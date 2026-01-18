@@ -28,9 +28,10 @@
         header {
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Расталкивает лево, центр и право */
             background-color: #000;
-            padding: 0 30px;
-            height: 85px;
+            padding: 0 40px;
+            height: 90px;
             border-bottom: 1px solid #1a1a1a;
             position: fixed;
             top: 0;
@@ -40,24 +41,21 @@
             box-sizing: border-box;
         }
 
-        /* ЛЕВАЯ ЧАСТЬ: Логотип */
-        .left-side {
+        /* 1. ЛЕВО: Логотип */
+        .header-left {
             display: flex;
             align-items: center;
-            flex-shrink: 0;
+            width: 250px; /* Фиксируем ширину, чтобы поиск не прыгал */
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             text-decoration: none;
         }
 
-        .logo-img {
-            height: 48px;
-            width: auto;
-        }
+        .logo-img { height: 50px; width: auto; }
 
         .brand-name {
             font-size: 28px;
@@ -68,11 +66,18 @@
 
         .brand-name span { color: #ff0000; }
 
-        /* ЦЕНТРАЛЬНАЯ ЧАСТЬ: Поисковик (растягиваем) */
+        /* 2. ЦЕНТР: Поисковик */
+        .header-center {
+            flex-grow: 1; /* Занимает всё доступное место в центре */
+            display: flex;
+            justify-content: center;
+            padding: 0 40px;
+        }
+
         .search-container {
             position: relative;
-            flex-grow: 1; /* Занимает всё свободное место */
-            margin: 0 50px; /* Отступы от лого и иконок */
+            width: 100%;
+            max-width: 800px; /* Максимальная ширина поиска */
         }
 
         .search-input {
@@ -80,7 +85,7 @@
             background: #111;
             border: 1px solid #333;
             border-radius: 12px;
-            padding: 14px 20px 14px 50px;
+            padding: 14px 20px 14px 55px;
             color: white;
             font-size: 16px;
             outline: none;
@@ -90,25 +95,25 @@
 
         .search-input:focus {
             border-color: #ff0000;
-            background: #161616;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.1);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
         }
 
         .search-icon {
             position: absolute;
-            left: 18px;
+            left: 20px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 20px;
             opacity: 0.5;
         }
 
-        /* ПРАВАЯ ЧАСТЬ: Чат и Профиль */
-        .right-side {
+        /* 3. ПРАВО: Иконки */
+        .header-right {
             display: flex;
             align-items: center;
-            gap: 35px;
-            flex-shrink: 0;
+            gap: 30px;
+            width: 250px; /* Такая же ширина, как у левой части для симметрии */
+            justify-content: flex-end;
         }
 
         .nav-item {
@@ -116,22 +121,14 @@
             flex-direction: column;
             align-items: center;
             text-decoration: none;
-            gap: 6px;
+            gap: 5px;
             transition: 0.2s;
-            cursor: pointer;
-            min-width: 65px;
+            min-width: 60px;
         }
 
-        .nav-item:hover {
-            transform: translateY(-2px);
-            opacity: 0.8;
-        }
+        .nav-item:hover { transform: translateY(-2px); opacity: 0.8; }
 
-        .chat-icon-svg {
-            fill: white;
-            width: 32px;
-            height: 32px;
-        }
+        .chat-icon-svg { fill: white; width: 32px; height: 32px; }
 
         .header-avatar {
             width: 34px;
@@ -139,7 +136,6 @@
             border-radius: 50%;
             border: 2px solid #ff0000;
             object-fit: cover;
-            background: #222;
         }
 
         .nav-label {
@@ -147,7 +143,7 @@
             font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 1px;
         }
 
         .login-btn-link {
@@ -157,30 +153,26 @@
             padding: 10px 25px;
             border-radius: 8px;
             font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .login-btn-link:hover {
-            background: white;
-            color: black;
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="left-side">
+        <div class="header-left">
             <a href="index.html" class="brand">
                 <img src="logo.png" alt="NG" class="logo-img">
                 <div class="brand-name">Nova<span>Game</span></div>
             </a>
         </div>
 
-        <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" placeholder="Поиск игр, аккаунтов и ключей...">
+        <div class="header-center">
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Поиск игр, аккаунтов и валюты...">
+            </div>
         </div>
 
-        <div class="right-side">
+        <div class="header-right">
             <a href="messages.html" class="nav-item">
                 <svg class="chat-icon-svg" viewBox="0 0 24 24">
                     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
@@ -194,7 +186,7 @@
         </div>
     </header>
 
-    <div style="height: 100px;"></div>
+    <div style="height: 110px;"></div>
 
     <script>
         const firebaseConfig = {

@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -54,7 +52,7 @@
         .avatar-preview {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* Исправляет сплющивание картинки */
             opacity: 0.6;
             transition: 0.3s;
         }
@@ -127,19 +125,10 @@
     </div>
 
     <script>
-        // При загрузке подставляем фото из Google, если оно было сохранено в login.html
-        window.onload = function() {
-            const googlePic = localStorage.getItem('temp_pic');
-            if (googlePic) {
-                const preview = document.getElementById('avatar-img');
-                preview.src = googlePic;
-                preview.style.opacity = "1";
-            }
-        }
+        // Блок автоматической подстановки фото из Google удален, чтобы всегда была default-avatar.png
 
         const badWords = [
             "хуй", "хуйня", "пизда", "ебать", "блядь", "сука", "чмо", "лох", "дерьмо", "говно"
-            // Сюда можно добавлять любые другие слова через запятую
         ];
 
         function previewFile() {
@@ -162,7 +151,6 @@
             const nickLow = nickInput.trim().toLowerCase();
             const avatarImg = document.getElementById('avatar-img');
             
-            // Проверка длины: от 4 до 16
             if(nickLow.length < 4) {
                 alert("Ник слишком короткий! Минимум 4 символа.");
                 return;
@@ -172,7 +160,6 @@
                 return;
             }
 
-            // Проверка на запрещенные слова
             for (let word of badWords) {
                 if (nickLow.includes(word)) {
                     alert("Данный ник не допустим. Пожалуйста, выберите другой.");
@@ -180,13 +167,10 @@
                 }
             }
 
-            // СОХРАНЕНИЕ ДАННЫХ В БРАУЗЕР
             localStorage.setItem('userName', nickInput);
             localStorage.setItem('userPic', avatarImg.src);
             localStorage.setItem('isLoggedIn', 'true');
 
-            // После сохранения перекидываем на главную
-            console.log("Профиль настроен, ник:", nickInput);
             window.location.href = "index.html";
         }
     </script>

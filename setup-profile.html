@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -41,19 +43,24 @@
             cursor: pointer;
             border-radius: 50%;
             border: 3px solid #ff0000;
-            background: #fff;
+            background: #222;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            position: relative;
         }
 
         .avatar-preview {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.5; /* Тусклая иконка */
+            opacity: 0.6;
             transition: 0.3s;
+        }
+
+        .avatar-container:hover .avatar-preview {
+            opacity: 0.9;
         }
 
         input[type="text"] {
@@ -68,6 +75,11 @@
             box-sizing: border-box;
             text-align: center;
             outline: none;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ff0000;
         }
 
         .save-btn {
@@ -80,30 +92,54 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #cc0000;
+            transform: scale(1.02);
         }
 
         #file-input { display: none; }
+        
+        .hint {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
     <div class="setup-card">
         <h2>Ваш профиль</h2>
-        <p style="color: #888; font-size: 14px;">Нажмите на круг, чтобы выбрать фото</p>
+        <p class="hint">Нажмите на круг, чтобы изменить фото</p>
         
         <div class="avatar-container" onclick="document.getElementById('file-input').click()">
             <img id="avatar-img" src="default-avatar.png" class="avatar-preview">
         </div>
         
         <input type="file" id="file-input" accept="image/*" onchange="previewFile()">
-        <input type="text" id="nickname" placeholder="Ник (мин. 4 символа)" maxlength="15">
+        
+        <input type="text" id="nickname" placeholder="Ваш ник (4-16 символов)" maxlength="16">
+        
         <button class="save-btn" onclick="finishSetup()">Подтвердить</button>
     </div>
 
     <script>
+        // При загрузке подставляем фото из Google, если оно было сохранено в login.html
+        window.onload = function() {
+            const googlePic = localStorage.getItem('temp_pic');
+            if (googlePic) {
+                const preview = document.getElementById('avatar-img');
+                preview.src = googlePic;
+                preview.style.opacity = "1";
+            }
+        }
+
         const badWords = [
-            "хуй", "хуйня", "хуёвый", "захуярить", "пизда", "пиздец", "пиздатый", "распиздяй", "ебать", "ёбаный", "заебал", "переебать", "блядь", "блядский", "блядство", "дебил", "идиот", "придурок", "козёл", "мудак", "урод", "тварь", "чёрт", "блин", "жесть", "капец", "трындец", "фигня", "кринж", "токсик", "дичь", "дно", "зашквар", "рэд флаг", "ё-моё", "ёпрст", "пипец", "офигеть",
-            "дурак", "кретин", "имбецил", "болван", "тупица", "тупой", "тормоз", "мудила", "гандон", "скотина", "ублюдок", "выродок", "вырод", "уродец", "сволочь", "мразь", "мерзавец", "подонок", "гнида", "паскуда", "сука", "сучара", "сукин сын", "падла", "чмо", "чмошник", "чмырь", "лох", "ничтожество", "никчёмный", "пустышка", "ноль", "жлоб", "хам", "быдло", "деревенщина", "псих", "неадекват", "отбитый", "предатель", "стукач", "крыса", "паразит", "дармоед", "нахлебник", "тряпка", "слабак", "трус", "наглец", "наглая рожа", "хамло", "жиртрест", "обжора", "старпёр", "маразматик", "клоун", "посмешище", "цирк", "позор", "стыдоба", "чертяка", "бес", "говно", "дерьмо"
+            "хуй", "хуйня", "пизда", "ебать", "блядь", "сука", "чмо", "лох", "дерьмо", "говно"
+            // Сюда можно добавлять любые другие слова через запятую
         ];
 
         function previewFile() {
@@ -124,25 +160,33 @@
         function finishSetup() {
             const nickInput = document.getElementById('nickname').value;
             const nickLow = nickInput.trim().toLowerCase();
-            const avatarData = document.getElementById('avatar-img').src;
+            const avatarImg = document.getElementById('avatar-img');
             
+            // Проверка длины: от 4 до 16
             if(nickLow.length < 4) {
-                alert("Ник должен содержать минимум 4 символа!");
+                alert("Ник слишком короткий! Минимум 4 символа.");
+                return;
+            }
+            if(nickLow.length > 16) {
+                alert("Ник слишком длинный! Максимум 16 символов.");
                 return;
             }
 
+            // Проверка на запрещенные слова
             for (let word of badWords) {
                 if (nickLow.includes(word)) {
-                    // Новая табличка
-                    alert("Данный ник не допустим");
+                    alert("Данный ник не допустим. Пожалуйста, выберите другой.");
                     return;
                 }
             }
 
+            // СОХРАНЕНИЕ ДАННЫХ В БРАУЗЕР
             localStorage.setItem('userName', nickInput);
-            localStorage.setItem('userPic', avatarData);
+            localStorage.setItem('userPic', avatarImg.src);
             localStorage.setItem('isLoggedIn', 'true');
 
+            // После сохранения перекидываем на главную
+            console.log("Профиль настроен, ник:", nickInput);
             window.location.href = "index.html";
         }
     </script>

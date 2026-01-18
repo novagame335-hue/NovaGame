@@ -35,14 +35,13 @@
         }
 
         .avatar-container {
-            position: relative;
             width: 130px;
             height: 130px;
             margin: 0 auto 20px;
             cursor: pointer;
             border-radius: 50%;
             border: 3px solid #ff0000;
-            background: #fff; /* Белый фон как на твоем скрине */
+            background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -53,6 +52,8 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            opacity: 0.5; /* Тусклая иконка */
+            transition: 0.3s;
         }
 
         input[type="text"] {
@@ -82,26 +83,29 @@
         }
 
         #file-input { display: none; }
-        h2 { margin-top: 0; }
-        p { color: #888; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <div class="setup-card">
         <h2>Ваш профиль</h2>
-        <p>Нажмите на круг, чтобы загрузить своё фото</p>
+        <p style="color: #888; font-size: 14px;">Нажмите на круг, чтобы выбрать фото</p>
         
         <div class="avatar-container" onclick="document.getElementById('file-input').click()">
             <img id="avatar-img" src="default-avatar.png" class="avatar-preview">
         </div>
         
         <input type="file" id="file-input" accept="image/*" onchange="previewFile()">
-        <input type="text" id="nickname" placeholder="Введите ваш ник" maxlength="15">
-        <button class="save-btn" onclick="finishSetup()">Начать играть</button>
+        <input type="text" id="nickname" placeholder="Ник (мин. 4 символа)" maxlength="15">
+        <button class="save-btn" onclick="finishSetup()">Подтвердить</button>
     </div>
 
     <script>
+        const badWords = [
+            "хуй", "хуйня", "хуёвый", "захуярить", "пизда", "пиздец", "пиздатый", "распиздяй", "ебать", "ёбаный", "заебал", "переебать", "блядь", "блядский", "блядство", "дебил", "идиот", "придурок", "козёл", "мудак", "урод", "тварь", "чёрт", "блин", "жесть", "капец", "трындец", "фигня", "кринж", "токсик", "дичь", "дно", "зашквар", "рэд флаг", "ё-моё", "ёпрст", "пипец", "офигеть",
+            "дурак", "кретин", "имбецил", "болван", "тупица", "тупой", "тормоз", "мудила", "гандон", "скотина", "ублюдок", "выродок", "вырод", "уродец", "сволочь", "мразь", "мерзавец", "подонок", "гнида", "паскуда", "сука", "сучара", "сукин сын", "падла", "чмо", "чмошник", "чмырь", "лох", "ничтожество", "никчёмный", "пустышка", "ноль", "жлоб", "хам", "быдло", "деревенщина", "псих", "неадекват", "отбитый", "предатель", "стукач", "крыса", "паразит", "дармоед", "нахлебник", "тряпка", "слабак", "трус", "наглец", "наглая рожа", "хамло", "жиртрест", "обжора", "старпёр", "маразматик", "клоун", "посмешище", "цирк", "позор", "стыдоба", "чертяка", "бес", "говно", "дерьмо"
+        ];
+
         function previewFile() {
             const file = document.getElementById('file-input').files[0];
             const reader = new FileReader();
@@ -109,6 +113,7 @@
 
             reader.onloadend = function() {
                 preview.src = reader.result;
+                preview.style.opacity = "1"; 
             }
 
             if (file) {
@@ -117,15 +122,24 @@
         }
 
         function finishSetup() {
-            const nick = document.getElementById('nickname').value;
+            const nickInput = document.getElementById('nickname').value;
+            const nickLow = nickInput.trim().toLowerCase();
             const avatarData = document.getElementById('avatar-img').src;
             
-            if(nick.length < 3) {
-                alert("Ник слишком короткий!");
+            if(nickLow.length < 4) {
+                alert("Ник должен содержать минимум 4 символа!");
                 return;
             }
 
-            localStorage.setItem('userName', nick);
+            for (let word of badWords) {
+                if (nickLow.includes(word)) {
+                    // Новая табличка
+                    alert("Данный ник не допустим");
+                    return;
+                }
+            }
+
+            localStorage.setItem('userName', nickInput);
             localStorage.setItem('userPic', avatarData);
             localStorage.setItem('isLoggedIn', 'true');
 
@@ -134,4 +148,3 @@
     </script>
 </body>
 </html>
-

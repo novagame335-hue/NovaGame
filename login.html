@@ -204,7 +204,7 @@
     // Твоя функция входа
 function onSignIn(response) {
     console.log("Успешный вход в Google, перенаправляем на настройку профиля...");
-    
+    window.location.href = "setup-profile.html";
     // Получаем данные от Google (почту и аватарку), чтобы предложить их пользователю
     const base64Url = response.credential.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -222,5 +222,6 @@ function onSignIn(response) {
 </body>
 
 </html>
+
 
 

@@ -29,33 +29,33 @@
             display: flex;
             align-items: center;
             background-color: #000;
-            padding: 0 25px;
-            height: 80px;
+            padding: 0 30px;
+            height: 85px;
             border-bottom: 1px solid #1a1a1a;
-            justify-content: space-between;
-            position: fixed; /* Закрепляем шапку сверху */
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 100;
+            box-sizing: border-box;
         }
 
+        /* ЛЕВАЯ ЧАСТЬ: Логотип */
         .left-side {
             display: flex;
             align-items: center;
-            gap: 25px;
             flex-shrink: 0;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 8px; 
+            gap: 10px;
             text-decoration: none;
         }
 
         .logo-img {
-            height: 45px; /* Сбалансированный размер лого */
+            height: 48px;
             width: auto;
         }
 
@@ -64,62 +64,62 @@
             font-weight: 800;
             color: #fff;
             letter-spacing: -1px;
-            white-space: nowrap;
         }
 
         .brand-name span { color: #ff0000; }
 
-        /* Поисковик — сделал шире и заметнее */
+        /* ЦЕНТРАЛЬНАЯ ЧАСТЬ: Поисковик (растягиваем) */
         .search-container {
             position: relative;
-            flex-grow: 1;
-            max-width: 600px;
-            margin: 0 40px;
+            flex-grow: 1; /* Занимает всё свободное место */
+            margin: 0 50px; /* Отступы от лого и иконок */
         }
 
         .search-input {
             width: 100%;
             background: #111;
             border: 1px solid #333;
-            border-radius: 10px;
-            padding: 12px 15px 12px 45px;
+            border-radius: 12px;
+            padding: 14px 20px 14px 50px;
             color: white;
-            font-size: 15px;
+            font-size: 16px;
             outline: none;
             transition: 0.3s;
+            box-sizing: border-box;
         }
 
         .search-input:focus {
             border-color: #ff0000;
             background: #161616;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.1);
         }
 
         .search-icon {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 18px;
-            opacity: 0.6;
+            font-size: 20px;
+            opacity: 0.5;
         }
 
+        /* ПРАВАЯ ЧАСТЬ: Чат и Профиль */
         .right-side {
             display: flex;
             align-items: center;
-            gap: 30px; /* Расстояние между Чатом и Профилем */
+            gap: 35px;
             flex-shrink: 0;
         }
 
-        /* Общий стиль для иконок с подписями (Чат и Профиль) */
         .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-decoration: none;
-            gap: 5px;
+            gap: 6px;
             transition: 0.2s;
             cursor: pointer;
-            min-width: 60px;
+            min-width: 65px;
         }
 
         .nav-item:hover {
@@ -129,13 +129,13 @@
 
         .chat-icon-svg {
             fill: white;
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
         }
 
         .header-avatar {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             border: 2px solid #ff0000;
             object-fit: cover;
@@ -144,18 +144,18 @@
 
         .nav-label {
             color: #fff;
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
         .login-btn-link {
             text-decoration: none;
             border: 2px solid #fff;
             color: #fff;
-            padding: 8px 24px;
-            border-radius: 6px;
+            padding: 10px 25px;
+            border-radius: 8px;
             font-weight: bold;
             transition: 0.2s;
         }
@@ -177,7 +177,7 @@
 
         <div class="search-container">
             <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" placeholder="Поиск игр, аккаунтов и валюты...">
+            <input type="text" class="search-input" placeholder="Поиск игр, аккаунтов и ключей...">
         </div>
 
         <div class="right-side">
@@ -194,7 +194,9 @@
         </div>
     </header>
 
-    <div style="height: 100px;"></div> <script>
+    <div style="height: 100px;"></div>
+
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",

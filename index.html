@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NovaGame — Маркетплейс</title>
     <style>
         body {
@@ -30,6 +31,8 @@
             height: 75px;
             border-bottom: 1px solid #1a1a1a;
             justify-content: space-between;
+            position: relative;
+            z-index: 10;
         }
 
         .left-side {
@@ -116,13 +119,19 @@
             font-weight: bold;
             text-transform: uppercase;
             white-space: nowrap;
+            transition: 0.2s;
+        }
+
+        .login-btn-link:hover {
+            background: white;
+            color: black;
         }
     </style>
 </head>
 <body>
     <header>
         <div class="left-side">
-            <a href="#" class="brand">
+            <a href="index.html" class="brand">
                 <img src="logo.png" alt="NG" class="logo-img">
                 <div class="brand-name">Nova<span>Game</span></div>
             </a>
@@ -132,7 +141,7 @@
             </div>
         </div>
         <div class="right-side">
-            <a href="messages.html" class="chat-link">
+            <a href="messages.html" class="chat-link" title="Сообщения">
                 <svg class="chat-icon-svg" viewBox="0 0 24 24">
                     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
                 </svg>

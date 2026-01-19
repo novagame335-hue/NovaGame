@@ -1,124 +1,235 @@
-header {
-    display: flex;
-    align-items: center;
-    background-color: #000;
-    padding: 0 40px;
-    height: 90px;
-    border-bottom: 1px solid #1a1a1a;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    box-sizing: border-box;
-}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NovaGame — Маркетплейс</title>
 
-/* Логотип слева */
-.header-left {
-    display: flex;
-    align-items: center;
-    margin-right: 40px; /* Фиксированный отступ от лого до поиска */
-}
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-}
+    <style>
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #350101, #000000, #220101, #000000);
+            background-size: 300% 300%;
+            animation: smoothBG 20s ease-in-out infinite;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+            min-height: 100vh;
+        }
 
-.logo-img { height: 45px; width: auto; }
+        @keyframes smoothBG {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
 
-.brand-name {
-    font-size: 28px;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -1px;
-}
+        header {
+            display: flex;
+            align-items: center;
+            background-color: #000;
+            padding: 0 40px;
+            height: 90px;
+            border-bottom: 1px solid #1a1a1a;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-sizing: border-box;
+        }
 
-.brand-name span { color: #ff0000; }
+        /* ЛЕВАЯ ЧАСТЬ: Логотип */
+        .header-left {
+            display: flex;
+            align-items: center;
+            margin-right: 30px;
+            flex-shrink: 0;
+        }
 
-/* Центр: Поиск теперь сам заполняет пустоту */
-.header-center {
-    flex: 1; 
-    display: flex;
-    margin-right: 40px; /* Отступ между поиском и кнопкой Новости */
-}
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
 
-.search-container {
-    position: relative;
-    width: 100%;
-}
+        .logo-img { height: 45px; width: auto; }
 
-.search-input {
-    width: 100%;
-    background: #111;
-    border: 1px solid #333;
-    border-radius: 12px;
-    padding: 14px 20px 14px 55px;
-    color: white;
-    font-size: 16px;
-    outline: none;
-    transition: 0.3s;
-    box-sizing: border-box;
-}
+        .brand-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -1px;
+        }
 
-.search-input:focus {
-    border-color: #ff0000;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
-}
+        .brand-name span { color: #ff0000; }
 
-.search-icon {
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 20px;
-    opacity: 0.5;
-}
+        /* ЦЕНТРАЛЬНАЯ ЧАСТЬ: Длинный поиск */
+        .header-center {
+            flex: 1; /* Растягивает поиск на всё свободное место */
+            display: flex;
+            align-items: center;
+            margin-right: 40px;
+        }
 
-/* Правая часть: Иконки стоят плотно друг к другу */
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 35px; /* Расстояние между кнопками Новости, Чат и Профиль */
-}
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px; /* Чтобы на ультрашироких мониторах не был бесконечным */
+        }
 
-.nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none;
-    gap: 5px;
-    transition: 0.2s;
-    cursor: pointer;
-}
+        .search-input {
+            width: 100%;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 14px 20px 14px 55px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
 
-.nav-item:hover { transform: translateY(-2px); opacity: 0.8; }
+        .search-input:focus {
+            border-color: #ff0000;
+            background: #161616;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.1);
+        }
 
-.header-icon-svg { fill: white; width: 28px; height: 28px; }
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            opacity: 0.5;
+        }
 
-.header-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid #ff0000;
-    object-fit: cover;
-}
+        /* ПРАВАЯ ЧАСТЬ: Иконки */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 30px; /* Расстояние между Новости, Чат и Профиль */
+            flex-shrink: 0;
+        }
 
-.nav-label {
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            gap: 5px;
+            transition: 0.2s;
+            cursor: pointer;
+            min-width: 60px;
+        }
 
-.login-btn-link {
-    text-decoration: none;
-    border: 2px solid #fff;
-    color: #fff;
-    padding: 10px 25px;
-    border-radius: 8px;
-    font-weight: bold;
-}
+        .nav-item:hover { transform: translateY(-2px); opacity: 0.8; }
+
+        .header-icon-svg { fill: white; width: 28px; height: 28px; }
+
+        .header-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 2px solid #ff0000;
+            object-fit: cover;
+            background: #222;
+        }
+
+        .nav-label {
+            color: #fff;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .login-btn-link {
+            text-decoration: none;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .login-btn-link:hover { background: white; color: black; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="brand">
+                <img src="logo.png" alt="NG" class="logo-img">
+                <div class="brand-name">Nova<span>Game</span></div>
+            </a>
+        </div>
+
+        <div class="header-center">
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Поиск игр, аккаунтов и валюты...">
+            </div>
+        </div>
+
+        <div class="header-right">
+            <a href="news.html" class="nav-item">
+                <svg class="header-icon-svg" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <span class="nav-label">Новости</span>
+            </a>
+
+            <a href="messages.html" class="nav-item">
+                <svg class="header-icon-svg" viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
+                </svg>
+                <span class="nav-label">Чат</span>
+            </a>
+
+            <div id="user-menu-area">
+                <a href="login.html" class="login-btn-link">Войти</a>
+            </div>
+        </div>
+    </header>
+
+    <div style="height: 110px;"></div> <script>
+        // Твой конфиг Firebase с Realtime Database
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+            authDomain: "novagame-b15b6.firebaseapp.com",
+            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "novagame-b15b6",
+            storageBucket: "novagame-b15b6.firebasestorage.app",
+            messagingSenderId: "7572791951",
+            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        window.onload = function() {
+            const savedNick = localStorage.getItem('userName');
+            const savedPic = localStorage.getItem('userPic');
+            const menuArea = document.getElementById('user-menu-area');
+
+            if (savedNick) {
+                // Если залогинен, показываем аватарку и подпись Профиль
+                menuArea.innerHTML = `
+                    <a href="profile.html" class="nav-item">
+                        <img src="${savedPic || 'default-avatar.png'}" class="header-avatar">
+                        <span class="nav-label">Профиль</span>
+                    </a>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

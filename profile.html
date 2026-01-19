@@ -121,6 +121,9 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // Фиксируем сессию пользователя
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
         // Следим за состоянием входа
         auth.onAuthStateChanged((user) => {
             if (user) {
@@ -129,13 +132,17 @@
                     const data = snapshot.val();
                     if (data) {
                         document.getElementById('user-name').innerText = data.username || "Без имени";
-                        document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
+                        document.getElementById('user-pic').src = data.profilePic || user.photoURL || "default-avatar.png";
                         document.getElementById('user-balance').innerText = (data.balance || 0).toFixed(2);
                         document.getElementById('user-id-display').innerText = "UID: " + user.uid.substring(0, 8).toUpperCase();
+                    } else {
+                        // Если записи в базе нет (новый юзер), берем из Google
+                        document.getElementById('user-name').innerText = user.displayName || "Новый игрок";
+                        document.getElementById('user-pic').src = user.photoURL || "default-avatar.png";
                     }
                 });
             } else {
-                // Если не залогинен — отправляем на вход
+                // Если Firebase не нашел активную сессию — на вход
                 window.location.href = "login.html";
             }
         });
@@ -143,7 +150,7 @@
         function logout() {
             auth.signOut().then(() => {
                 localStorage.clear();
-                window.location.href = "index.html";
+                window.location.href = "login.html";
             });
         }
     </script>

@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход в NovaGame</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         body {
             /* Твой фон с переливом */
@@ -45,10 +49,27 @@
             margin-bottom: 25px;
         }
 
-        #agree-check:checked ~ #google-btn-wrapper {
+        #agree-check:checked ~ .controls #google-btn-wrapper {
             opacity: 1;
             pointer-events: auto;
         }
+
+        /* Кнопка Google в стиле Firebase */
+        .custom-google-btn {
+            background: white;
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        .custom-google-btn:hover { background: #eee; transform: scale(1.02); }
 
         .controls {
             display: flex;
@@ -144,15 +165,14 @@
 <div class="login-card">
     <h2>Вход</h2>
 
+    <input type="checkbox" id="agree-check" style="display: none;">
+    
     <div class="controls">
-        <input type="checkbox" id="agree-check" style="display: none;">
-        
         <div id="google-btn-wrapper">
-            <div id="g_id_onload" 
-                 data-client_id="645850262179-clorkftlc8jlfcec254oa9fgilbn5frr.apps.googleusercontent.com" 
-                 data-callback="onSignIn">
-            </div>
-            <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-size="large"></div>
+            <button class="custom-google-btn" onclick="signInWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20">
+                Войти через Google
+            </button>
         </div>
 
         <label for="agree-check" class="agree-label">
@@ -186,6 +206,21 @@
 </div>
 
 <script>
+    // КОНФИГ ТВОЕЙ БАЗЫ
+    const firebaseConfig = {
+        apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+        authDomain: "novagame-b15b6.firebaseapp.com",
+        databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+        projectId: "novagame-b15b6",
+        storageBucket: "novagame-b15b6.firebasestorage.app",
+        messagingSenderId: "7572791951",
+        appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
     // Показ галочки
     document.getElementById('agree-check').addEventListener('change', function() {
         document.getElementById('checkmark').style.display = this.checked ? 'block' : 'none';
@@ -201,25 +236,35 @@
         document.getElementById('terms-modal').style.display = 'none';
     }
 
-    // Функция входа с умным перенаправлением
-    function onSignIn(response) {
-        const base64Url = response.credential.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const fullData = JSON.parse(window.atob(base64));
+    // НОВАЯ ФУНКЦИЯ ВХОДА ЧЕРЕЗ FIREBASE
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).then((result) => {
+            const user = result.user;
 
-        // Сохраняем временную аватарку от Google
-        localStorage.setItem('temp_pic', fullData.picture);
+            // Сохраняем временную аватарку от Google
+            localStorage.setItem('temp_pic', user.photoURL);
+            
+            // Проверяем в базе, есть ли уже такой пользователь
+            db.ref('users/' + user.uid).once('value').then((snapshot) => {
+                const userData = snapshot.val();
 
-        // ПРОВЕРКА: Если в памяти нет имени пользователя, значит он тут ПЕРВЫЙ РАЗ
-        const savedNick = localStorage.getItem('userName');
+                if (!userData || !userData.username) {
+                    // Если данных в базе нет — на настройку профиля
+                    window.location.href = "setup-profile.html";
+                } else {
+                    // Если есть — сохраняем локально и на главную
+                    localStorage.setItem('userName', userData.username);
+                    localStorage.setItem('userPic', userData.profilePic || user.photoURL);
+                    localStorage.setItem('userId', user.uid);
+                    window.location.href = "index.html";
+                }
+            });
 
-        if (!savedNick) {
-            // Первый раз — отправляем на настройку профиля
-            window.location.href = "setup-profile.html";
-        } else {
-            // Уже был — отправляем сразу на главную
-            window.location.href = "index.html";
-        }
+        }).catch((error) => {
+            console.error("Ошибка входа:", error);
+            alert("Ошибка входа: " + error.message);
+        });
     }
 </script>
 

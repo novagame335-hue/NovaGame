@@ -239,21 +239,18 @@
     // НОВАЯ ФУНКЦИЯ ВХОДА ЧЕРЕЗ FIREBASE
     function signInWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
+        // Используем signInWithPopup вместо signInWithGoogle
         auth.signInWithPopup(provider).then((result) => {
             const user = result.user;
 
-            // Сохраняем временную аватарку от Google
             localStorage.setItem('temp_pic', user.photoURL);
             
-            // Проверяем в базе, есть ли уже такой пользователь
             db.ref('users/' + user.uid).once('value').then((snapshot) => {
                 const userData = snapshot.val();
 
                 if (!userData || !userData.username) {
-                    // Если данных в базе нет — на настройку профиля
                     window.location.href = "setup-profile.html";
                 } else {
-                    // Если есть — сохраняем локально и на главную
                     localStorage.setItem('userName', userData.username);
                     localStorage.setItem('userPic', userData.profilePic || user.photoURL);
                     localStorage.setItem('userId', user.uid);

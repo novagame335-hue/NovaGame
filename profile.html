@@ -24,17 +24,12 @@
             padding: 20px;
         }
 
-        /* Шапка профиля в стиле Playerok */
         .profile-header {
             display: flex;
             align-items: center;
             gap: 30px;
             padding: 40px 0;
             border-bottom: 1px solid #333;
-        }
-
-        .avatar-wrapper {
-            position: relative;
         }
 
         .avatar-main {
@@ -71,7 +66,6 @@
             margin-top: 5px;
         }
 
-        /* Сетка с балансом и кнопками */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 2fr;
@@ -87,8 +81,9 @@
         }
 
         .balance-label { color: #888; font-size: 12px; text-transform: uppercase; }
+        /* Изменено на рубли */
         .balance-value { font-size: 28px; font-weight: 800; margin: 10px 0; }
-        .balance-value span { color: #ff0000; font-size: 16px; }
+        .balance-value span.currency { color: #ff0000; font-size: 24px; margin-left: 5px; }
 
         .btn-wallet {
             width: 100%;
@@ -103,7 +98,6 @@
         }
         .btn-wallet:hover { background: #333; }
 
-        /* Табы (вкладки) */
         .tabs-nav {
             display: flex;
             gap: 10px;
@@ -127,11 +121,6 @@
             border-color: #ff0000;
         }
 
-        .tab-btn span {
-            margin-left: 8px;
-            opacity: 0.6;
-        }
-
         .content-area {
             background: #111;
             border-radius: 20px;
@@ -150,7 +139,6 @@
             text-decoration: none;
             font-size: 14px;
         }
-        .logout-link:hover { color: #ff0000; }
 
         .btn-back {
             display: block;
@@ -188,8 +176,8 @@
             <div class="left-col">
                 <div class="balance-card">
                     <div class="balance-label">Кошелек</div>
-                    <div class="balance-value"><span id="user-balance">0.00</span> <span>USDT</span></div>
-                    <button class="btn-wallet" onclick="alert('Пополнение в разработке')">ПОПОЛНИТЬ</button>
+                    <div class="balance-value"><span id="user-balance">0</span><span class="currency">₽</span></div>
+                    <button class="btn-wallet" onclick="alert('Перенаправление на криптошлюз...')">ПОПОЛНИТЬ</button>
                     <a href="index.html" class="btn-back">← В МАРКЕТ</a>
                 </div>
             </div>
@@ -212,7 +200,6 @@
     </div>
 
     <script>
-        // Твой стандартный конфиг Firebase (оставляем без изменений)
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -238,7 +225,11 @@
 
                     document.getElementById('user-name').innerText = data.username;
                     document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
-                    document.getElementById('user-balance').innerText = (data.balance || 0).toFixed(2);
+                    
+                    // Баланс теперь отображается как целое число или с 2 знаками, если есть копейки
+                    const balance = data.balance || 0;
+                    document.getElementById('user-balance').innerText = Number.isInteger(balance) ? balance : balance.toFixed(2);
+                    
                     document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
                 });
             } else {

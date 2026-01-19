@@ -41,7 +41,6 @@
             box-sizing: border-box;
         }
 
-        /* Левая часть: Логотип */
         .header-left {
             display: flex;
             align-items: center;
@@ -66,18 +65,17 @@
 
         .brand-name span { color: #ff0000; }
 
-        /* Центр: Растянутый поиск */
         .header-center {
             flex: 1; 
             display: flex;
             justify-content: center;
-            padding: 0 40px;
+            padding: 0 30px;
         }
 
         .search-container {
             position: relative;
             width: 100%;
-            max-width: 1000px; /* Максимальная длина поиска */
+            max-width: 800px; /* Немного уменьшил, чтобы влезли новости */
         }
 
         .search-input {
@@ -107,12 +105,12 @@
             opacity: 0.5;
         }
 
-        /* Правая часть: Чат и Профиль */
+        /* Правая часть: Новости, Чат и Профиль */
         .header-right {
             display: flex;
             align-items: center;
-            gap: 30px;
-            min-width: 200px;
+            gap: 25px;
+            min-width: 320px; /* Увеличил ширину для трех кнопок */
             justify-content: flex-end;
         }
 
@@ -124,11 +122,13 @@
             gap: 5px;
             transition: 0.2s;
             cursor: pointer;
+            min-width: 70px;
         }
 
         .nav-item:hover { transform: translateY(-2px); opacity: 0.8; }
 
-        .chat-icon-svg { fill: white; width: 32px; height: 32px; }
+        /* Иконки */
+        .header-icon-svg { fill: white; width: 28px; height: 28px; }
 
         .header-avatar {
             width: 34px;
@@ -150,15 +150,10 @@
             text-decoration: none;
             border: 2px solid #fff;
             color: #fff;
-            padding: 10px 25px;
+            padding: 8px 20px;
             border-radius: 8px;
             font-weight: bold;
             transition: 0.2s;
-        }
-
-        .login-btn-link:hover {
-            background: #fff;
-            color: #000;
         }
     </style>
 </head>
@@ -179,8 +174,15 @@
         </div>
 
         <div class="header-right">
+            <a href="news.html" class="nav-item">
+                <svg class="header-icon-svg" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <span class="nav-label">Новости</span>
+            </a>
+
             <a href="messages.html" class="nav-item">
-                <svg class="chat-icon-svg" viewBox="0 0 24 24">
+                <svg class="header-icon-svg" viewBox="0 0 24 24">
                     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
                 </svg>
                 <span class="nav-label">Чат</span>

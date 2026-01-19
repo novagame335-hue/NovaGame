@@ -200,13 +200,16 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // Устанавливаем тип сохранения сессии (чтобы не вылетало)
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
         // Главный механизм проверки пользователя
         auth.onAuthStateChanged((user) => {
             const menuArea = document.getElementById('user-menu-area');
             
             if (user) {
                 // Если пользователь авторизован, берем его данные из Realtime Database
-                db.ref('users/' + user.uid).once('value').then((snapshot) => {
+                db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const userData = snapshot.val();
                     const profilePic = userData ? userData.profilePic : (user.photoURL || 'default-avatar.png');
                     

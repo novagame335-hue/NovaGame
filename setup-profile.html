@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Настройка профиля — NovaGame</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -52,7 +57,7 @@
         .avatar-preview {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Исправляет сплющивание картинки */
+            object-fit: cover;
             opacity: 0.6;
             transition: 0.3s;
         }
@@ -125,7 +130,20 @@
     </div>
 
     <script>
-        // Блок автоматической подстановки фото из Google удален, чтобы всегда была default-avatar.png
+        // КОНФИГУРАЦИЯ FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+            authDomain: "novagame-b15b6.firebaseapp.com",
+            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "novagame-b15b6",
+            storageBucket: "novagame-b15b6.firebasestorage.app",
+            messagingSenderId: "7572791951",
+            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
 
         const badWords = [
             "хуй", "хуйня", "пизда", "ебать", "блядь", "сука", "чмо", "лох", "дерьмо", "говно"
@@ -167,11 +185,33 @@
                 }
             }
 
-            localStorage.setItem('userName', nickInput);
-            localStorage.setItem('userPic', avatarImg.src);
-            localStorage.setItem('isLoggedIn', 'true');
+            // ПОЛУЧАЕМ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
+            const user = auth.currentUser;
 
-            window.location.href = "index.html";
+            if (user) {
+                // СОХРАНЯЕМ В ОБЛАКО (FIREBASE)
+                db.ref('users/' + user.uid).set({
+                    username: nickInput,
+                    email: user.email,
+                    profilePic: avatarImg.src, // Сохраняем картинку (Base64 или ссылка)
+                    balance: 0,
+                    registrationDate: new Date().toISOString()
+                }).then(() => {
+                    // СОХРАНЯЕМ ЛОКАЛЬНО
+                    localStorage.setItem('userName', nickInput);
+                    localStorage.setItem('userPic', avatarImg.src);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userId', user.uid);
+
+                    // ПЕРЕХОД
+                    window.location.href = "index.html";
+                }).catch((error) => {
+                    alert("Ошибка сохранения: " + error.message);
+                });
+            } else {
+                alert("Пользователь не авторизован. Вернитесь на страницу входа.");
+                window.location.href = "login.html";
+            }
         }
     </script>
 </body>

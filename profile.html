@@ -52,7 +52,6 @@
         h2 { margin: 10px 0; font-size: 26px; letter-spacing: 1px; }
         .user-id { color: #666; font-size: 12px; margin-bottom: 30px; }
 
-        /* Блок с "циферками" баланса */
         .balance-box {
             background: #111;
             border-radius: 12px;
@@ -79,6 +78,7 @@
             font-size: 14px;
             box-sizing: border-box;
             display: inline-block;
+            text-align: center;
         }
 
         .btn-home { background: #ff0000; color: white; border: none; }
@@ -121,35 +121,33 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // Фиксируем сессию пользователя
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-        // Следим за состоянием входа
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // Идем в базу за актуальными данными (балансом, ником)
+                // Слушаем изменения данных пользователя в реальном времени
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const data = snapshot.val();
-                    if (data) {
-                        document.getElementById('user-name').innerText = data.username || "Без имени";
-                        document.getElementById('user-pic').src = data.profilePic || user.photoURL || "default-avatar.png";
-                        document.getElementById('user-balance').innerText = (data.balance || 0).toFixed(2);
-                        document.getElementById('user-id-display').innerText = "UID: " + user.uid.substring(0, 8).toUpperCase();
-                    } else {
-                        // Если записи в базе нет (новый юзер), берем из Google
-                        document.getElementById('user-name').innerText = user.displayName || "Новый игрок";
-                        document.getElementById('user-pic').src = user.photoURL || "default-avatar.png";
+                    
+                    if (!data || !data.username) {
+                        // Если профиль не настроен — шлем на настройку
+                        window.location.href = "setup-profile.html";
+                        return;
                     }
+
+                    // Обновляем данные на странице
+                    document.getElementById('user-name').innerText = data.username;
+                    document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
+                    document.getElementById('user-balance').innerText = (data.balance || 0).toFixed(2);
+                    // Красивый короткий ID из начала UID
+                    document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
                 });
             } else {
-                // Если Firebase не нашел активную сессию — на вход
+                // Если не залогинен — на страницу входа
                 window.location.href = "login.html";
             }
         });
 
         function logout() {
             auth.signOut().then(() => {
-                localStorage.clear();
                 window.location.href = "login.html";
             });
         }

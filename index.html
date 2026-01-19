@@ -200,19 +200,24 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // Устанавливаем тип сохранения сессии (чтобы не вылетало)
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-        // Главный механизм проверки пользователя
         auth.onAuthStateChanged((user) => {
             const menuArea = document.getElementById('user-menu-area');
             
             if (user) {
-                // Если пользователь авторизован, берем его данные из Realtime Database
+                // ПРОВЕРКА: Создан ли профиль в базе?
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const userData = snapshot.val();
-                    const profilePic = userData ? userData.profilePic : (user.photoURL || 'default-avatar.png');
                     
+                    if (!userData || !userData.username) {
+                        // Если записи нет, принудительно шлем на настройку
+                        window.location.href = "setup-profile.html";
+                        return;
+                    }
+
+                    // Если всё ок, показываем аватарку
+                    const profilePic = userData.profilePic || 'default-avatar.png';
                     menuArea.innerHTML = `
                         <a href="profile.html" class="nav-item">
                             <img src="${profilePic}" class="header-avatar">
@@ -221,7 +226,6 @@
                     `;
                 });
             } else {
-                // Если не авторизован — показываем кнопку входа
                 menuArea.innerHTML = `
                     <a href="login.html" class="login-btn-link">Войти</a>
                 `;

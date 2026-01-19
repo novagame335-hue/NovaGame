@@ -240,29 +240,34 @@
     function signInWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
         
-        // Здесь исправлено: auth.signInWithPopup вместо auth.signInWithGoogle
-        auth.signInWithPopup(provider).then((result) => {
-            const user = result.user;
+        // Добавляем сохранение сессии, чтобы не выкидывало из профиля
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => {
+                // Вызываем окно входа
+                return auth.signInWithPopup(provider);
+            })
+            .then((result) => {
+                const user = result.user;
 
-            localStorage.setItem('temp_pic', user.photoURL);
-            
-            db.ref('users/' + user.uid).once('value').then((snapshot) => {
-                const userData = snapshot.val();
+                localStorage.setItem('temp_pic', user.photoURL);
+                
+                db.ref('users/' + user.uid).once('value').then((snapshot) => {
+                    const userData = snapshot.val();
 
-                if (!userData || !userData.username) {
-                    window.location.href = "setup-profile.html";
-                } else {
-                    localStorage.setItem('userName', userData.username);
-                    localStorage.setItem('userPic', userData.profilePic || user.photoURL);
-                    localStorage.setItem('userId', user.uid);
-                    window.location.href = "index.html";
-                }
+                    if (!userData || !userData.username) {
+                        window.location.href = "setup-profile.html";
+                    } else {
+                        localStorage.setItem('userName', userData.username);
+                        localStorage.setItem('userPic', userData.profilePic || user.photoURL);
+                        localStorage.setItem('userId', user.uid);
+                        window.location.href = "index.html";
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Ошибка входа:", error);
+                alert("Ошибка входа: " + error.message);
             });
-
-        }).catch((error) => {
-            console.error("Ошибка входа:", error);
-            alert("Ошибка входа: " + error.message);
-        });
     }
 </script>
 

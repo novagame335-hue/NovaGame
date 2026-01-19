@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль — NovaGame</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #350101, #000000, #220101, #000000);
+            background-size: 300% 300%;
+            animation: smoothBG 20s ease-in-out infinite;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        @keyframes smoothBG {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .profile-card {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #ff0000;
+            text-align: center;
+            width: 380px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.2);
+        }
+
+        .avatar-main {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #ff0000;
+            object-fit: cover;
+            margin-bottom: 20px;
+            background: #222;
+        }
+
+        h2 { margin: 10px 0; font-size: 26px; letter-spacing: 1px; }
+        .user-id { color: #666; font-size: 12px; margin-bottom: 30px; }
+
+        /* Блок с "циферками" баланса */
+        .balance-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #ff0000;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .balance-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-amount { font-size: 24px; font-weight: 800; color: #fff; margin-top: 5px; }
+        .balance-amount span { color: #ff0000; font-size: 16px; margin-left: 5px; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 15px; }
+
+        .btn-action {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            font-size: 14px;
+            box-sizing: border-box;
+            display: inline-block;
+        }
+
+        .btn-home { background: #ff0000; color: white; border: none; }
+        .btn-home:hover { background: #cc0000; transform: translateY(-2px); }
+
+        .btn-logout { background: transparent; color: #ff0000; border: 1px solid #ff0000; }
+        .btn-logout:hover { background: rgba(255, 0, 0, 0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="profile-card">
+        <img id="user-pic" src="default-avatar.png" class="avatar-main">
+        <h2 id="user-name">Загрузка...</h2>
+        <div id="user-id-display" class="user-id">ID: 000000</div>
+
+        <div class="balance-box">
+            <div class="balance-label">Доступный баланс</div>
+            <div class="balance-amount"><span id="user-balance">0.00</span> <span>USDT</span></div>
+        </div>
+
+        <div class="btn-group">
+            <a href="index.html" class="btn-action btn-home">ВЕРНУТЬСЯ В МАРКЕТ</a>
+            <button class="btn-action btn-logout" onclick="logout()">ВЫЙТИ ИЗ АККАУНТА</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+            authDomain: "novagame-b15b6.firebaseapp.com",
+            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "novagame-b15b6",
+            storageBucket: "novagame-b15b6.firebasestorage.app",
+            messagingSenderId: "7572791951",
+            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // Следим за состоянием входа
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Идем в базу за актуальными данными (балансом, ником)
+                db.ref('users/' + user.uid).on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        document.getElementById('user-name').innerText = data.username || "Без имени";
+                        document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
+                        document.getElementById('user-balance').innerText = (data.balance || 0).toFixed(2);
+                        document.getElementById('user-id-display').innerText = "UID: " + user.uid.substring(0, 8).toUpperCase();
+                    }
+                });
+            } else {
+                // Если не залогинен — отправляем на вход
+                window.location.href = "login.html";
+            }
+        });
+
+        function logout() {
+            auth.signOut().then(() => {
+                localStorage.clear();
+                window.location.href = "index.html";
+            });
+        }
+    </script>
+</body>
+</html>

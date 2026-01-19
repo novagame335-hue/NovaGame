@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Настройка профиля — NovaGame</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -20,7 +20,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         @keyframes smoothBG {
@@ -35,184 +35,111 @@
             border-radius: 20px;
             border: 1px solid #ff0000;
             text-align: center;
-            width: 350px;
+            width: 380px;
             box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
         }
 
-        .avatar-container {
-            width: 130px;
-            height: 130px;
-            margin: 0 auto 20px;
-            cursor: pointer;
-            border-radius: 50%;
-            border: 3px solid #ff0000;
-            background: #222;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-
         .avatar-preview {
-            width: 100%;
-            height: 100%;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid #ff0000;
+            margin-bottom: 20px;
             object-fit: cover;
-            opacity: 0.6;
-            transition: 0.3s;
         }
 
-        .avatar-container:hover .avatar-preview {
-            opacity: 0.9;
-        }
-
-        input[type="text"] {
+        input {
             width: 100%;
             padding: 12px;
-            margin: 15px 0;
+            margin: 20px 0;
             background: #111;
             border: 1px solid #333;
             border-radius: 8px;
             color: white;
-            font-size: 16px;
             box-sizing: border-box;
-            text-align: center;
             outline: none;
-            transition: border 0.3s;
         }
 
-        input[type="text"]:focus {
-            border-color: #ff0000;
-        }
+        input:focus { border-color: #ff0000; }
 
-        .save-btn {
+        .btn-save {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: #ff0000;
             color: white;
             border: none;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 16px;
             transition: 0.3s;
         }
 
-        .save-btn:hover {
-            background: #cc0000;
-            transform: scale(1.02);
-        }
-
-        #file-input { display: none; }
-        
-        .hint {
-            color: #888;
-            font-size: 12px;
-            margin-bottom: 10px;
-        }
+        .btn-save:hover { background: #cc0000; }
     </style>
 </head>
 <body>
 
-    <div class="setup-card">
-        <h2>Ваш профиль</h2>
-        <p class="hint">Нажмите на круг, чтобы изменить фото</p>
-        
-        <div class="avatar-container" onclick="document.getElementById('file-input').click()">
-            <img id="avatar-img" src="default-avatar.png" class="avatar-preview">
-        </div>
-        
-        <input type="file" id="file-input" accept="image/*" onchange="previewFile()">
-        
-        <input type="text" id="nickname" placeholder="Ваш ник (4-16 символов)" maxlength="16">
-        
-        <button class="save-btn" onclick="finishSetup()">Подтвердить</button>
-    </div>
+<div class="setup-card">
+    <img id="pre-pic" src="default-avatar.png" class="avatar-preview">
+    <h2>Придумайте никнейм</h2>
+    <p style="font-size: 14px; color: #888;">Это имя будут видеть другие игроки</p>
+    
+    <input type="text" id="username-input" placeholder="Ваш ник..." maxlength="15">
+    
+    <button class="btn-save" onclick="saveProfile()">СОХРАНИТЬ И ВОЙТИ</button>
+</div>
 
-    <script>
-        // КОНФИГУРАЦИЯ FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
-            authDomain: "novagame-b15b6.firebaseapp.com",
-            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
-            projectId: "novagame-b15b6",
-            storageBucket: "novagame-b15b6.firebasestorage.app",
-            messagingSenderId: "7572791951",
-            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
-        };
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+        authDomain: "novagame-b15b6.firebaseapp.com",
+        databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+        projectId: "novagame-b15b6",
+        storageBucket: "novagame-b15b6.firebasestorage.app",
+        messagingSenderId: "7572791951",
+        appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+    };
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-        const badWords = [
-            "хуй", "хуйня", "пизда", "ебать", "блядь", "сука", "чмо", "лох", "дерьмо", "говно"
-        ];
+    // Загружаем аватарку из Google сразу для превью
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            document.getElementById('pre-pic').src = user.photoURL || 'default-avatar.png';
+        } else {
+            // Если чудом зашли сюда без логина — уходим
+            window.location.href = "login.html";
+        }
+    });
 
-        function previewFile() {
-            const file = document.getElementById('file-input').files[0];
-            const reader = new FileReader();
-            const preview = document.getElementById('avatar-img');
+    function saveProfile() {
+        const user = auth.currentUser;
+        const name = document.getElementById('username-input').value.trim();
 
-            reader.onloadend = function() {
-                preview.src = reader.result;
-                preview.style.opacity = "1"; 
-            }
-
-            if (file) {
-                reader.readAsDataURL(file);
-            }
+        if (name.length < 3) {
+            alert("Никнейм слишком короткий!");
+            return;
         }
 
-        function finishSetup() {
-            const nickInput = document.getElementById('nickname').value;
-            const nickLow = nickInput.trim().toLowerCase();
-            const avatarImg = document.getElementById('avatar-img');
-            
-            if(nickLow.length < 4) {
-                alert("Ник слишком короткий! Минимум 4 символа.");
-                return;
-            }
-            if(nickLow.length > 16) {
-                alert("Ник слишком длинный! Максимум 16 символов.");
-                return;
-            }
-
-            for (let word of badWords) {
-                if (nickLow.includes(word)) {
-                    alert("Данный ник не допустим. Пожалуйста, выберите другой.");
-                    return;
-                }
-            }
-
-            // ПОЛУЧАЕМ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
-            const user = auth.currentUser;
-
-            if (user) {
-                // СОХРАНЯЕМ В ОБЛАКО (FIREBASE)
-                db.ref('users/' + user.uid).set({
-                    username: nickInput,
-                    email: user.email,
-                    profilePic: avatarImg.src, // Сохраняем картинку (Base64 или ссылка)
-                    balance: 0,
-                    registrationDate: new Date().toISOString()
-                }).then(() => {
-                    // СОХРАНЯЕМ ЛОКАЛЬНО
-                    localStorage.setItem('userName', nickInput);
-                    localStorage.setItem('userPic', avatarImg.src);
-                    localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('userId', user.uid);
-
-                    // ПЕРЕХОД
-                    window.location.href = "index.html";
-                }).catch((error) => {
-                    alert("Ошибка сохранения: " + error.message);
-                });
-            } else {
-                alert("Пользователь не авторизован. Вернитесь на страницу входа.");
-                window.location.href = "login.html";
-            }
+        if (user) {
+            // Создаем запись в Realtime Database
+            db.ref('users/' + user.uid).set({
+                username: name,
+                profilePic: user.photoURL,
+                balance: 0,
+                email: user.email,
+                uid: user.uid
+            }).then(() => {
+                // После сохранения отправляем на главную
+                window.location.href = "index.html";
+            }).catch((error) => {
+                alert("Ошибка сохранения: " + error.message);
+            });
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>

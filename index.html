@@ -59,7 +59,6 @@
         .brand-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
         .brand-name span { color: #ff0000; }
 
-        /* ЦЕНТР: Поиск на максимум */
         .header-center {
             flex: 1;
             display: flex;
@@ -96,7 +95,6 @@
             opacity: 0.5;
         }
 
-        /* ПРАВО: Новости и Чат рядом */
         .header-right {
             display: flex;
             align-items: center;
@@ -112,6 +110,7 @@
             gap: 4px;
             transition: 0.2s;
             min-width: 60px;
+            cursor: pointer;
         }
 
         .nav-item:hover { transform: translateY(-2px); opacity: 0.8; }
@@ -200,7 +199,7 @@
             const menuArea = document.getElementById('user-menu-area');
 
             if (savedNick) {
-                // ПРАВКА ТУТ: Ссылка на profile.html теперь активна
+                // Прямая ссылка на profile.html
                 menuArea.innerHTML = `
                     <a href="profile.html" class="nav-item">
                         <img src="${savedPic || 'default-avatar.png'}" class="header-avatar">

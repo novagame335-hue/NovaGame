@@ -236,10 +236,11 @@
         document.getElementById('terms-modal').style.display = 'none';
     }
 
-    // НОВАЯ ФУНКЦИЯ ВХОДА ЧЕРЕЗ FIREBASE
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ (Название изменено на корректное для Firebase)
     function signInWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
-        // Используем signInWithPopup вместо signInWithGoogle
+        
+        // Здесь исправлено: auth.signInWithPopup вместо auth.signInWithGoogle
         auth.signInWithPopup(provider).then((result) => {
             const user = result.user;
 

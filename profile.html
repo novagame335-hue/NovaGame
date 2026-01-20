@@ -32,14 +32,47 @@
             border-bottom: 1px solid #333;
         }
 
-        .avatar-main {
+        /* Стиль для кликабельной аватарки */
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
             width: 130px;
             height: 130px;
+        }
+
+        .avatar-main {
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             border: 4px solid #ff0000;
             object-fit: cover;
             background: #222;
+            transition: 0.3s;
         }
+
+        .avatar-wrapper:hover .avatar-main {
+            opacity: 0.5;
+            filter: blur(1px);
+        }
+
+        .avatar-wrapper::after {
+            content: "ИЗМЕНИТЬ";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .avatar-wrapper:hover::after {
+            opacity: 1;
+        }
+
+        #file-input { display: none; }
 
         .profile-info h2 {
             font-size: 32px;
@@ -160,9 +193,11 @@
 
     <div class="container">
         <div class="profile-header">
-            <div class="avatar-wrapper">
+            <div class="avatar-wrapper" onclick="document.getElementById('file-input').click()">
                 <img id="user-pic" src="default-avatar.png" class="avatar-main">
             </div>
+            <input type="file" id="file-input" accept="image/*" onchange="changeAvatar(this)">
+
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: 00000000</div>
@@ -225,14 +260,12 @@
                         return;
                     }
 
-                    // Базовые данные
                     document.getElementById('user-name').innerText = data.username;
                     document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
                     const balance = data.balance || 0;
                     document.getElementById('user-balance').innerText = Number.isInteger(balance) ? balance : balance.toFixed(2);
                     document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
 
-                    // Логика рейтинга
                     const rating = data.rating || 0;
                     const reviews = data.reviewsCount || 0;
                     const starsElem = document.getElementById('stars-display');
@@ -254,6 +287,32 @@
                 window.location.href = "login.html";
             }
         });
+
+        // Функция смены аватарки
+        function changeAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const user = auth.currentUser;
+                    const base64Image = e.target.result;
+
+                    // 1. Сразу меняем картинку визуально для скорости
+                    document.getElementById('user-pic').src = base64Image;
+
+                    // 2. Сохраняем новую картинку в базу данных
+                    if (user) {
+                        db.ref('users/' + user.uid).update({
+                            profilePic: base64Image
+                        }).then(() => {
+                            console.log("Аватарка обновлена!");
+                        }).catch((err) => {
+                            alert("Ошибка при сохранении: " + err.message);
+                        });
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
         function logout() {
             auth.signOut().then(() => { window.location.href = "login.html"; });

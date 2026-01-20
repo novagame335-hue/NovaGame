@@ -24,7 +24,7 @@
             padding: 20px;
         }
 
-        /* --- ВЕРХНЯЯ ЧАСТЬ (КАК БЫЛО) --- */
+        /* --- ШАПКА --- */
         .profile-header {
             display: flex;
             align-items: center;
@@ -47,28 +47,11 @@
             background: #111;
         }
 
-        .edit-btn {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            background: #ff0000;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            border: 2px solid #000;
-        }
-        .edit-btn::after { content: "✎"; color: white; font-size: 14px; }
-        #file-input { display: none; }
-
         .profile-info h2 { font-size: 32px; margin: 0; font-weight: 700; }
         .user-id { color: #666; font-size: 14px; margin: 5px 0; }
         .rating { color: #ff0000; font-size: 14px; margin-top: 5px; }
 
-        /* --- КОШЕЛЕК (ГОРИЗОНТАЛЬНО) --- */
+        /* --- КОШЕЛЕК --- */
         .balance-section {
             background: #111;
             border-radius: 15px;
@@ -80,8 +63,6 @@
             border: 1px solid #222;
         }
 
-        .balance-info { display: flex; align-items: center; gap: 15px; }
-        .balance-icon { font-size: 24px; color: #3b71fe; }
         .balance-text { font-size: 24px; font-weight: 800; }
         .balance-text span { color: #ff0000; margin-left: 5px; }
 
@@ -93,18 +74,16 @@
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
         }
-        .btn-topup:hover { background: #333; }
 
-        /* --- КРАСНЫЕ КНОПКИ ТАБЫ --- */
-        .tabs-nav {
+        /* --- ТАБЫ --- */
+        .tabs-nav, .sub-tabs {
             display: flex;
             gap: 10px;
-            margin: 25px 0 15px 0;
+            margin: 20px 0;
         }
 
-        .tab-btn {
+        .tab-btn, .sub-btn {
             padding: 12px 25px;
             background: #1a1a1f;
             border-radius: 50px;
@@ -112,39 +91,32 @@
             border: none;
             font-weight: 600;
             cursor: pointer;
+            transition: 0.3s;
         }
 
-        .tab-btn.active { background: #ff0000; }
-
-        .sub-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+        .tab-btn.active, .sub-btn.active {
+            background: #ff0000;
         }
 
-        .sub-btn {
-            padding: 8px 20px;
-            background: #1a1a1f;
-            border-radius: 50px;
-            color: white;
-            border: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .sub-btn.active { background: #ff0000; }
-
-        /* --- ЦЕНТРАЛЬНЫЙ БЛОК --- */
+        /* --- КОНТЕНТНАЯ ОБЛАСТЬ --- */
         .content-area {
             background: #0d0d0f;
             border-radius: 15px;
             padding: 60px 20px;
             text-align: center;
             border: 1px solid #1a1a1a;
-            margin-bottom: 30px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
-        .empty-msg { color: #444; margin-bottom: 20px; font-size: 16px; }
+        .empty-msg { 
+            color: #444; 
+            margin-bottom: 25px; 
+            font-size: 16px; 
+        }
 
         .btn-sell {
             padding: 15px 45px;
@@ -165,10 +137,10 @@
             border: none;
             cursor: pointer;
             font-size: 14px;
+            margin-top: 20px;
             text-decoration: underline;
         }
 
-        /* МОДАЛКА */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -178,18 +150,14 @@
             align-items: center;
             z-index: 1000;
         }
+
         .modal-card {
             background: #111;
             padding: 30px;
             border-radius: 20px;
             text-align: center;
             border: 1px solid #222;
-            width: 300px;
         }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .c-confirm { background: #ff0000; color: white; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; font-weight: bold; }
-        .c-cancel { background: #222; color: #888; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; }
-
     </style>
 </head>
 <body>
@@ -198,8 +166,6 @@
         <div class="profile-header">
             <div class="avatar-wrapper">
                 <img id="user-pic" src="default-avatar.png" class="avatar-main">
-                <label for="file-input" class="edit-btn"></label>
-                <input type="file" id="file-input" accept="image/*" onchange="changeAvatar(this)">
             </div>
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
@@ -209,11 +175,8 @@
         </div>
 
         <div class="balance-section">
-            <div class="balance-info">
-                <span class="balance-icon">💳</span>
-                <div class="balance-text"><span id="user-balance">0</span> <span>₽</span></div>
-            </div>
-            <button class="btn-topup" onclick="alert('Пополнение...')">ПОПОЛНИТЬ</button>
+            <div class="balance-text"><span id="user-balance">0</span> <span>₽</span></div>
+            <button class="btn-topup">ПОПОЛНИТЬ</button>
         </div>
 
         <div class="tabs-nav">
@@ -223,33 +186,61 @@
         </div>
 
         <div class="sub-tabs">
-            <button class="sub-btn active">Активные 0</button>
-            <button class="sub-btn">Завершенные 0</button>
+            <button id="tab-active" class="sub-btn active" onclick="switchTab('active')">Активные 0</button>
+            <button id="tab-finished" class="sub-btn" onclick="switchTab('finished')">Завершенные 0</button>
         </div>
 
-        <div class="content-area">
+        <div class="content-area" id="content-display">
             <div class="empty-msg">У вас пока нет активных товаров</div>
             <button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>
         </div>
 
         <center>
-            <a href="index.html" style="color:#ff0000; text-decoration:none; font-weight:bold; display:block; margin-bottom:20px;">← В МАРКЕТ</a>
+            <a href="index.html" style="color:#ff0000; text-decoration:none; font-weight:bold; display:block; margin-top:20px;">← В МАРКЕТ</a>
             <button class="logout-btn" onclick="toggleModal(true)">Выйти из аккаунта</button>
         </center>
     </div>
 
     <div id="logout-modal" class="modal-overlay">
         <div class="modal-card">
-            <h3 style="margin-top:0">Выход</h3>
+            <h3>Выход</h3>
             <p style="color: #888;">Вы уверены?</p>
-            <div class="modal-btns">
-                <button class="c-cancel" onclick="toggleModal(false)">НЕТ</button>
-                <button class="c-confirm" onclick="logout()">ВЫЙТИ</button>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="toggleModal(false)" style="flex:1; padding:10px; border-radius:8px; border:none; background:#222; color:#888; cursor:pointer;">НЕТ</button>
+                <button onclick="logout()" style="flex:1; padding:10px; border-radius:8px; border:none; background:#ff0000; color:white; cursor:pointer; font-weight:bold;">ВЫЙТИ</button>
             </div>
         </div>
     </div>
 
     <script>
+        // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК
+        function switchTab(type) {
+            const content = document.getElementById('content-display');
+            const btnActive = document.getElementById('tab-active');
+            const btnFinished = document.getElementById('tab-finished');
+
+            // Сбрасываем стили кнопок
+            btnActive.classList.remove('active');
+            btnFinished.classList.remove('active');
+
+            if (type === 'active') {
+                btnActive.classList.add('active');
+                content.innerHTML = `
+                    <div class="empty-msg">У вас пока нет активных товаров</div>
+                    <button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>
+                `;
+            } else {
+                btnFinished.classList.add('active');
+                // Здесь будет проверка: если в базе есть завершенные, выводим их. 
+                // Пока ставим заглушку по твоему запросу:
+                content.innerHTML = `
+                    <div class="empty-msg">У вас пока нет завершённых товаров</div>
+                    <button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>
+                `;
+            }
+        }
+
+        // FIREBASE КОНФИГ (Оставь свой)
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -277,23 +268,6 @@
                 });
             } else { location.href = "login.html"; }
         });
-
-        function changeAvatar(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 200; canvas.height = 200;
-                        canvas.getContext('2d').drawImage(img, 0, 0, 200, 200);
-                        db.ref('users/' + auth.currentUser.uid).update({ profilePic: canvas.toDataURL('image/jpeg', 0.7) });
-                    };
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
 
         function toggleModal(show) { document.getElementById('logout-modal').style.display = show ? 'flex' : 'none'; }
         function logout() { auth.signOut().then(() => location.href = "login.html"); }

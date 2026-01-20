@@ -12,14 +12,14 @@
     <style>
         body {
             margin: 0;
-            background: radial-gradient(circle at center, #1a0000, #000);
+            background: #000;
             font-family: 'Segoe UI', Roboto, sans-serif;
             color: white;
             min-height: 100vh;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -28,116 +28,104 @@
         .profile-header {
             display: flex;
             align-items: center;
-            gap: 30px;
+            gap: 25px;
             padding: 40px 0;
-            border-bottom: 1px solid #333;
         }
 
         .avatar-wrapper {
             position: relative;
-            width: 130px;
-            height: 130px;
-            flex-shrink: 0;
+            width: 120px;
+            height: 120px;
         }
 
         .avatar-main {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            border: 4px solid #ff0000;
+            border: 3px solid #ff0000;
             object-fit: cover;
-            background: #222;
+            background: #1a1a1a;
         }
 
         .edit-btn {
             position: absolute;
-            bottom: 5px;
-            right: 5px;
+            bottom: 3px;
+            right: 3px;
             background: #ff0000;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            border: 3px solid #000;
+            border: 2px solid #000;
             z-index: 10;
         }
+        .edit-btn::after { content: "✎"; color: white; font-size: 16px; }
 
-        .edit-btn::after { content: "✎"; color: white; font-size: 18px; }
         #file-input { display: none !important; }
 
-        .profile-info h2 { font-size: 32px; margin: 0 0 5px 0; }
-        .user-id { color: #888; font-size: 14px; margin-bottom: 15px; }
-        .rating { display: flex; align-items: center; gap: 5px; color: #ff0000; font-size: 16px; }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-            margin-top: 30px;
-        }
+        .profile-info h2 { font-size: 34px; margin: 0 0 5px 0; font-weight: 700; }
+        .user-id { color: #666; font-size: 14px; margin-bottom: 8px; }
+        .rating { color: #ff0000; font-size: 14px; margin-bottom: 5px; }
+        .reg-date { color: #444; font-size: 13px; }
 
         /* --- КОШЕЛЕК --- */
         .balance-card {
             background: #111;
-            border-radius: 20px;
-            padding: 25px;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            max-width: 350px;
             border: 1px solid #222;
         }
 
-        .balance-value { font-size: 32px; font-weight: 800; margin: 10px 0; }
-        .balance-value span.currency { color: #ff0000; margin-left: 5px; }
-
-        .btn-wallet {
+        .balance-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-value { font-size: 28px; font-weight: 800; margin: 5px 0; color: #ff0000; }
+        
+        .btn-topup {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: #222;
             color: white;
             border: none;
-            border-radius: 12px;
-            cursor: pointer;
+            border-radius: 10px;
             font-weight: bold;
-            transition: 0.3s;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: 0.2s;
         }
-        .btn-wallet:hover { background: #333; }
+        .btn-topup:hover { background: #333; }
 
-        /* --- НОВЫЕ КНОПКИ (ТВОЙ СТИЛЬ) --- */
+        /* --- ТАБЫ (КРАСНЫЙ СТИЛЬ NOVAGAME) --- */
+        .tabs-container { margin-top: 20px; }
+
         .tabs-nav {
             display: flex;
-            flex-wrap: wrap;
             gap: 12px;
             margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
         }
 
         .tab-btn {
-            padding: 12px 24px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 50px; /* Закругленные как на скрине */
+            padding: 12px 25px;
+            background: #1a1a1f;
+            border-radius: 50px;
             color: white;
-            cursor: pointer;
+            border: 1px solid #333;
             font-weight: 600;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 16px;
+            cursor: pointer;
             transition: 0.3s;
-        }
-
-        .tab-btn span {
-            color: #888;
-            font-size: 14px;
+            white-space: nowrap;
         }
 
         .tab-btn.active {
-            background: #ff0000;
+            background: #ff0000; /* ИЗМЕНЕНО НА КРАСНЫЙ */
             border-color: #ff0000;
-        }
-
-        .tab-btn.active span {
-            color: rgba(255,255,255,0.8);
         }
 
         .sub-tabs {
@@ -147,41 +135,71 @@
         }
 
         .sub-btn {
-            padding: 8px 18px;
-            background: #111;
-            border: 1px solid #222;
+            padding: 8px 20px;
+            background: #1a1a1f;
             border-radius: 50px;
-            color: #888;
-            font-size: 13px;
+            color: white;
+            border: 1px solid #222;
+            font-size: 14px;
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.3s;
         }
 
         .sub-btn.active {
-            background: #333;
-            color: white;
-            border-color: #444;
+            background: #ff0000; /* ИЗМЕНЕНО НА КРАСНЫЙ */
+            border-color: #ff0000;
         }
 
-        /* --- КОНТЕНТ --- */
+        /* --- ЦЕНТРАЛЬНАЯ ОБЛАСТЬ --- */
         .content-area {
-            background: #0a0a0a;
+            background: #0d0d0f;
             border-radius: 20px;
-            padding: 60px 40px;
+            padding: 80px 20px;
             text-align: center;
             border: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
 
-        .logout-link {
-            display: inline-block;
-            margin-top: 40px;
+        .empty-text {
             color: #444;
-            text-decoration: none;
+            font-size: 16px;
+        }
+
+        /* КРАСНАЯ КНОПКА ВЫСТАВИТЬ ТОВАР */
+        .btn-sell {
+            padding: 14px 40px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
+            transition: 0.3s;
+        }
+
+        .btn-sell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(255, 0, 0, 0.5);
+        }
+
+        .logout-btn {
+            margin-top: 50px;
+            color: #333;
             cursor: pointer;
             font-size: 14px;
+            background: none;
+            border: none;
+            transition: 0.3s;
         }
+        .logout-btn:hover { color: #ff0000; }
 
-        /* --- МОДАЛКА --- */
+        /* МОДАЛКА */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -190,26 +208,20 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(5px);
         }
-
         .modal-card {
             background: #111;
-            border: 1px solid #ff0000;
             padding: 30px;
             border-radius: 20px;
             text-align: center;
-            max-width: 350px;
+            border: 1px solid #ff0000;
+            max-width: 320px;
         }
+        .modal-btns { display: flex; gap: 10px; margin-top: 25px; }
+        .c-confirm { background: #ff0000; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; flex: 1; }
+        .c-cancel { background: #222; color: #888; border: none; padding: 12px; border-radius: 10px; cursor: pointer; flex: 1; }
 
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-confirm { flex: 1; padding: 12px; background: #ff0000; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
-        .btn-cancel { flex: 1; padding: 12px; background: #222; border: none; border-radius: 10px; color: #888; cursor: pointer; }
-
-        @media (max-width: 768px) {
-            .profile-header { flex-direction: column; text-align: center; }
-            .main-grid { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
@@ -223,45 +235,39 @@
             </div>
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
-                <div id="user-id-display" class="user-id">ID: 00000000</div>
-                <div class="rating">
-                    <span id="stars-display">★★★★★</span> 
-                    <span id="reviews-count" style="color: #888; margin-left: 10px;">нет отзывов</span>
-                </div>
+                <div id="user-id-display" class="user-id">ID: ...</div>
+                <div class="rating">★★★★★ <span style="color:#666; margin-left:5px;">НЕТ ОТЗЫВОВ</span></div>
+                <div class="reg-date">на NovaGame с января 2026</div>
             </div>
         </div>
 
-        <div class="main-grid">
-            <div class="left-col">
-                <div class="balance-card">
-                    <div style="color: #888; font-size: 12px; text-transform: uppercase;">Доступный баланс</div>
-                    <div class="balance-value"><span id="user-balance">0</span><span class="currency">₽</span></div>
-                    <button class="btn-wallet">ПОПОЛНИТЬ</button>
-                    <center><a href="index.html" style="color:#ff0000; text-decoration:none; display:block; margin-top:15px; font-weight:bold;">← В МАРКЕТ</a></center>
-                </div>
+        <div class="balance-card">
+            <div class="balance-label">Доступный баланс</div>
+            <div class="balance-value"><span id="user-balance">0</span> ₽</div>
+            <button class="btn-topup" onclick="alert('Переход к оплате...')">Пополнить баланс</button>
+            <center><a href="index.html" style="color:#ff0000; text-decoration:none; font-size:12px; display:block; margin-top:15px; font-weight:bold;">← ВЕРНУТЬСЯ В МАРКЕТ</a></center>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-nav">
+                <button class="tab-btn active">Мои товары 0</button>
+                <button class="tab-btn">Покупки 0</button>
+                <button class="tab-btn">Продажи 0</button>
             </div>
-
-            <div class="right-col">
-                <div class="tabs-nav">
-                    <button class="tab-btn active">Мои товары <span id="count-items">0</span></button>
-                    <button class="tab-btn">Покупки <span id="count-buys">0</span></button>
-                    <button class="tab-btn">Продажи <span id="count-sales">0</span></button>
-                </div>
-
-                <div class="sub-tabs">
-                    <button class="sub-btn active">Активные 0</button>
-                    <button class="sub-btn">Завершенные 0</button>
-                </div>
-
-                <div class="content-area">
-                    <div style="color: #444; font-size: 14px;">У вас пока нет активных товаров</div>
-                </div>
-                
-                <center>
-                    <div class="logout-link" onclick="toggleLogoutModal(true)">Выйти из аккаунта</div>
-                </center>
+            <div class="sub-tabs">
+                <button class="sub-btn active">Активные 0</button>
+                <button class="sub-btn">Завершенные 0</button>
             </div>
         </div>
+
+        <div class="content-area">
+            <div class="empty-text">У вас пока нет активных товаров</div>
+            <button class="btn-sell" onclick="alert('Открытие формы создания товара...')">ВЫСТАВИТЬ ТОВАР</button>
+        </div>
+
+        <center>
+            <button class="logout-btn" onclick="toggleModal(true)">Выйти из аккаунта</button>
+        </center>
     </div>
 
     <div id="logout-modal" class="modal-overlay">
@@ -269,8 +275,8 @@
             <h3 style="margin-top:0">Выход</h3>
             <p style="color: #888;">Вы уверены, что хотите выйти из аккаунта?</p>
             <div class="modal-btns">
-                <button class="btn-cancel" onclick="toggleLogoutModal(false)">ОТМЕНА</button>
-                <button class="btn-confirm" onclick="confirmLogout()">ВЫЙТИ</button>
+                <button class="c-cancel" onclick="toggleModal(false)">ОТМЕНА</button>
+                <button class="c-confirm" onclick="logout()">ВЫЙТИ</button>
             </div>
         </div>
     </div>
@@ -298,21 +304,13 @@
                         document.getElementById('user-name').innerText = data.username || "User";
                         document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
                         document.getElementById('user-balance').innerText = data.balance || 0;
-                        document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
+                        document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 7).toUpperCase();
                     }
                 });
             } else {
                 window.location.href = "login.html";
             }
         });
-
-        function toggleLogoutModal(show) {
-            document.getElementById('logout-modal').style.display = show ? 'flex' : 'none';
-        }
-
-        function confirmLogout() {
-            auth.signOut().then(() => { window.location.href = "login.html"; });
-        }
 
         function changeAvatar(input) {
             if (input.files && input.files[0]) {
@@ -331,6 +329,9 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        function toggleModal(show) { document.getElementById('logout-modal').style.display = show ? 'flex' : 'none'; }
+        function logout() { auth.signOut().then(() => location.href = "login.html"); }
     </script>
 </body>
 </html>

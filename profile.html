@@ -11,145 +11,49 @@
 
     <style>
         body {
-            margin: 0;
-            background: #000;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            color: white;
-            min-height: 100vh;
+            margin: 0; background: #000; font-family: 'Segoe UI', Roboto, sans-serif; color: white; min-height: 100vh;
         }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
         /* --- ШАПКА --- */
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            padding: 30px 0;
-        }
-
-        .avatar-wrapper {
-            position: relative;
-            width: 110px;
-            height: 110px;
-            cursor: pointer;
-        }
-
-        .avatar-main {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 3px solid #ff0000;
-            object-fit: cover;
-            background: #111;
-        }
-
-        .edit-btn {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            background: #ff0000;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid #000;
-            pointer-events: none; /* Пропускает клик на label */
-        }
+        .profile-header { display: flex; align-items: center; gap: 25px; padding: 30px 0; }
+        .avatar-wrapper { position: relative; width: 110px; height: 110px; cursor: pointer; }
+        .avatar-main { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #ff0000; object-fit: cover; background: #111; }
+        .edit-btn { position: absolute; bottom: 2px; right: 2px; background: #ff0000; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #000; pointer-events: none; }
         .edit-btn::after { content: "✎"; color: white; font-size: 14px; }
-        
         #file-input { display: none !important; }
-
         .profile-info h2 { font-size: 32px; margin: 0; font-weight: 700; }
         .user-id { color: #666; font-size: 14px; margin: 5px 0; }
 
         /* --- КОШЕЛЕК --- */
         .balance-section {
-            background: #111;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid #222;
+            background: #111; border-radius: 15px; padding: 20px; margin: 20px 0;
+            display: flex; align-items: center; justify-content: space-between; border: 1px solid #222;
         }
-
         .balance-text { font-size: 24px; font-weight: 800; }
         .balance-text span { color: #ff0000; margin-left: 5px; }
-
-        .btn-topup {
-            background: #222;
-            color: white;
-            border: 1px solid #444;
-            padding: 10px 25px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            z-index: 5;
-            position: relative;
-        }
-        .btn-topup:hover { background: #333; border-color: #ff0000; }
+        .btn-topup { background: #222; color: white; border: 1px solid #444; padding: 10px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-topup:hover { border-color: #ff0000; }
 
         /* --- ТАБЫ --- */
         .tabs-nav, .sub-tabs { display: flex; gap: 10px; margin: 20px 0; }
-
         .tab-btn, .sub-btn {
-            padding: 12px 25px;
-            background: #1a1a1f;
-            border-radius: 50px;
-            color: white;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
+            padding: 12px 25px; background: #1a1a1f; border-radius: 50px; color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s;
         }
         .tab-btn.active, .sub-btn.active { background: #ff0000; }
 
         /* --- КОНТЕНТ --- */
         .content-area {
-            background: #0d0d0f;
-            border-radius: 15px;
-            padding: 60px 20px;
-            text-align: center;
-            border: 1px solid #1a1a1a;
+            background: #0d0d0f; border-radius: 15px; padding: 60px 20px; text-align: center; border: 1px solid #1a1a1a; min-height: 250px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-
         .empty-msg { color: #444; margin-bottom: 25px; font-size: 16px; }
-
-        .btn-sell {
-            padding: 15px 45px;
-            background: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 15px;
-            cursor: pointer;
-            text-transform: uppercase;
+        .btn-main-action {
+            padding: 15px 45px; background: #ff0000; color: white; border: none; border-radius: 12px;
+            font-weight: 800; font-size: 15px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,0,0,0.3);
         }
 
-        .logout-btn {
-            color: #333; background: none; border: none; cursor: pointer; text-decoration: underline; margin-top: 20px;
-        }
-
-        /* МОДАЛКА */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-card { background: #111; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #222; }
+        .logout-btn { color: #333; background: none; border: none; cursor: pointer; text-decoration: underline; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -161,11 +65,10 @@
                 <div class="edit-btn"></div>
             </label>
             <input type="file" id="file-input" accept="image/*" onchange="changeAvatar(this)">
-
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: ...</div>
-                <div class="rating">★★★★★ <span style="color:#666; margin-left:5px;">НЕТ ОТЗЫВОВ</span></div>
+                <div class="rating" style="color:#ff0000; font-size:14px;">★★★★★ <span style="color:#666; margin-left:5px;">НЕТ ОТЗЫВОВ</span></div>
             </div>
         </div>
 
@@ -175,19 +78,19 @@
         </div>
 
         <div class="tabs-nav">
-            <button class="tab-btn active">Мои товары 0</button>
-            <button class="tab-btn">Покупки 0</button>
-            <button class="tab-btn">Продажи 0</button>
+            <button id="main-items" class="tab-btn active" onclick="switchMainTab('items')">Мои товары 0</button>
+            <button id="main-buys" class="tab-btn" onclick="switchMainTab('buys')">Покупки 0</button>
+            <button id="main-sales" class="tab-btn" onclick="switchMainTab('sales')">Продажи 0</button>
         </div>
 
         <div class="sub-tabs">
-            <button id="tab-active" class="sub-btn active" onclick="switchTab('active')">Активные 0</button>
-            <button id="tab-finished" class="sub-btn" onclick="switchTab('finished')">Завершенные 0</button>
+            <button id="sub-active" class="sub-btn active" onclick="switchSubTab('active')">Активные 0</button>
+            <button id="sub-finished" class="sub-btn" onclick="switchSubTab('finished')">Завершенные 0</button>
         </div>
 
         <div class="content-area" id="content-display">
             <div class="empty-msg">У вас пока нет активных товаров</div>
-            <button class="btn-sell" onclick="alert('Выставление товара...')">ВЫСТАВИТЬ ТОВАР</button>
+            <button class="btn-main-action" onclick="alert('Выставление товара...')">ВЫСТАВИТЬ ТОВАР</button>
         </div>
 
         <center>
@@ -196,19 +99,52 @@
         </center>
     </div>
 
-    <div id="logout-modal" class="modal-overlay">
-        <div class="modal-card">
-            <h3>Выход</h3>
-            <p style="color: #888;">Вы уверены?</p>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="toggleModal(false)" style="flex:1; padding:10px; border-radius:8px; border:none; background:#222; color:#888; cursor:pointer;">НЕТ</button>
-                <button onclick="logout()" style="flex:1; padding:10px; border-radius:8px; border:none; background:#ff0000; color:white; cursor:pointer; font-weight:bold;">ВЫЙТИ</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // FIREBASE CONFIG
+        let currentMainTab = 'items';
+        let currentSubTab = 'active';
+
+        function updateUI() {
+            const content = document.getElementById('content-display');
+            let msg = "";
+            let btnText = "ВЫСТАВИТЬ ТОВАР";
+            let btnAction = () => alert('Переход к созданию товара...');
+
+            if (currentMainTab === 'items') {
+                msg = currentSubTab === 'active' ? "У вас пока нет активных товаров" : "У вас пока нет завершённых товаров";
+                btnText = "ВЫСТАВИТЬ ТОВАР";
+            } 
+            else if (currentMainTab === 'buys') {
+                msg = currentSubTab === 'active' ? "У вас пока нет активных покупок" : "У вас пока нет завершённых покупок";
+                btnText = "КУПИТЬ ТОВАР";
+                btnAction = () => window.location.href = 'index.html';
+            }
+            else if (currentMainTab === 'sales') {
+                msg = currentSubTab === 'active' ? "У вас пока нет активных продаж" : "У вас пока нет завершённых продаж";
+                btnText = "ВЫСТАВИТЬ ТОВАР";
+            }
+
+            content.innerHTML = `
+                <div class="empty-msg">${msg}</div>
+                <button class="btn-main-action" id="dynamic-btn">${btnText}</button>
+            `;
+            document.getElementById('dynamic-btn').onclick = btnAction;
+        }
+
+        function switchMainTab(tab) {
+            currentMainTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('main-' + tab).classList.add('active');
+            updateUI();
+        }
+
+        function switchSubTab(tab) {
+            currentSubTab = tab;
+            document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('sub-' + tab).classList.add('active');
+            updateUI();
+        }
+
+        // Firebase Config (Твой оригинал)
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -223,7 +159,6 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // Загрузка данных
         auth.onAuthStateChanged((user) => {
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
@@ -238,7 +173,6 @@
             } else { location.href = "login.html"; }
         });
 
-        // Смена аватарки (ВОССТАНОВЛЕНО)
         function changeAvatar(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -249,34 +183,12 @@
                         const canvas = document.createElement('canvas');
                         canvas.width = 200; canvas.height = 200;
                         canvas.getContext('2d').drawImage(img, 0, 0, 200, 200);
-                        const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                        
-                        db.ref('users/' + auth.currentUser.uid).update({
-                            profilePic: base64
-                        }).then(() => {
-                            console.log("Аватар обновлен");
-                        });
+                        db.ref('users/' + auth.currentUser.uid).update({ profilePic: canvas.toDataURL('image/jpeg', 0.7) });
                     };
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
-
-        // Переключение табов
-        function switchTab(type) {
-            const content = document.getElementById('content-display');
-            document.getElementById('tab-active').classList.toggle('active', type === 'active');
-            document.getElementById('tab-finished').classList.toggle('active', type === 'finished');
-
-            if (type === 'active') {
-                content.innerHTML = `<div class="empty-msg">У вас пока нет активных товаров</div><button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>`;
-            } else {
-                content.innerHTML = `<div class="empty-msg">У вас пока нет завершённых товаров</div><button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>`;
-            }
-        }
-
-        function toggleModal(show) { document.getElementById('logout-modal').style.display = show ? 'flex' : 'none'; }
-        function logout() { auth.signOut().then(() => location.href = "login.html"); }
     </script>
 </body>
 </html>

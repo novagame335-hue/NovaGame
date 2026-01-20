@@ -24,18 +24,18 @@
             padding: 20px;
         }
 
-        /* --- ШАПКА --- */
+        /* --- ВЕРХНЯЯ ЧАСТЬ (КАК БЫЛО) --- */
         .profile-header {
             display: flex;
             align-items: center;
             gap: 25px;
-            padding: 40px 0;
+            padding: 30px 0;
         }
 
         .avatar-wrapper {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 110px;
+            height: 110px;
         }
 
         .avatar-main {
@@ -44,70 +44,64 @@
             border-radius: 50%;
             border: 3px solid #ff0000;
             object-fit: cover;
-            background: #1a1a1a;
+            background: #111;
         }
 
         .edit-btn {
             position: absolute;
-            bottom: 3px;
-            right: 3px;
+            bottom: 2px;
+            right: 2px;
             background: #ff0000;
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             border: 2px solid #000;
-            z-index: 10;
         }
-        .edit-btn::after { content: "✎"; color: white; font-size: 16px; }
+        .edit-btn::after { content: "✎"; color: white; font-size: 14px; }
+        #file-input { display: none; }
 
-        #file-input { display: none !important; }
+        .profile-info h2 { font-size: 32px; margin: 0; font-weight: 700; }
+        .user-id { color: #666; font-size: 14px; margin: 5px 0; }
+        .rating { color: #ff0000; font-size: 14px; margin-top: 5px; }
 
-        .profile-info h2 { font-size: 34px; margin: 0 0 5px 0; font-weight: 700; }
-        .user-id { color: #666; font-size: 14px; margin-bottom: 8px; }
-        .rating { color: #ff0000; font-size: 14px; margin-bottom: 5px; }
-        .reg-date { color: #444; font-size: 13px; }
-
-        /* --- КОШЕЛЕК --- */
-        .balance-card {
+        /* --- КОШЕЛЕК (ГОРИЗОНТАЛЬНО) --- */
+        .balance-section {
             background: #111;
             border-radius: 15px;
             padding: 20px;
-            margin-bottom: 30px;
-            max-width: 350px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             border: 1px solid #222;
         }
 
-        .balance-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-        .balance-value { font-size: 28px; font-weight: 800; margin: 5px 0; color: #ff0000; }
-        
+        .balance-info { display: flex; align-items: center; gap: 15px; }
+        .balance-icon { font-size: 24px; color: #3b71fe; }
+        .balance-text { font-size: 24px; font-weight: 800; }
+        .balance-text span { color: #ff0000; margin-left: 5px; }
+
         .btn-topup {
-            width: 100%;
-            padding: 12px;
             background: #222;
             color: white;
             border: none;
+            padding: 10px 25px;
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 14px;
-            text-transform: uppercase;
-            transition: 0.2s;
+            transition: 0.3s;
         }
         .btn-topup:hover { background: #333; }
 
-        /* --- ТАБЫ (КРАСНЫЙ СТИЛЬ NOVAGAME) --- */
-        .tabs-container { margin-top: 20px; }
-
+        /* --- КРАСНЫЕ КНОПКИ ТАБЫ --- */
         .tabs-nav {
             display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-            overflow-x: auto;
-            padding-bottom: 5px;
+            gap: 10px;
+            margin: 25px 0 15px 0;
         }
 
         .tab-btn {
@@ -115,23 +109,17 @@
             background: #1a1a1f;
             border-radius: 50px;
             color: white;
-            border: 1px solid #333;
+            border: none;
             font-weight: 600;
-            font-size: 16px;
             cursor: pointer;
-            transition: 0.3s;
-            white-space: nowrap;
         }
 
-        .tab-btn.active {
-            background: #ff0000; /* ИЗМЕНЕНО НА КРАСНЫЙ */
-            border-color: #ff0000;
-        }
+        .tab-btn.active { background: #ff0000; }
 
         .sub-tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .sub-btn {
@@ -139,38 +127,27 @@
             background: #1a1a1f;
             border-radius: 50px;
             color: white;
-            border: 1px solid #222;
+            border: none;
             font-size: 14px;
             cursor: pointer;
-            transition: 0.3s;
         }
 
-        .sub-btn.active {
-            background: #ff0000; /* ИЗМЕНЕНО НА КРАСНЫЙ */
-            border-color: #ff0000;
-        }
+        .sub-btn.active { background: #ff0000; }
 
-        /* --- ЦЕНТРАЛЬНАЯ ОБЛАСТЬ --- */
+        /* --- ЦЕНТРАЛЬНЫЙ БЛОК --- */
         .content-area {
             background: #0d0d0f;
-            border-radius: 20px;
-            padding: 80px 20px;
+            border-radius: 15px;
+            padding: 60px 20px;
             text-align: center;
             border: 1px solid #1a1a1a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .empty-text {
-            color: #444;
-            font-size: 16px;
-        }
+        .empty-msg { color: #444; margin-bottom: 20px; font-size: 16px; }
 
-        /* КРАСНАЯ КНОПКА ВЫСТАВИТЬ ТОВАР */
         .btn-sell {
-            padding: 14px 40px;
+            padding: 15px 45px;
             background: #ff0000;
             color: white;
             border: none;
@@ -179,25 +156,17 @@
             font-size: 15px;
             cursor: pointer;
             text-transform: uppercase;
-            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
-            transition: 0.3s;
-        }
-
-        .btn-sell:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(255, 0, 0, 0.5);
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
         }
 
         .logout-btn {
-            margin-top: 50px;
             color: #333;
-            cursor: pointer;
-            font-size: 14px;
             background: none;
             border: none;
-            transition: 0.3s;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
         }
-        .logout-btn:hover { color: #ff0000; }
 
         /* МОДАЛКА */
         .modal-overlay {
@@ -208,19 +177,18 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(5px);
         }
         .modal-card {
             background: #111;
             padding: 30px;
             border-radius: 20px;
             text-align: center;
-            border: 1px solid #ff0000;
-            max-width: 320px;
+            border: 1px solid #222;
+            width: 300px;
         }
-        .modal-btns { display: flex; gap: 10px; margin-top: 25px; }
-        .c-confirm { background: #ff0000; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; flex: 1; }
-        .c-cancel { background: #222; color: #888; border: none; padding: 12px; border-radius: 10px; cursor: pointer; flex: 1; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .c-confirm { background: #ff0000; color: white; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; font-weight: bold; }
+        .c-cancel { background: #222; color: #888; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; }
 
     </style>
 </head>
@@ -237,35 +205,35 @@
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: ...</div>
                 <div class="rating">★★★★★ <span style="color:#666; margin-left:5px;">НЕТ ОТЗЫВОВ</span></div>
-                <div class="reg-date">на NovaGame с января 2026</div>
             </div>
         </div>
 
-        <div class="balance-card">
-            <div class="balance-label">Доступный баланс</div>
-            <div class="balance-value"><span id="user-balance">0</span> ₽</div>
-            <button class="btn-topup" onclick="alert('Переход к оплате...')">Пополнить баланс</button>
-            <center><a href="index.html" style="color:#ff0000; text-decoration:none; font-size:12px; display:block; margin-top:15px; font-weight:bold;">← ВЕРНУТЬСЯ В МАРКЕТ</a></center>
+        <div class="balance-section">
+            <div class="balance-info">
+                <span class="balance-icon">💳</span>
+                <div class="balance-text"><span id="user-balance">0</span> <span>₽</span></div>
+            </div>
+            <button class="btn-topup" onclick="alert('Пополнение...')">ПОПОЛНИТЬ</button>
         </div>
 
-        <div class="tabs-container">
-            <div class="tabs-nav">
-                <button class="tab-btn active">Мои товары 0</button>
-                <button class="tab-btn">Покупки 0</button>
-                <button class="tab-btn">Продажи 0</button>
-            </div>
-            <div class="sub-tabs">
-                <button class="sub-btn active">Активные 0</button>
-                <button class="sub-btn">Завершенные 0</button>
-            </div>
+        <div class="tabs-nav">
+            <button class="tab-btn active">Мои товары 0</button>
+            <button class="tab-btn">Покупки 0</button>
+            <button class="tab-btn">Продажи 0</button>
+        </div>
+
+        <div class="sub-tabs">
+            <button class="sub-btn active">Активные 0</button>
+            <button class="sub-btn">Завершенные 0</button>
         </div>
 
         <div class="content-area">
-            <div class="empty-text">У вас пока нет активных товаров</div>
-            <button class="btn-sell" onclick="alert('Открытие формы создания товара...')">ВЫСТАВИТЬ ТОВАР</button>
+            <div class="empty-msg">У вас пока нет активных товаров</div>
+            <button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>
         </div>
 
         <center>
+            <a href="index.html" style="color:#ff0000; text-decoration:none; font-weight:bold; display:block; margin-bottom:20px;">← В МАРКЕТ</a>
             <button class="logout-btn" onclick="toggleModal(true)">Выйти из аккаунта</button>
         </center>
     </div>
@@ -273,9 +241,9 @@
     <div id="logout-modal" class="modal-overlay">
         <div class="modal-card">
             <h3 style="margin-top:0">Выход</h3>
-            <p style="color: #888;">Вы уверены, что хотите выйти из аккаунта?</p>
+            <p style="color: #888;">Вы уверены?</p>
             <div class="modal-btns">
-                <button class="c-cancel" onclick="toggleModal(false)">ОТМЕНА</button>
+                <button class="c-cancel" onclick="toggleModal(false)">НЕТ</button>
                 <button class="c-confirm" onclick="logout()">ВЫЙТИ</button>
             </div>
         </div>
@@ -304,12 +272,10 @@
                         document.getElementById('user-name').innerText = data.username || "User";
                         document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
                         document.getElementById('user-balance').innerText = data.balance || 0;
-                        document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 7).toUpperCase();
+                        document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
                     }
                 });
-            } else {
-                window.location.href = "login.html";
-            }
+            } else { location.href = "login.html"; }
         });
 
         function changeAvatar(input) {
@@ -322,8 +288,7 @@
                         const canvas = document.createElement('canvas');
                         canvas.width = 200; canvas.height = 200;
                         canvas.getContext('2d').drawImage(img, 0, 0, 200, 200);
-                        const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                        db.ref('users/' + auth.currentUser.uid).update({ profilePic: base64 });
+                        db.ref('users/' + auth.currentUser.uid).update({ profilePic: canvas.toDataURL('image/jpeg', 0.7) });
                     };
                 };
                 reader.readAsDataURL(input.files[0]);

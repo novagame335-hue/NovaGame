@@ -3,57 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой профиль — NovaGame</title>
+    <title>NovaGame — Личный Кабинет</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
+        :root {
+            --neon-red: #ff0000;
+            --dark-red: #990000;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 0, 0, 0.2);
+        }
+
         body {
-            margin: 0; background: #000; font-family: 'Segoe UI', Roboto, sans-serif; color: white; min-height: 100vh;
+            margin: 0;
+            background: #000;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            min-height: 100vh;
         }
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        /* --- ШАПКА --- */
-        .profile-header { display: flex; align-items: center; gap: 25px; padding: 30px 0; }
-        .avatar-wrapper { position: relative; width: 110px; height: 110px; cursor: pointer; }
-        .avatar-main { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #ff0000; object-fit: cover; background: #111; }
-        .edit-btn { position: absolute; bottom: 2px; right: 2px; background: #ff0000; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #000; pointer-events: none; }
-        .edit-btn::after { content: "✎"; color: white; font-size: 14px; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- ШАПКА ПРОФИЛЯ --- */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            padding: 40px 0;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            cursor: pointer;
+        }
+
+        .avatar-main {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--neon-red);
+            object-fit: cover;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+            background: #111;
+        }
+
+        .edit-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--neon-red);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid #000;
+        }
+        .edit-btn::after { content: "✎"; color: white; font-size: 16px; }
+        
         #file-input { display: none !important; }
-        .profile-info h2 { font-size: 32px; margin: 0; font-weight: 700; }
-        .user-id { color: #666; font-size: 14px; margin: 5px 0; }
 
-        /* --- КОШЕЛЕК --- */
+        .profile-info h2 { font-size: 34px; margin: 0; font-weight: 800; }
+        .user-id { color: #666; font-size: 14px; margin: 5px 0; letter-spacing: 1px; }
+        .rating { color: var(--neon-red); font-size: 14px; margin-top: 8px; }
+
+        /* --- КОШЕЛЕК (СТИЛЬ БУДУЩЕГО) --- */
         .balance-section {
-            background: #111; border-radius: 15px; padding: 20px; margin: 20px 0;
-            display: flex; align-items: center; justify-content: space-between; border: 1px solid #222;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--border-color);
         }
-        .balance-text { font-size: 24px; font-weight: 800; }
-        .balance-text span { color: #ff0000; margin-left: 5px; }
-        .btn-topup { background: #222; color: white; border: 1px solid #444; padding: 10px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-topup:hover { border-color: #ff0000; }
 
-        /* --- ТАБЫ --- */
-        .tabs-nav, .sub-tabs { display: flex; gap: 10px; margin: 20px 0; }
-        .tab-btn, .sub-btn {
-            padding: 12px 25px; background: #1a1a1f; border-radius: 50px; color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s;
+        .balance-text { font-size: 28px; font-weight: 900; }
+        .balance-text span { color: var(--neon-red); text-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+
+        .btn-topup {
+            background: transparent;
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        .tab-btn.active, .sub-btn.active { background: #ff0000; }
+        .btn-topup:hover { background: var(--neon-red); color: white; box-shadow: 0 0 20px rgba(255,0,0,0.4); }
 
-        /* --- КОНТЕНТ --- */
+        /* --- КНОПКИ ТАБЫ (СТИЛЬ БУДУЩЕГО) --- */
+        .tabs-nav, .sub-tabs { display: flex; gap: 12px; margin: 25px 0; }
+
+        .tab-btn {
+            padding: 14px 28px;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.4s;
+        }
+
+        .tab-btn.active {
+            background: var(--neon-red);
+            border-color: var(--neon-red);
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .sub-btn {
+            padding: 10px 24px;
+            background: transparent;
+            border: 1px solid #333;
+            border-radius: 10px;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .sub-btn.active {
+            color: var(--neon-red);
+            border-color: var(--neon-red);
+            background: rgba(255, 0, 0, 0.05);
+        }
+
+        /* --- КОНТЕНТ (ЦЕНТР) --- */
         .content-area {
-            background: #0d0d0f; border-radius: 15px; padding: 60px 20px; text-align: center; border: 1px solid #1a1a1a; min-height: 250px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .empty-msg { color: #444; margin-bottom: 25px; font-size: 16px; }
-        .btn-main-action {
-            padding: 15px 45px; background: #ff0000; color: white; border: none; border-radius: 12px;
-            font-weight: 800; font-size: 15px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,0,0,0.3);
+            background: rgba(10, 10, 10, 0.8);
+            border-radius: 20px;
+            padding: 80px 20px;
+            text-align: center;
+            border: 1px solid #111;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .logout-btn { color: #333; background: none; border: none; cursor: pointer; text-decoration: underline; margin-top: 20px; }
+        .empty-msg { color: #444; margin-bottom: 30px; font-size: 18px; }
+
+        .btn-main-action {
+            padding: 18px 55px;
+            background: linear-gradient(45deg, var(--neon-red), var(--dark-red));
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-weight: 900;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+            transition: 0.3s;
+        }
+
+        .btn-main-action:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 0, 0, 0.5);
+        }
+
+        .logout-btn {
+            color: #333;
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-top: 40px;
+            font-size: 14px;
+            text-decoration: underline;
+        }
+
+        /* --- МОДАЛЬНОЕ ОКНО --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: #0a0a0a;
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            border: 1px solid var(--neon-red);
+            max-width: 320px;
+        }
     </style>
 </head>
 <body>
@@ -65,16 +221,17 @@
                 <div class="edit-btn"></div>
             </label>
             <input type="file" id="file-input" accept="image/*" onchange="changeAvatar(this)">
+
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: ...</div>
-                <div class="rating" style="color:#ff0000; font-size:14px;">★★★★★ <span style="color:#666; margin-left:5px;">НЕТ ОТЗЫВОВ</span></div>
+                <div class="rating">★★★★★ <span style="color:#444; margin-left:10px;">НЕТ ОТЗЫВОВ</span></div>
             </div>
         </div>
 
         <div class="balance-section">
             <div class="balance-text"><span id="user-balance">0</span> <span>₽</span></div>
-            <button class="btn-topup" onclick="alert('Окно пополнения в разработке...')">ПОПОЛНИТЬ</button>
+            <button class="btn-topup" onclick="alert('Система пополнения скоро будет готова!')">ПОПОЛНИТЬ</button>
         </div>
 
         <div class="tabs-nav">
@@ -89,14 +246,23 @@
         </div>
 
         <div class="content-area" id="content-display">
-            <div class="empty-msg">У вас пока нет активных товаров</div>
-            <button class="btn-main-action" onclick="alert('Выставление товара...')">ВЫСТАВИТЬ ТОВАР</button>
-        </div>
+            </div>
 
         <center>
-            <a href="index.html" style="color:#ff0000; text-decoration:none; font-weight:bold; display:block; margin-top:20px;">← В МАРКЕТ</a>
+            <a href="index.html" style="color:var(--neon-red); text-decoration:none; font-weight:bold; display:block; margin-top:30px; letter-spacing: 1px;">← ВЕРНУТЬСЯ В МАРКЕТ</a>
             <button class="logout-btn" onclick="toggleModal(true)">Выйти из аккаунта</button>
         </center>
+    </div>
+
+    <div id="logout-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="margin-top:0; color:var(--neon-red);">Выход</h2>
+            <p style="color: #888;">Вы уверены, что хотите выйти из аккаунта?</p>
+            <div style="display:flex; gap:15px; margin-top:30px;">
+                <button onclick="toggleModal(false)" style="flex:1; padding:12px; border-radius:12px; border:1px solid #333; background:transparent; color:#888; cursor:pointer; font-weight:bold;">ОТМЕНА</button>
+                <button onclick="logout()" style="flex:1; padding:12px; border-radius:12px; border:none; background:var(--neon-red); color:white; cursor:pointer; font-weight:bold; box-shadow: 0 0 15px rgba(255,0,0,0.3);">ВЫЙТИ</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -107,11 +273,10 @@
             const content = document.getElementById('content-display');
             let msg = "";
             let btnText = "ВЫСТАВИТЬ ТОВАР";
-            let btnAction = () => alert('Переход к созданию товара...');
+            let btnAction = () => alert('Форма создания товара откроется скоро!');
 
             if (currentMainTab === 'items') {
                 msg = currentSubTab === 'active' ? "У вас пока нет активных товаров" : "У вас пока нет завершённых товаров";
-                btnText = "ВЫСТАВИТЬ ТОВАР";
             } 
             else if (currentMainTab === 'buys') {
                 msg = currentSubTab === 'active' ? "У вас пока нет активных покупок" : "У вас пока нет завершённых покупок";
@@ -120,7 +285,6 @@
             }
             else if (currentMainTab === 'sales') {
                 msg = currentSubTab === 'active' ? "У вас пока нет активных продаж" : "У вас пока нет завершённых продаж";
-                btnText = "ВЫСТАВИТЬ ТОВАР";
             }
 
             content.innerHTML = `
@@ -144,7 +308,7 @@
             updateUI();
         }
 
-        // Firebase Config (Твой оригинал)
+        // --- FIREBASE ЛОГИКА ---
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -170,6 +334,7 @@
                         document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
                     }
                 });
+                updateUI(); // Первичная отрисовка контента
             } else { location.href = "login.html"; }
         });
 
@@ -183,12 +348,17 @@
                         const canvas = document.createElement('canvas');
                         canvas.width = 200; canvas.height = 200;
                         canvas.getContext('2d').drawImage(img, 0, 0, 200, 200);
-                        db.ref('users/' + auth.currentUser.uid).update({ profilePic: canvas.toDataURL('image/jpeg', 0.7) });
+                        db.ref('users/' + auth.currentUser.uid).update({
+                            profilePic: canvas.toDataURL('image/jpeg', 0.7)
+                        });
                     };
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        function toggleModal(show) { document.getElementById('logout-modal').style.display = show ? 'flex' : 'none'; }
+        function logout() { auth.signOut().then(() => location.href = "login.html"); }
     </script>
 </body>
 </html>

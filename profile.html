@@ -32,12 +32,12 @@
             border-bottom: 1px solid #333;
         }
 
-        /* Стиль для кликабельной аватарки */
+        /* Аватарка и кнопка редактирования */
         .avatar-wrapper {
             position: relative;
-            cursor: pointer;
             width: 130px;
             height: 130px;
+            flex-shrink: 0;
         }
 
         .avatar-main {
@@ -47,32 +47,40 @@
             border: 4px solid #ff0000;
             object-fit: cover;
             background: #222;
-            transition: 0.3s;
+            display: block;
         }
 
-        .avatar-wrapper:hover .avatar-main {
-            opacity: 0.5;
-            filter: blur(1px);
-        }
-
-        .avatar-wrapper::after {
-            content: "ИЗМЕНИТЬ";
+        .edit-btn {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-            opacity: 0;
+            bottom: 5px;
+            right: 5px;
+            background: #ff0000;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 3px solid #000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
             transition: 0.3s;
+            z-index: 10;
         }
 
-        .avatar-wrapper:hover::after {
-            opacity: 1;
+        .edit-btn:hover {
+            transform: scale(1.1);
+            background: #cc0000;
         }
 
-        #file-input { display: none; }
+        .edit-btn::after {
+            content: "✎";
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #file-input { display: none !important; }
 
         .profile-info h2 {
             font-size: 32px;
@@ -90,7 +98,7 @@
             align-items: center;
             gap: 5px;
             color: #ff0000;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         #stars-display { letter-spacing: 2px; }
@@ -115,20 +123,21 @@
             border: 1px solid #222;
         }
 
-        .balance-label { color: #888; font-size: 12px; text-transform: uppercase; }
-        .balance-value { font-size: 28px; font-weight: 800; margin: 10px 0; }
-        .balance-value span.currency { color: #ff0000; font-size: 24px; margin-left: 5px; }
+        .balance-label { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-value { font-size: 32px; font-weight: 800; margin: 10px 0; }
+        .balance-value span.currency { color: #ff0000; margin-left: 5px; }
 
         .btn-wallet {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: #222;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
             transition: 0.3s;
+            margin-top: 10px;
         }
         .btn-wallet:hover { background: #333; }
 
@@ -158,10 +167,9 @@
         .content-area {
             background: #111;
             border-radius: 20px;
-            padding: 40px;
+            padding: 60px 40px;
             text-align: center;
             border: 1px solid #222;
-            min-height: 200px;
         }
 
         .empty-icon { font-size: 50px; margin-bottom: 15px; opacity: 0.2; }
@@ -169,18 +177,21 @@
         .logout-link {
             display: inline-block;
             margin-top: 40px;
-            color: #555;
+            color: #444;
             text-decoration: none;
             font-size: 14px;
+            transition: 0.3s;
         }
+        .logout-link:hover { color: #ff0000; }
 
         .btn-back {
             display: block;
-            margin-top: 20px;
+            margin-top: 25px;
             text-align: center;
             color: #ff0000;
             text-decoration: none;
             font-weight: bold;
+            font-size: 14px;
         }
 
         @media (max-width: 768px) {
@@ -193,10 +204,11 @@
 
     <div class="container">
         <div class="profile-header">
-            <div class="avatar-wrapper" onclick="document.getElementById('file-input').click()">
+            <div class="avatar-wrapper">
                 <img id="user-pic" src="default-avatar.png" class="avatar-main">
+                <label for="file-input" class="edit-btn"></label>
+                <input type="file" id="file-input" accept="image/*" onchange="changeAvatar(this)">
             </div>
-            <input type="file" id="file-input" accept="image/*" onchange="changeAvatar(this)">
 
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
@@ -215,7 +227,7 @@
                     <div class="balance-label">Кошелек</div>
                     <div class="balance-value"><span id="user-balance">0</span><span class="currency">₽</span></div>
                     <button class="btn-wallet" onclick="alert('Перенаправление на криптошлюз...')">ПОПОЛНИТЬ</button>
-                    <a href="index.html" class="btn-back">← В МАРКЕТ</a>
+                    <a href="index.html" class="btn-back">← ВЕРНУТЬСЯ В МАРКЕТ</a>
                 </div>
             </div>
 
@@ -228,10 +240,10 @@
 
                 <div class="content-area">
                     <div class="empty-icon">📦</div>
-                    <div style="color: #444;">У вас пока нет активных товаров</div>
+                    <div style="color: #444; font-size: 15px;">У вас пока нет активных товаров</div>
                 </div>
                 
-                <a href="#" class="logout-link" onclick="logout()">Выйти из профиля</a>
+                <center><a href="#" class="logout-link" onclick="logout()">Выйти из аккаунта</a></center>
             </div>
         </div>
     </div>
@@ -251,6 +263,7 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // Загрузка данных профиля
         auth.onAuthStateChanged((user) => {
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
@@ -262,10 +275,12 @@
 
                     document.getElementById('user-name').innerText = data.username;
                     document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
+                    
                     const balance = data.balance || 0;
                     document.getElementById('user-balance').innerText = Number.isInteger(balance) ? balance : balance.toFixed(2);
                     document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
 
+                    // Рейтинг
                     const rating = data.rating || 0;
                     const reviews = data.reviewsCount || 0;
                     const starsElem = document.getElementById('stars-display');
@@ -288,27 +303,28 @@
             }
         });
 
-        // Функция смены аватарки
+        // Функция смены аватарки сжатием
         function changeAvatar(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const user = auth.currentUser;
-                    const base64Image = e.target.result;
-
-                    // 1. Сразу меняем картинку визуально для скорости
-                    document.getElementById('user-pic').src = base64Image;
-
-                    // 2. Сохраняем новую картинку в базу данных
-                    if (user) {
-                        db.ref('users/' + user.uid).update({
-                            profilePic: base64Image
-                        }).then(() => {
-                            console.log("Аватарка обновлена!");
-                        }).catch((err) => {
-                            alert("Ошибка при сохранении: " + err.message);
-                        });
-                    }
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 200;
+                        canvas.height = 200;
+                        ctx.drawImage(img, 0, 0, 200, 200);
+                        
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        const user = auth.currentUser;
+                        if (user) {
+                            db.ref('users/' + user.uid).update({
+                                profilePic: compressedBase64
+                            }).then(() => console.log("Avatar updated"));
+                        }
+                    };
                 };
                 reader.readAsDataURL(input.files[0]);
             }

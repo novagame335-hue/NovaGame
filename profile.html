@@ -36,6 +36,7 @@
             position: relative;
             width: 110px;
             height: 110px;
+            cursor: pointer;
         }
 
         .avatar-main {
@@ -47,9 +48,26 @@
             background: #111;
         }
 
+        .edit-btn {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: #ff0000;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000;
+            pointer-events: none; /* Пропускает клик на label */
+        }
+        .edit-btn::after { content: "✎"; color: white; font-size: 14px; }
+        
+        #file-input { display: none !important; }
+
         .profile-info h2 { font-size: 32px; margin: 0; font-weight: 700; }
         .user-id { color: #666; font-size: 14px; margin: 5px 0; }
-        .rating { color: #ff0000; font-size: 14px; margin-top: 5px; }
 
         /* --- КОШЕЛЕК --- */
         .balance-section {
@@ -69,19 +87,19 @@
         .btn-topup {
             background: #222;
             color: white;
-            border: none;
+            border: 1px solid #444;
             padding: 10px 25px;
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.3s;
+            z-index: 5;
+            position: relative;
         }
+        .btn-topup:hover { background: #333; border-color: #ff0000; }
 
         /* --- ТАБЫ --- */
-        .tabs-nav, .sub-tabs {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
+        .tabs-nav, .sub-tabs { display: flex; gap: 10px; margin: 20px 0; }
 
         .tab-btn, .sub-btn {
             padding: 12px 25px;
@@ -91,32 +109,19 @@
             border: none;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.3s;
         }
+        .tab-btn.active, .sub-btn.active { background: #ff0000; }
 
-        .tab-btn.active, .sub-btn.active {
-            background: #ff0000;
-        }
-
-        /* --- КОНТЕНТНАЯ ОБЛАСТЬ --- */
+        /* --- КОНТЕНТ --- */
         .content-area {
             background: #0d0d0f;
             border-radius: 15px;
             padding: 60px 20px;
             text-align: center;
             border: 1px solid #1a1a1a;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
 
-        .empty-msg { 
-            color: #444; 
-            margin-bottom: 25px; 
-            font-size: 16px; 
-        }
+        .empty-msg { color: #444; margin-bottom: 25px; font-size: 16px; }
 
         .btn-sell {
             padding: 15px 45px;
@@ -128,19 +133,13 @@
             font-size: 15px;
             cursor: pointer;
             text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
         }
 
         .logout-btn {
-            color: #333;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: 20px;
-            text-decoration: underline;
+            color: #333; background: none; border: none; cursor: pointer; text-decoration: underline; margin-top: 20px;
         }
 
+        /* МОДАЛКА */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -150,23 +149,19 @@
             align-items: center;
             z-index: 1000;
         }
-
-        .modal-card {
-            background: #111;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            border: 1px solid #222;
-        }
+        .modal-card { background: #111; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #222; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="profile-header">
-            <div class="avatar-wrapper">
+            <label for="file-input" class="avatar-wrapper">
                 <img id="user-pic" src="default-avatar.png" class="avatar-main">
-            </div>
+                <div class="edit-btn"></div>
+            </label>
+            <input type="file" id="file-input" accept="image/*" onchange="changeAvatar(this)">
+
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: ...</div>
@@ -176,7 +171,7 @@
 
         <div class="balance-section">
             <div class="balance-text"><span id="user-balance">0</span> <span>₽</span></div>
-            <button class="btn-topup">ПОПОЛНИТЬ</button>
+            <button class="btn-topup" onclick="alert('Окно пополнения в разработке...')">ПОПОЛНИТЬ</button>
         </div>
 
         <div class="tabs-nav">
@@ -192,7 +187,7 @@
 
         <div class="content-area" id="content-display">
             <div class="empty-msg">У вас пока нет активных товаров</div>
-            <button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>
+            <button class="btn-sell" onclick="alert('Выставление товара...')">ВЫСТАВИТЬ ТОВАР</button>
         </div>
 
         <center>
@@ -213,34 +208,7 @@
     </div>
 
     <script>
-        // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК
-        function switchTab(type) {
-            const content = document.getElementById('content-display');
-            const btnActive = document.getElementById('tab-active');
-            const btnFinished = document.getElementById('tab-finished');
-
-            // Сбрасываем стили кнопок
-            btnActive.classList.remove('active');
-            btnFinished.classList.remove('active');
-
-            if (type === 'active') {
-                btnActive.classList.add('active');
-                content.innerHTML = `
-                    <div class="empty-msg">У вас пока нет активных товаров</div>
-                    <button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>
-                `;
-            } else {
-                btnFinished.classList.add('active');
-                // Здесь будет проверка: если в базе есть завершенные, выводим их. 
-                // Пока ставим заглушку по твоему запросу:
-                content.innerHTML = `
-                    <div class="empty-msg">У вас пока нет завершённых товаров</div>
-                    <button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>
-                `;
-            }
-        }
-
-        // FIREBASE КОНФИГ (Оставь свой)
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -255,6 +223,7 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // Загрузка данных
         auth.onAuthStateChanged((user) => {
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
@@ -268,6 +237,43 @@
                 });
             } else { location.href = "login.html"; }
         });
+
+        // Смена аватарки (ВОССТАНОВЛЕНО)
+        function changeAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 200; canvas.height = 200;
+                        canvas.getContext('2d').drawImage(img, 0, 0, 200, 200);
+                        const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        db.ref('users/' + auth.currentUser.uid).update({
+                            profilePic: base64
+                        }).then(() => {
+                            console.log("Аватар обновлен");
+                        });
+                    };
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Переключение табов
+        function switchTab(type) {
+            const content = document.getElementById('content-display');
+            document.getElementById('tab-active').classList.toggle('active', type === 'active');
+            document.getElementById('tab-finished').classList.toggle('active', type === 'finished');
+
+            if (type === 'active') {
+                content.innerHTML = `<div class="empty-msg">У вас пока нет активных товаров</div><button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>`;
+            } else {
+                content.innerHTML = `<div class="empty-msg">У вас пока нет завершённых товаров</div><button class="btn-sell">ВЫСТАВИТЬ ТОВАР</button>`;
+            }
+        }
 
         function toggleModal(show) { document.getElementById('logout-modal').style.display = show ? 'flex' : 'none'; }
         function logout() { auth.signOut().then(() => location.href = "login.html"); }

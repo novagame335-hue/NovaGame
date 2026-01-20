@@ -15,6 +15,7 @@
             --dark-red: #990000;
             --glass-bg: rgba(255, 255, 255, 0.03);
             --border-color: rgba(255, 0, 0, 0.2);
+            --empty-star: #333; /* Цвет для пустых звезд */
         }
 
         body {
@@ -75,9 +76,13 @@
 
         .profile-info h2 { font-size: 34px; margin: 0; font-weight: 800; }
         .user-id { color: #666; font-size: 14px; margin: 5px 0; letter-spacing: 1px; }
-        .rating { color: var(--neon-red); font-size: 14px; margin-top: 8px; }
+        
+        /* СТИЛЬ ЗВЕЗД */
+        .rating { font-size: 14px; margin-top: 8px; transition: 0.3s; }
+        .rating.no-reviews { color: var(--empty-star); }
+        .rating.has-reviews { color: var(--neon-red); }
 
-        /* --- КОШЕЛЕК (СТИЛЬ БУДУЩЕГО) --- */
+        /* --- КОШЕЛЕК --- */
         .balance-section {
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
@@ -106,7 +111,7 @@
         }
         .btn-topup:hover { background: var(--neon-red); color: white; box-shadow: 0 0 20px rgba(255,0,0,0.4); }
 
-        /* --- КНОПКИ ТАБЫ (СТИЛЬ БУДУЩЕГО) --- */
+        /* --- ТАБЫ --- */
         .tabs-nav, .sub-tabs { display: flex; gap: 12px; margin: 25px 0; }
 
         .tab-btn {
@@ -144,7 +149,7 @@
             background: rgba(255, 0, 0, 0.05);
         }
 
-        /* --- КОНТЕНТ (ЦЕНТР) --- */
+        /* --- КОНТЕНТ --- */
         .content-area {
             background: rgba(10, 10, 10, 0.8);
             border-radius: 20px;
@@ -190,7 +195,6 @@
             text-decoration: underline;
         }
 
-        /* --- МОДАЛЬНОЕ ОКНО --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -225,7 +229,7 @@
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: ...</div>
-                <div class="rating">★★★★★ <span style="color:#444; margin-left:10px;">НЕТ ОТЗЫВОВ</span></div>
+                <div id="user-rating" class="rating no-reviews">★★★★★ <span style="color:#444; margin-left:10px;">НЕТ ОТЗЫВОВ</span></div>
             </div>
         </div>
 
@@ -245,8 +249,7 @@
             <button id="sub-finished" class="sub-btn" onclick="switchSubTab('finished')">Завершенные 0</button>
         </div>
 
-        <div class="content-area" id="content-display">
-            </div>
+        <div class="content-area" id="content-display"></div>
 
         <center>
             <a href="index.html" style="color:var(--neon-red); text-decoration:none; font-weight:bold; display:block; margin-top:30px; letter-spacing: 1px;">← ВЕРНУТЬСЯ В МАРКЕТ</a>
@@ -308,7 +311,6 @@
             updateUI();
         }
 
-        // --- FIREBASE ЛОГИКА ---
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -332,9 +334,20 @@
                         document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
                         document.getElementById('user-balance').innerText = data.balance || 0;
                         document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
+
+                        // ЛОГИКА РЕЙТИНГА
+                        const ratingBox = document.getElementById('user-rating');
+                        const reviewsCount = data.reviewsCount || 0;
+                        if (reviewsCount > 0) {
+                            ratingBox.className = "rating has-reviews";
+                            ratingBox.innerHTML = `★★★★★ <span style="color:#666; margin-left:10px;">ОТЗЫВОВ: ${reviewsCount}</span>`;
+                        } else {
+                            ratingBox.className = "rating no-reviews";
+                            ratingBox.innerHTML = `★★★★★ <span style="color:#444; margin-left:10px;">НЕТ ОТЗЫВОВ</span>`;
+                        }
                     }
                 });
-                updateUI(); // Первичная отрисовка контента
+                updateUI();
             } else { location.href = "login.html"; }
         });
 

@@ -24,6 +24,7 @@
             padding: 20px;
         }
 
+        /* --- ШАПКА --- */
         .profile-header {
             display: flex;
             align-items: center;
@@ -46,7 +47,6 @@
             border: 4px solid #ff0000;
             object-fit: cover;
             background: #222;
-            display: block;
         }
 
         .edit-btn {
@@ -62,16 +62,10 @@
             align-items: center;
             cursor: pointer;
             border: 3px solid #000;
-            transition: 0.3s;
             z-index: 10;
         }
 
-        .edit-btn::after {
-            content: "✎";
-            color: white;
-            font-size: 18px;
-        }
-
+        .edit-btn::after { content: "✎"; color: white; font-size: 18px; }
         #file-input { display: none !important; }
 
         .profile-info h2 { font-size: 32px; margin: 0 0 5px 0; }
@@ -85,6 +79,7 @@
             margin-top: 30px;
         }
 
+        /* --- КОШЕЛЕК --- */
         .balance-card {
             background: #111;
             border-radius: 20px;
@@ -106,24 +101,75 @@
             font-weight: bold;
             transition: 0.3s;
         }
+        .btn-wallet:hover { background: #333; }
 
-        .tabs-nav { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn {
-            padding: 12px 20px;
-            background: #111;
-            border-radius: 12px;
-            color: #888;
-            border: 1px solid #222;
-            cursor: pointer;
+        /* --- НОВЫЕ КНОПКИ (ТВОЙ СТИЛЬ) --- */
+        .tabs-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
         }
-        .tab-btn.active { background: #ff0000; color: white; border-color: #ff0000; }
 
-        .content-area {
+        .tab-btn {
+            padding: 12px 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 50px; /* Закругленные как на скрине */
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .tab-btn span {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: #ff0000;
+            border-color: #ff0000;
+        }
+
+        .tab-btn.active span {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .sub-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .sub-btn {
+            padding: 8px 18px;
             background: #111;
+            border: 1px solid #222;
+            border-radius: 50px;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .sub-btn.active {
+            background: #333;
+            color: white;
+            border-color: #444;
+        }
+
+        /* --- КОНТЕНТ --- */
+        .content-area {
+            background: #0a0a0a;
             border-radius: 20px;
             padding: 60px 40px;
             text-align: center;
-            border: 1px solid #222;
+            border: 1px solid #1a1a1a;
         }
 
         .logout-link {
@@ -132,59 +178,37 @@
             color: #444;
             text-decoration: none;
             cursor: pointer;
+            font-size: 14px;
         }
 
-        /* --- СТИЛИ МОДАЛЬНОГО ОКНА ВЫХОДА --- */
+        /* --- МОДАЛКА --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: none; /* Скрыто по умолчанию */
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
         }
 
         .modal-card {
             background: #111;
-            border: 1px solid #333;
+            border: 1px solid #ff0000;
             padding: 30px;
             border-radius: 20px;
             text-align: center;
             max-width: 350px;
-            width: 90%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
-        .modal-card h3 { margin-top: 0; color: white; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-confirm { flex: 1; padding: 12px; background: #ff0000; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-cancel { flex: 1; padding: 12px; background: #222; border: none; border-radius: 10px; color: #888; cursor: pointer; }
 
-        .modal-btns {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .btn-confirm {
-            flex: 1;
-            padding: 12px;
-            background: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            padding: 12px;
-            background: #222;
-            color: #888;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
+        @media (max-width: 768px) {
+            .profile-header { flex-direction: column; text-align: center; }
+            .main-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -201,7 +225,7 @@
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: 00000000</div>
                 <div class="rating">
-                    <span id="stars-display">☆☆☆☆☆</span> 
+                    <span id="stars-display">★★★★★</span> 
                     <span id="reviews-count" style="color: #888; margin-left: 10px;">нет отзывов</span>
                 </div>
             </div>
@@ -210,6 +234,7 @@
         <div class="main-grid">
             <div class="left-col">
                 <div class="balance-card">
+                    <div style="color: #888; font-size: 12px; text-transform: uppercase;">Доступный баланс</div>
                     <div class="balance-value"><span id="user-balance">0</span><span class="currency">₽</span></div>
                     <button class="btn-wallet">ПОПОЛНИТЬ</button>
                     <center><a href="index.html" style="color:#ff0000; text-decoration:none; display:block; margin-top:15px; font-weight:bold;">← В МАРКЕТ</a></center>
@@ -218,11 +243,18 @@
 
             <div class="right-col">
                 <div class="tabs-nav">
-                    <button class="tab-btn active">Мои товары 0</button>
-                    <button class="tab-btn">Покупки 0</button>
+                    <button class="tab-btn active">Мои товары <span id="count-items">0</span></button>
+                    <button class="tab-btn">Покупки <span id="count-buys">0</span></button>
+                    <button class="tab-btn">Продажи <span id="count-sales">0</span></button>
                 </div>
+
+                <div class="sub-tabs">
+                    <button class="sub-btn active">Активные 0</button>
+                    <button class="sub-btn">Завершенные 0</button>
+                </div>
+
                 <div class="content-area">
-                    <div style="color: #444;">У вас пока нет активных товаров</div>
+                    <div style="color: #444; font-size: 14px;">У вас пока нет активных товаров</div>
                 </div>
                 
                 <center>
@@ -234,7 +266,7 @@
 
     <div id="logout-modal" class="modal-overlay">
         <div class="modal-card">
-            <h3>Выход</h3>
+            <h3 style="margin-top:0">Выход</h3>
             <p style="color: #888;">Вы уверены, что хотите выйти из аккаунта?</p>
             <div class="modal-btns">
                 <button class="btn-cancel" onclick="toggleLogoutModal(false)">ОТМЕНА</button>
@@ -244,7 +276,6 @@
     </div>
 
     <script>
-        // Твои настройки Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -275,16 +306,12 @@
             }
         });
 
-        // ФУНКЦИИ МОДАЛЬНОГО ОКНА
         function toggleLogoutModal(show) {
-            const modal = document.getElementById('logout-modal');
-            modal.style.display = show ? 'flex' : 'none';
+            document.getElementById('logout-modal').style.display = show ? 'flex' : 'none';
         }
 
         function confirmLogout() {
-            auth.signOut().then(() => {
-                window.location.href = "login.html";
-            });
+            auth.signOut().then(() => { window.location.href = "login.html"; });
         }
 
         function changeAvatar(input) {

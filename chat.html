@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaGame — Чаты</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --neon-red: #ff0000;
+            --dark-bg: #0b0b0b;
+            --panel-bg: #141414;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+        }
+
+        body {
+            margin: 0;
+            background: var(--dark-bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ЛЕВАЯ ПАНЕЛЬ (СПИСОК) */
+        .side-bar {
+            width: 350px;
+            background: var(--panel-bg);
+            border-right: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-header {
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            border-bottom: 1px solid #222;
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            gap: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .chat-item:hover { background: #1a1a1a; }
+        .chat-item.active { background: #222; border-left: 4px solid var(--neon-red); }
+
+        .avatar-container { position: relative; }
+        .avatar-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #333; }
+        .status-online { 
+            position: absolute; bottom: 2px; right: 2px; 
+            width: 12px; height: 12px; background: #00ff00; 
+            border-radius: 50%; border: 2px solid var(--panel-bg); 
+        }
+
+        .chat-info h4 { margin: 0; font-size: 16px; }
+        .chat-info p { margin: 5px 0 0; font-size: 13px; color: var(--text-dim); }
+
+        /* ПРАВАЯ ПАНЕЛЬ (ОКНО ЧАТА) */
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--dark-bg);
+        }
+
+        .window-header {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #222;
+            background: var(--panel-bg);
+        }
+
+        .messages-area {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); /* Легкая текстура */
+        }
+
+        .msg {
+            max-width: 60%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .msg.received { align-self: flex-start; background: #222; border-bottom-left-radius: 2px; }
+        .msg.sent { 
+            align-self: flex-end; 
+            background: var(--neon-red); 
+            color: white; 
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
+        }
+
+        /* ПОЛЕ ВВОДА */
+        .input-container {
+            padding: 20px;
+            background: var(--panel-bg);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .attach-btn { color: var(--text-dim); font-size: 24px; cursor: pointer; }
+        
+        .message-input {
+            flex: 1;
+            background: #222;
+            border: 1px solid #333;
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: white;
+            outline: none;
+        }
+
+        .message-input:focus { border-color: var(--neon-red); }
+
+        .send-btn {
+            background: none;
+            border: none;
+            color: var(--neon-red);
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="side-bar">
+        <div class="side-header">Чаты</div>
+        <div class="chat-list" id="chat-list">
+            <div class="chat-item active">
+                <div class="avatar-container">
+                    <img src="https://img.icons8.com/fluency/48/000000/support.png" class="avatar-img">
+                    <div class="status-online"></div>
+                </div>
+                <div class="chat-info">
+                    <h4>Поддержка NovaGame</h4>
+                    <p>Работаем 24/7</p>
+                </div>
+            </div>
+            </div>
+    </div>
+
+    <div class="chat-window">
+        <div class="window-header">
+            <img src="https://img.icons8.com/fluency/48/000000/support.png" style="width: 40px; border-radius: 50%;">
+            <div>
+                <div style="font-weight: bold;">Поддержка NovaGame</div>
+                <div style="font-size: 12px; color: #00ff00;">онлайн</div>
+            </div>
+        </div>
+
+        <div class="messages-area" id="msg-area">
+            <div class="msg received">Добро пожаловать в NovaGame! Чем можем помочь?</div>
+            <div class="msg sent">Привет! Как мне пополнить баланс?</div>
+        </div>
+
+        <div class="input-container">
+            <div class="attach-btn">📎</div>
+            <input type="text" class="message-input" id="msg-input" placeholder="Введите сообщение...">
+            <button class="send-btn" onclick="sendMessage()">ОТПРАВИТЬ</button>
+        </div>
+    </div>
+
+    <script>
+        // ... (Твоя Firebase логика из прошлого шага) ...
+        // Она будет работать так же, просто теперь вывод идет в красивые блоки "msg sent" и "msg received"
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -111,6 +112,7 @@
             gap: 4px;
             transition: 0.2s;
             min-width: 60px;
+            position: relative; /* Для позиционирования точки уведомлений */
         }
 
         .nav-item:hover { transform: translateY(-2px); opacity: 0.8; }
@@ -123,6 +125,20 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        /* КРАСНАЯ ТОЧКА УВЕДОМЛЕНИЙ */
+        .notif-badge {
+            display: none;
+            position: absolute;
+            top: -2px;
+            right: 15px;
+            width: 8px;
+            height: 8px;
+            background: #ff0000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ff0000;
+            border: 2px solid #000;
         }
 
         .header-avatar {
@@ -173,10 +189,13 @@
                 <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                 <span class="nav-label">Новости</span>
             </a>
-            <a href="messages.html" class="nav-item">
+            
+            <a href="chat.html" class="nav-item" id="chat-link">
                 <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>
                 <span class="nav-label">Чат</span>
+                <div id="chat-dot" class="notif-badge"></div>
             </a>
+
             <div id="user-menu-area">
                 <div style="font-size: 12px; color: #444;">Загрузка...</div>
             </div>
@@ -206,17 +225,15 @@
             const menuArea = document.getElementById('user-menu-area');
             
             if (user) {
-                // ПРОВЕРКА: Создан ли профиль в базе?
+                // Загрузка данных пользователя
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const userData = snapshot.val();
                     
                     if (!userData || !userData.username) {
-                        // Если записи нет, принудительно шлем на настройку
                         window.location.href = "setup-profile.html";
                         return;
                     }
 
-                    // Если всё ок, показываем аватарку
                     const profilePic = userData.profilePic || 'default-avatar.png';
                     menuArea.innerHTML = `
                         <a href="profile.html" class="nav-item">
@@ -225,12 +242,29 @@
                         </a>
                     `;
                 });
+
+                // ПРАВКА: Логика уведомлений чата
+                // Слушаем последние сообщения в общем чате
+                db.ref('chats/global_support').limitToLast(1).on('child_added', (snapshot) => {
+                    const msg = snapshot.val();
+                    // Если сообщение не от нас, показываем точку
+                    if (msg.uid !== user.uid) {
+                        document.getElementById('chat-dot').style.display = 'block';
+                    }
+                });
+
             } else {
                 menuArea.innerHTML = `
                     <a href="login.html" class="login-btn-link">Войти</a>
                 `;
+                document.getElementById('chat-dot').style.display = 'none';
             }
         });
+
+        // Скрываем точку при переходе в чат
+        document.getElementById('chat-link').onclick = () => {
+            document.getElementById('chat-dot').style.display = 'none';
+        };
     </script>
 </body>
 </html>

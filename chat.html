@@ -14,7 +14,6 @@
             --neon-red: #ff0000;
             --dark-bg: #0a0a0a;
             --panel-bg: #111;
-            --border: rgba(255, 0, 0, 0.2);
         }
 
         body {
@@ -32,7 +31,7 @@
         .side-header {
             padding: 25px 20px; font-weight: 800; font-size: 18px;
             border-bottom: 1px solid #222; color: var(--neon-red);
-            text-transform: uppercase; letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         #chat-list { flex: 1; overflow-y: auto; }
@@ -43,8 +42,6 @@
         }
         .chat-item:hover { background: #1a1a1a; }
         .chat-item.active { background: #222; border-left: 4px solid var(--neon-red); }
-        .chat-item h4 { margin: 0 0 5px 0; font-size: 14px; color: #fff; }
-        .chat-item p { margin: 0; font-size: 11px; color: #555; }
 
         /* --- ОКНО ЧАТА --- */
         .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--dark-bg); }
@@ -52,10 +49,9 @@
         #msg-area {
             flex: 1; padding: 20px; overflow-y: auto;
             display: flex; flex-direction: column; gap: 15px;
-            background: radial-gradient(circle at center, #110000 0%, #000 100%);
         }
 
-        /* --- СООБЩЕНИЯ С АВАТАРКАМИ --- */
+        /* --- КОНТЕЙНЕР СООБЩЕНИЯ С АВАТАРКОЙ --- */
         .msg-wrapper {
             display: flex; align-items: flex-end; gap: 10px; max-width: 80%;
         }
@@ -65,24 +61,24 @@
 
         .chat-avatar {
             width: 38px; height: 38px; border-radius: 50%;
-            object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;
-            background: #222;
+            object-fit: cover; border: 1px solid rgba(255,0,0,0.3);
+            flex-shrink: 0; background: #222;
         }
 
         .msg {
             padding: 12px 16px; border-radius: 18px; font-size: 14px;
-            line-height: 1.4; position: relative; word-wrap: break-word;
+            line-height: 1.4; position: relative;
         }
         
         .sent .msg { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .received .msg { background: #1a1a1a; color: #eee; border-bottom-left-radius: 2px; border: 1px solid #333; }
 
-        .admin-badge {
+        .admin-label {
             display: block; font-size: 9px; font-weight: 900;
-            margin-bottom: 4px; letter-spacing: 1px; color: #ffda00;
+            margin-bottom: 4px; color: #ffda00; text-transform: uppercase;
         }
 
-        /* --- ПОЛЕ ВВОДА --- */
+        /* --- ВВОД --- */
         .input-area {
             padding: 20px; background: var(--panel-bg);
             display: flex; gap: 12px; border-top: 1px solid #222;
@@ -90,23 +86,13 @@
 
         input {
             flex: 1; background: #000; border: 1px solid #333;
-            padding: 14px 18px; color: white; border-radius: 12px; outline: none;
-            transition: 0.3s;
+            padding: 14px; color: white; border-radius: 10px; outline: none;
         }
-        input:focus { border-color: var(--neon-red); box-shadow: 0 0 10px rgba(255,0,0,0.1); }
 
         button {
             background: var(--neon-red); color: white; border: none;
-            padding: 0 25px; border-radius: 12px; font-weight: bold;
-            cursor: pointer; transition: 0.3s;
+            padding: 0 20px; border-radius: 10px; font-weight: bold; cursor: pointer;
         }
-        button:hover { opacity: 0.8; transform: scale(1.02); }
-
-        .back-link {
-            padding: 15px; font-size: 11px; color: #444; text-decoration: none;
-            text-align: center; border-top: 1px solid #1a1a1a;
-        }
-        .back-link:hover { color: var(--neon-red); }
     </style>
 </head>
 <body>
@@ -114,16 +100,13 @@
     <div class="side-panel">
         <div class="side-header" id="side-title">Загрузка...</div>
         <div id="chat-list"></div>
-        <a href="index.html" class="back-link">← НА ГЛАВНУЮ</a>
+        <a href="index.html" style="padding: 15px; color: #444; text-decoration: none; text-align: center; font-size: 12px;">← НА ГЛАВНУЮ</a>
     </div>
 
     <div class="main-chat">
-        <div id="msg-area">
-            <div style="text-align:center; color:#333; margin-top:50px;">Загрузка сообщений...</div>
-        </div>
-        
+        <div id="msg-area"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="Напишите сообщение..." autocomplete="off">
+            <input type="text" id="msg-input" placeholder="Введите сообщение...">
             <button onclick="sendMessage()">ОТПРАВИТЬ</button>
         </div>
     </div>
@@ -148,90 +131,72 @@
 
         auth.onAuthStateChanged((user) => {
             if (user) {
-                db.ref('users/' + user.uid).once('value').then((snapshot) => {
-                    const userData = snapshot.val();
+                db.ref('users/' + user.uid).once('value').then((snap) => {
+                    const userData = snap.val();
                     isAdmin = (userData && userData.role === 'admin');
                     
                     if (isAdmin) {
-                        document.getElementById('side-title').innerText = "Панель Админа";
+                        document.getElementById('side-title').innerText = "АДМИН-ПАНЕЛЬ";
                         loadTicketList();
                     } else {
-                        document.getElementById('side-title').innerText = "Поддержка";
+                        document.getElementById('side-title').innerText = "ПОДДЕРЖКА";
                         currentChatUid = user.uid;
-                        // Юзер видит заглушку "Чат с поддержкой"
-                        const list = document.getElementById('chat-list');
-                        list.innerHTML = `
-                            <div class="chat-item active">
-                                <h4>Nova Game Support</h4>
-                                <p>Мы всегда на связи</p>
-                            </div>
-                        `;
                         loadMessages(user.uid);
                     }
                 });
             } else { window.location.href = "login.html"; }
         });
 
-        // СПИСОК ТИКЕТОВ ДЛЯ АДМИНА
         function loadTicketList() {
-            const listArea = document.getElementById('chat-list');
             db.ref('support_tickets').on('value', (snapshot) => {
-                listArea.innerHTML = "";
+                const list = document.getElementById('chat-list');
+                list.innerHTML = "";
                 snapshot.forEach((child) => {
-                    const userId = child.key;
+                    const uid = child.key;
                     const item = document.createElement('div');
-                    item.className = `chat-item ${currentChatUid === userId ? 'active' : ''}`;
-                    item.innerHTML = `<h4>ID: ${userId.substring(0,10)}</h4><p>Открыть переписку</p>`;
-                    item.onclick = () => {
-                        currentChatUid = userId;
-                        loadMessages(userId);
-                        loadTicketList();
-                    };
-                    listArea.appendChild(item);
+                    item.className = `chat-item ${currentChatUid === uid ? 'active' : ''}`;
+                    item.innerHTML = `<h4>Тикет: ${uid.substring(0,8)}</h4><p>Нажмите для ответа</p>`;
+                    item.onclick = () => { currentChatUid = uid; loadMessages(uid); loadTicketList(); };
+                    list.appendChild(item);
                 });
             });
         }
 
-        // ЗАГРУЗКА СООБЩЕНИЙ С АВАТАРКАМИ
         function loadMessages(ticketId) {
             const msgArea = document.getElementById('msg-area');
             msgArea.innerHTML = "";
-            
             db.ref(`support_tickets/${ticketId}/messages`).off();
             db.ref(`support_tickets/${ticketId}/messages`).on('child_added', (snapshot) => {
                 const data = snapshot.val();
                 const isMy = data.senderUid === auth.currentUser.uid;
                 
-                // Оболочка сообщения
                 const wrapper = document.createElement('div');
                 wrapper.className = isMy ? 'msg-wrapper sent' : 'msg-wrapper received';
 
-                // Получаем аватарку отправителя
+                // Подгружаем аватарку
                 db.ref('users/' + data.senderUid).once('value').then((uSnap) => {
                     const uData = uSnap.val();
-                    let finalAvatar = "default-avatar.png";
+                    let avatarSrc = "default-avatar.png";
 
                     if (data.role === 'admin') {
-                        finalAvatar = "pod.jpg"; // Аватарка поддержки
+                        avatarSrc = "pod.jpg"; // Аватарка для всех админов
                     } else if (uData && uData.profilePic) {
-                        finalAvatar = uData.profilePic; // Аватарка юзера
+                        avatarSrc = uData.profilePic;
                     }
 
                     wrapper.innerHTML = `
-                        <img src="${finalAvatar}" class="chat-avatar">
+                        <img src="${avatarSrc}" class="chat-avatar" onerror="this.src='default-avatar.png'">
                         <div class="msg">
-                            ${data.role === 'admin' ? '<span class="admin-badge">SUPPORT</span>' : ''}
+                            ${data.role === 'admin' ? '<span class="admin-label">Nova Game Support</span>' : ''}
                             ${data.text}
                         </div>
                     `;
-                    
                     msgArea.appendChild(wrapper);
                     msgArea.scrollTop = msgArea.scrollHeight;
                 });
             });
         }
 
-        // ОТПРАВКА
         function sendMessage() {
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
@@ -240,15 +205,11 @@
             db.ref(`support_tickets/${currentChatUid}/messages`).push({
                 senderUid: auth.currentUser.uid,
                 text: text,
-                timestamp: Date.now(),
-                role: isAdmin ? "admin" : "user"
+                role: isAdmin ? "admin" : "user",
+                timestamp: Date.now()
             });
             input.value = "";
         }
-
-        document.getElementById('msg-input').addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendMessage();
-        });
     </script>
 </body>
 </html>

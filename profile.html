@@ -180,7 +180,7 @@
             transition: 0.3s;
         }
 
-        /* --- КНОПКА ЧАТА (СТИЛЬ БУДУЩЕГО) --- */
+        /* --- КНОПКА ЧАТА (СТИЛЬ ПЛЕЙЕРОК) --- */
         .chat-fab {
             position: fixed;
             bottom: 30px;
@@ -242,14 +242,14 @@
         </div>
 
         <div class="tabs-nav">
-            <button id="main-items" class="tab-btn active" onclick="switchMainTab('items')">Мои товары 0</button>
-            <button id="main-buys" class="tab-btn" onclick="switchMainTab('buys')">Покупки 0</button>
-            <button id="main-sales" class="tab-btn" onclick="switchMainTab('sales')">Продажи 0</button>
+            <button id="main-items" class="tab-btn active" onclick="switchMainTab('items')">Мои товары <span id="count-items">0</span></button>
+            <button id="main-buys" class="tab-btn" onclick="switchMainTab('buys')">Покупки <span id="count-buys">0</span></button>
+            <button id="main-sales" class="tab-btn" onclick="switchMainTab('sales')">Продажи <span id="count-sales">0</span></button>
         </div>
 
         <div class="sub-tabs">
-            <button id="sub-active" class="sub-btn active" onclick="switchSubTab('active')">Активные 0</button>
-            <button id="sub-finished" class="sub-btn" onclick="switchSubTab('finished')">Завершенные 0</button>
+            <button id="sub-active" class="sub-btn active" onclick="switchSubTab('active')">Активные <span id="count-active">0</span></button>
+            <button id="sub-finished" class="sub-btn" onclick="switchSubTab('finished')">Завершенные <span id="count-finished">0</span></button>
         </div>
 
         <div class="content-area" id="content-display"></div>
@@ -260,7 +260,7 @@
         </center>
     </div>
 
-    <div class="chat-fab" onclick="alert('Чат в разработке...')">
+    <div class="chat-fab" onclick="window.location.href='chat.html'">
         <div class="chat-icon"></div>
     </div>
 
@@ -334,6 +334,11 @@
                         document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
                         document.getElementById('user-balance').innerText = data.balance || 0;
                         document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
+
+                        // Обновление счетчиков (если они есть в базе)
+                        document.getElementById('count-items').innerText = data.itemsCount || 0;
+                        document.getElementById('count-buys').innerText = data.buysCount || 0;
+                        document.getElementById('count-active').innerText = data.activeCount || 0;
 
                         const rBox = document.getElementById('user-rating');
                         const rCount = data.reviewsCount || 0;

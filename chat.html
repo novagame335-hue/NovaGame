@@ -1,97 +1,219 @@
-let isAdmin = false;
-let currentChatUid = null; // UID пользователя, чей чат сейчас открыт у админа
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaGame — Поддержка</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        db.ref('users/' + user.uid).once('value').then((snapshot) => {
-            const userData = snapshot.val();
-            isAdmin = (userData && userData.role === 'admin');
-            
-            if (isAdmin) {
-                setupAdminUI();
-            } else {
-                // Для юзера "целевой чат" — это его собственный UID
-                currentChatUid = user.uid;
-                setupUserUI();
-                loadMessages(currentChatUid);
-            }
-        });
-    } else {
-        window.location.href = "login.html";
-    }
-});
-
-// --- ЛОГИКА ДЛЯ АДМИНА ---
-function setupAdminUI() {
-    document.querySelector('.side-header').innerText = "Все тикеты";
-    const listArea = document.getElementById('chat-list');
-    listArea.innerHTML = ""; // Очистка списка
-
-    // Слушаем список всех, кто написал в поддержку
-    db.ref('support_tickets').on('value', (snapshot) => {
-        listArea.innerHTML = "";
-        snapshot.forEach((child) => {
-            const userUid = child.key;
-            const chatItem = document.createElement('div');
-            chatItem.className = 'chat-item';
-            chatItem.innerHTML = `
-                <div class="chat-info">
-                    <h4>ID: ${userUid.substring(0, 8)}</h4>
-                    <p>Нажмите, чтобы ответить</p>
-                </div>
-            `;
-            chatItem.onclick = () => {
-                currentChatUid = userUid;
-                loadMessages(userUid);
-                // Подсвечиваем активный чат
-                document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
-                chatItem.classList.add('active');
-            };
-            listArea.appendChild(chatItem);
-        });
-    });
-}
-
-// --- ЛОГИКА ОТПРАВКИ ---
-function sendMessage() {
-    const input = document.getElementById('msg-input');
-    const text = input.value.trim();
-    if (!text || !currentChatUid) return;
-
-    const sender = auth.currentUser;
-    db.ref(`support_tickets/${currentChatUid}/messages`).push({
-        senderUid: sender.uid,
-        name: isAdmin ? "Nova Game (Support)" : (sender.displayName || "User"),
-        text: text,
-        timestamp: Date.now(),
-        role: isAdmin ? "admin" : "user"
-    });
-    input.value = "";
-}
-
-// --- ЗАГРУЗКА СООБЩЕНИЙ ---
-function loadMessages(ticketId) {
-    const msgArea = document.getElementById('msg-area');
-    msgArea.innerHTML = ""; // Очищаем окно при смене чата
-
-    // Отписываемся от старых чатов и подписываемся на новый
-    db.ref(`support_tickets/${ticketId}/messages`).off();
-    db.ref(`support_tickets/${ticketId}/messages`).on('child_added', (snapshot) => {
-        const data = snapshot.val();
-        const isMy = data.senderUid === auth.currentUser.uid;
-
-        const msgDiv = document.createElement('div');
-        msgDiv.className = isMy ? 'msg sent' : 'msg received';
-        
-        // Красим сообщения админов
-        if (data.role === "admin") {
-            msgDiv.style.background = isMy ? "var(--neon-red)" : "#440000";
-            msgDiv.innerHTML = `<small style="display:block; font-size:9px; opacity:0.7;">SUPPORT</small>${data.text}`;
-        } else {
-            msgDiv.innerText = data.text;
+    <style>
+        :root {
+            --neon-red: #ff0000;
+            --dark-bg: #0a0a0a;
+            --panel-bg: #111;
+            --border: rgba(255, 0, 0, 0.2);
         }
 
-        msgArea.appendChild(msgDiv);
-        msgArea.scrollTop = msgArea.scrollHeight;
-    });
-}
+        body {
+            margin: 0; background: #000; color: white;
+            font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex;
+        }
+
+        /* --- БОКОВАЯ ПАНЕЛЬ --- */
+        .side-panel {
+            width: 300px; background: var(--panel-bg);
+            border-right: 1px solid #222; display: flex; flex-direction: column;
+        }
+
+        .side-header {
+            padding: 20px; font-weight: 800; font-size: 18px;
+            border-bottom: 1px solid #222; color: var(--neon-red);
+        }
+
+        #chat-list { flex: 1; overflow-y: auto; }
+
+        .chat-item {
+            padding: 15px 20px; border-bottom: 1px solid #1a1a1a;
+            cursor: pointer; transition: 0.3s;
+        }
+        .chat-item:hover { background: #1a1a1a; }
+        .chat-item.active { background: #222; border-left: 3px solid var(--neon-red); }
+        .chat-item h4 { margin: 0 0 5px 0; font-size: 14px; }
+        .chat-item p { margin: 0; font-size: 12px; color: #666; }
+
+        /* --- ОКНО ЧАТА --- */
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--dark-bg); }
+
+        #msg-area {
+            flex: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        /* Стили сообщений */
+        .msg {
+            max-width: 70%; padding: 12px 16px; border-radius: 15px;
+            font-size: 14px; line-height: 1.4; position: relative;
+        }
+        .sent { align-self: flex-end; background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
+        .received { align-self: flex-start; background: #222; color: #ccc; border-bottom-left-radius: 2px; }
+
+        .admin-badge {
+            display: block; font-size: 9px; font-weight: 900;
+            margin-bottom: 4px; letter-spacing: 1px; color: gold;
+        }
+
+        /* ПОЛЕ ВВОДА */
+        .input-area {
+            padding: 20px; background: var(--panel-bg);
+            display: flex; gap: 10px; border-top: 1px solid #222;
+        }
+
+        input {
+            flex: 1; background: #000; border: 1px solid #333;
+            padding: 12px 15px; color: white; border-radius: 10px; outline: none;
+        }
+        input:focus { border-color: var(--neon-red); }
+
+        button {
+            background: var(--neon-red); color: white; border: none;
+            padding: 0 20px; border-radius: 10px; font-weight: bold; cursor: pointer;
+        }
+
+        .back-link {
+            padding: 15px; font-size: 12px; color: #444; text-decoration: none; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="side-panel">
+        <div class="side-header" id="side-title">Загрузка...</div>
+        <div id="chat-list">
+            </div>
+        <a href="profile.html" class="back-link">← ВЕРНУТЬСЯ В ПРОФИЛЬ</a>
+    </div>
+
+    <div class="main-chat">
+        <div id="msg-area">
+            <div style="text-align:center; color:#333; margin-top:50px;">Выберите чат или напишите сообщение...</div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="msg-input" placeholder="Введите сообщение...">
+            <button onclick="sendMessage()">ОТПРАВИТЬ</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+            authDomain: "novagame-b15b6.firebaseapp.com",
+            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "novagame-b15b6",
+            storageBucket: "novagame-b15b6.firebasestorage.app",
+            messagingSenderId: "7572791951",
+            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let isAdmin = false;
+        let currentChatUid = null;
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                db.ref('users/' + user.uid).once('value').then((snapshot) => {
+                    const userData = snapshot.val();
+                    isAdmin = (userData && userData.role === 'admin');
+                    
+                    if (isAdmin) {
+                        document.getElementById('side-title').innerText = "ПАНЕЛЬ ПОДДЕРЖКИ";
+                        loadTicketList();
+                    } else {
+                        document.getElementById('side-title').innerText = "ПОДДЕРЖКА";
+                        currentChatUid = user.uid;
+                        // Обычный юзер видит в списке только "Чат с Nova Game"
+                        const list = document.getElementById('chat-list');
+                        list.innerHTML = `
+                            <div class="chat-item active">
+                                <h4>Nova Game Support</h4>
+                                <p>Онлайн</p>
+                            </div>
+                        `;
+                        loadMessages(user.uid);
+                    }
+                });
+            } else { window.location.href = "login.html"; }
+        });
+
+        // СПИСОК ТИКЕТОВ (ТОЛЬКО ДЛЯ АДМИНА)
+        function loadTicketList() {
+            const listArea = document.getElementById('chat-list');
+            db.ref('support_tickets').on('value', (snapshot) => {
+                listArea.innerHTML = "";
+                snapshot.forEach((child) => {
+                    const userId = child.key;
+                    const item = document.createElement('div');
+                    item.className = `chat-item ${currentChatUid === userId ? 'active' : ''}`;
+                    item.innerHTML = `<h4>Клиент: ${userId.substring(0,8)}</h4><p>Открыть диалог</p>`;
+                    item.onclick = () => {
+                        currentChatUid = userId;
+                        loadMessages(userId);
+                        loadTicketList(); // Перерендерить для active класса
+                    };
+                    listArea.appendChild(item);
+                });
+            });
+        }
+
+        // ЗАГРУЗКА СООБЩЕНИЙ
+        function loadMessages(ticketId) {
+            const msgArea = document.getElementById('msg-area');
+            msgArea.innerHTML = "";
+            
+            db.ref(`support_tickets/${ticketId}/messages`).off();
+            db.ref(`support_tickets/${ticketId}/messages`).on('child_added', (snapshot) => {
+                const data = snapshot.val();
+                const isMy = data.senderUid === auth.currentUser.uid;
+                
+                const msgDiv = document.createElement('div');
+                msgDiv.className = isMy ? 'msg sent' : 'msg received';
+                
+                if (data.role === 'admin') {
+                    msgDiv.innerHTML = `<span class="admin-badge">NOVA GAME SUPPORT</span>${data.text}`;
+                } else {
+                    msgDiv.innerText = data.text;
+                }
+                
+                msgArea.appendChild(msgDiv);
+                msgArea.scrollTop = msgArea.scrollHeight;
+            });
+        }
+
+        // ОТПРАВКА
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if (!text || !currentChatUid) return;
+
+            db.ref(`support_tickets/${currentChatUid}/messages`).push({
+                senderUid: auth.currentUser.uid,
+                text: text,
+                timestamp: Date.now(),
+                role: isAdmin ? "admin" : "user"
+            });
+            input.value = "";
+        }
+
+        // Enter для отправки
+        document.getElementById('msg-input').addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+    </script>
+</body>
+</html>

@@ -64,7 +64,6 @@
             flex: 1;
             display: flex;
             align-items: center;
-            margin-right: 30px;
         }
 
         .search-container {
@@ -96,11 +95,12 @@
             opacity: 0.5;
         }
 
+        /* --- ПРАВКА: КНОПКИ НА ПК --- */
         .header-right {
             display: flex;
             align-items: center;
             gap: 25px;
-            flex-shrink: 0;
+            margin-left: 30px;
         }
 
         .nav-item {
@@ -110,11 +110,8 @@
             text-decoration: none;
             gap: 4px;
             transition: 0.2s;
-            min-width: 60px;
             position: relative;
         }
-
-        .nav-item:hover { transform: translateY(-2px); opacity: 0.8; }
 
         .header-icon-svg { fill: white; width: 26px; height: 26px; }
 
@@ -140,11 +137,27 @@
         }
 
         .header-avatar {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             border: 2px solid #ff0000;
             object-fit: cover;
+        }
+
+        /* --- НИЖНЯЯ ПАНЕЛЬ ДЛЯ ТЕЛЕФОНА --- */
+        .mobile-nav {
+            display: none; /* Скрыта на ПК */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: #000;
+            border-top: 1px solid #1a1a1a;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom); /* Поддержка iPhone с челкой */
         }
 
         .login-btn-link {
@@ -155,54 +168,37 @@
             border-radius: 8px;
             font-weight: bold;
             font-size: 14px;
-            white-space: nowrap;
             transition: 0.3s;
         }
-        
-        .login-btn-link:hover {
-            background: #fff;
-            color: #000;
-        }
 
-        /* --- АДАПТАЦИЯ ПОД МОБИЛЬНЫЕ УСТРОЙСТВА --- */
+        /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
         @media (max-width: 850px) {
             header {
-                height: auto;
-                padding: 15px 20px;
-                flex-wrap: wrap;
-                justify-content: space-between;
+                padding: 0 20px;
+                height: 70px;
             }
 
-            .header-left {
-                margin-right: 0;
-                order: 1;
-            }
-
+            /* В шапке оставляем только лого и поиск */
             .header-right {
-                order: 2;
-                gap: 15px;
+                display: none; /* Скрываем кнопки в шапке */
+            }
+            
+            /* Если пользователь не вошел, показываем кнопку входа в шапке */
+            .header-right.guest-only {
+                display: flex;
+                margin-left: 15px;
             }
 
-            .header-center {
-                order: 3;
-                width: 100%;
-                margin: 15px 0 5px 0;
-                flex: none;
-            }
-
-            .brand-name { font-size: 22px; }
+            .brand-name { font-size: 20px; }
             .logo-img { height: 35px; }
 
-            /* Делаем поиск чуть компактнее на телефоне */
-            .search-input {
-                padding: 10px 15px 10px 45px;
-                font-size: 14px;
+            /* Показываем нижнюю панель */
+            .mobile-nav {
+                display: flex;
             }
-            .search-icon { left: 15px; font-size: 16px; }
 
-            /* Чтобы основной контент не заезжал под высокую шапку */
-            div[style*="height: 110px"] {
-                height: 160px !important;
+            .container-main {
+                padding-bottom: 80px; /* Чтобы контент не перекрывался нижней панелью */
             }
         }
     </style>
@@ -220,29 +216,18 @@
         <div class="header-center">
             <div class="search-container">
                 <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" placeholder="Поиск игр, аккаунтов и валюты...">
+                <input type="text" class="search-input" placeholder="Поиск игр...">
             </div>
         </div>
 
-        <div class="header-right">
-            <a href="news.html" class="nav-item">
-                <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                <span class="nav-label">Новости</span>
-            </a>
-            
-            <a href="chat.html" class="nav-item" id="chat-link">
-                <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>
-                <span class="nav-label">Чат</span>
-                <div id="chat-dot" class="notif-badge"></div>
-            </a>
-
-            <div id="user-menu-area">
-                <div style="font-size: 12px; color: #444;">Загрузка...</div>
+        <div class="header-right" id="pc-nav">
             </div>
-        </div>
     </header>
 
-    <div style="height: 110px;"></div>
+    <nav class="mobile-nav" id="mobile-nav">
+        </nav>
+
+    <div style="height: 100px;"></div>
 
     <script>
         const firebaseConfig = {
@@ -259,47 +244,42 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
         auth.onAuthStateChanged((user) => {
-            const menuArea = document.getElementById('user-menu-area');
+            const pcNav = document.getElementById('pc-nav');
+            const mobileNav = document.getElementById('mobile-nav');
             
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const userData = snapshot.val();
+                    const profilePic = (userData && userData.profilePic) ? userData.profilePic : 'default-avatar.png';
                     
-                    if (!userData || !userData.username) {
-                        window.location.href = "setup-profile.html";
-                        return;
-                    }
-
-                    const profilePic = userData.profilePic || 'default-avatar.png';
-                    menuArea.innerHTML = `
+                    // Шаблон кнопок (Новости, Чат, Профиль)
+                    const navHtml = `
+                        <a href="news.html" class="nav-item">
+                            <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                            <span class="nav-label">Новости</span>
+                        </a>
+                        <a href="chat.html" class="nav-item">
+                            <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>
+                            <span class="nav-label">Чат</span>
+                            <div class="notif-badge" id="chat-dot"></div>
+                        </a>
                         <a href="profile.html" class="nav-item">
                             <img src="${profilePic}" class="header-avatar">
                             <span class="nav-label">Профиль</span>
                         </a>
                     `;
-                });
 
-                db.ref('chats/global_support').limitToLast(1).on('child_added', (snapshot) => {
-                    const msg = snapshot.val();
-                    if (msg.uid !== user.uid) {
-                        document.getElementById('chat-dot').style.display = 'block';
-                    }
+                    pcNav.innerHTML = navHtml;
+                    mobileNav.innerHTML = navHtml;
                 });
-
             } else {
-                menuArea.innerHTML = `
-                    <a href="login.html" class="login-btn-link">Войти</a>
-                `;
-                document.getElementById('chat-dot').style.display = 'none';
+                const loginHtml = `<a href="login.html" class="login-btn-link">Войти</a>`;
+                pcNav.innerHTML = loginHtml;
+                mobileNav.style.display = 'none'; // Скрываем панель, если не вошел
+                pcNav.classList.add('guest-only');
             }
         });
-
-        document.getElementById('chat-link').onclick = () => {
-            document.getElementById('chat-dot').style.display = 'none';
-        };
     </script>
 </body>
 </html>

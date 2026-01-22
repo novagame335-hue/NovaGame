@@ -1,270 +1,198 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NovaGame — Маркетплейс</title>
-
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
+    <title>NovaGame — Главная</title>
+    
     <style>
+        :root {
+            --neon-red: #ff0000;
+            --dark-bg: #0a0a0a;
+        }
+
         body {
             margin: 0;
-            background: radial-gradient(circle at center, #350101, #000000, #220101, #000000);
-            background-size: 300% 300%;
-            animation: smoothBG 20s ease-in-out infinite;
-            font-family: 'Segoe UI', sans-serif;
+            padding: 0;
+            background: #000;
             color: white;
-            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
             overflow-x: hidden;
         }
 
-        @keyframes smoothBG {
-            0% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
-            100% { background-position: 0% 0%; }
-        }
-
+        /* --- ШАПКА (HEADER) --- */
         header {
-            display: flex;
-            align-items: center;
-            background-color: #000;
-            padding: 0 40px;
-            height: 90px;
-            border-bottom: 1px solid #1a1a1a;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            box-sizing: border-box;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            margin-right: 30px;
-            flex-shrink: 0;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .logo-img { height: 45px; width: auto; }
-        .brand-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
-        .brand-name span { color: #ff0000; }
-
-        .header-center {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            margin-right: 30px;
-        }
-
-        .search-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .search-input {
-            width: 100%;
             background: #111;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 14px 20px 14px 55px;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--neon-red);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--neon-red);
+            text-decoration: none;
+            letter-spacing: 2px;
+        }
+
+        nav a {
             color: white;
-            font-size: 16px;
-            outline: none;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 600;
             transition: 0.3s;
-            box-sizing: border-box;
         }
 
-        .search-input:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
+        nav a:hover { color: var(--neon-red); }
 
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            opacity: 0.5;
+        /* --- ГЛАВНЫЙ КОНТЕНТ --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            flex-shrink: 0;
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: radial-gradient(circle, #1a0000 0%, #000 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
         }
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            gap: 4px;
-            transition: 0.2s;
-            min-width: 60px;
-            position: relative; /* Для позиционирования точки уведомлений */
+        .hero h1 { font-size: 48px; margin-bottom: 10px; }
+        .hero p { color: #888; font-size: 18px; }
+
+        /* --- СЕТКА ТОВАРОВ (GRID) --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
         }
 
-        .nav-item:hover { transform: translateY(-2px); opacity: 0.8; }
-
-        .header-icon-svg { fill: white; width: 26px; height: 26px; }
-
-        .nav-label {
-            color: #fff;
-            font-size: 9px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
         }
 
-        /* КРАСНАЯ ТОЧКА УВЕДОМЛЕНИЙ */
-        .notif-badge {
-            display: none;
-            position: absolute;
-            top: -2px;
-            right: 15px;
-            width: 8px;
-            height: 8px;
-            background: #ff0000;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #ff0000;
-            border: 2px solid #000;
+        .card:hover {
+            border-color: var(--neon-red);
+            transform: translateY(-5px);
         }
 
-        .header-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 2px solid #ff0000;
+        .card img {
+            width: 100%;
+            height: 180px;
             object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
         }
 
-        .login-btn-link {
+        .btn {
+            display: inline-block;
+            background: var(--neon-red);
+            color: white;
+            padding: 10px 25px;
             text-decoration: none;
-            border: 2px solid #fff;
-            color: #fff;
-            padding: 8px 18px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 14px;
-            white-space: nowrap;
-            transition: 0.3s;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
         }
-        
-        .login-btn-link:hover {
-            background: #fff;
-            color: #000;
+
+        /* --- МОБИЛЬНАЯ АДАПТАЦИЯ (MEDIA QUERIES) --- */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column; /* Логотип над меню */
+                gap: 15px;
+                padding: 15px 20px;
+            }
+
+            nav {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            nav a {
+                margin: 0;
+                font-size: 14px;
+                background: #222;
+                padding: 8px 15px;
+                border-radius: 20px;
+            }
+
+            .hero { padding: 40px 15px; }
+            .hero h1 { font-size: 28px; }
+            .hero p { font-size: 14px; }
+
+            .grid {
+                grid-template-columns: 1fr; /* Один товар в ряд на телефоне */
+                gap: 15px;
+            }
+
+            .card { padding: 15px; }
+        }
+
+        @media (max-width: 480px) {
+            .logo { font-size: 20px; }
+            nav a { font-size: 12px; padding: 6px 12px; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-left">
-            <a href="index.html" class="brand">
-                <img src="logo.png" alt="NG" class="logo-img">
-                <div class="brand-name">Nova<span>Game</span></div>
-            </a>
-        </div>
-
-        <div class="header-center">
-            <div class="search-container">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" placeholder="Поиск игр, аккаунтов и валюты...">
-            </div>
-        </div>
-
-        <div class="header-right">
-            <a href="news.html" class="nav-item">
-                <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                <span class="nav-label">Новости</span>
-            </a>
-            
-            <a href="chat.html" class="nav-item" id="chat-link">
-                <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>
-                <span class="nav-label">Чат</span>
-                <div id="chat-dot" class="notif-badge"></div>
-            </a>
-
-            <div id="user-menu-area">
-                <div style="font-size: 12px; color: #444;">Загрузка...</div>
-            </div>
-        </div>
+        <a href="index.html" class="logo">NOVA GAME</a>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="chat.html">Чат</a>
+            <a href="profile.html">Профиль</a>
+            <a href="login.html">Выход</a>
+        </nav>
     </header>
 
-    <div style="height: 110px;"></div>
+    <div class="container">
+        <section class="hero">
+            <h1>Магазин NovaGame</h1>
+            <p>Лучшие товары по самым низким ценам</p>
+        </section>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
-            authDomain: "novagame-b15b6.firebaseapp.com",
-            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
-            projectId: "novagame-b15b6",
-            storageBucket: "novagame-b15b6.firebasestorage.app",
-            messagingSenderId: "7572791951",
-            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+        <div class="grid">
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200" alt="Товар">
+                <h3>Товар #1</h3>
+                <p>Цена: 500 руб.</p>
+                <a href="#" class="btn">Купить</a>
+            </div>
 
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200" alt="Товар">
+                <h3>Товар #2</h3>
+                <p>Цена: 1200 руб.</p>
+                <a href="#" class="btn">Купить</a>
+            </div>
 
-        auth.onAuthStateChanged((user) => {
-            const menuArea = document.getElementById('user-menu-area');
-            
-            if (user) {
-                // Загрузка данных пользователя
-                db.ref('users/' + user.uid).on('value', (snapshot) => {
-                    const userData = snapshot.val();
-                    
-                    if (!userData || !userData.username) {
-                        window.location.href = "setup-profile.html";
-                        return;
-                    }
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200" alt="Товар">
+                <h3>Товар #3</h3>
+                <p>Цена: 800 руб.</p>
+                <a href="#" class="btn">Купить</a>
+            </div>
+        </div>
+    </div>
 
-                    const profilePic = userData.profilePic || 'default-avatar.png';
-                    menuArea.innerHTML = `
-                        <a href="profile.html" class="nav-item">
-                            <img src="${profilePic}" class="header-avatar">
-                            <span class="nav-label">Профиль</span>
-                        </a>
-                    `;
-                });
-
-                // ПРАВКА: Логика уведомлений чата
-                // Слушаем последние сообщения в общем чате
-                db.ref('chats/global_support').limitToLast(1).on('child_added', (snapshot) => {
-                    const msg = snapshot.val();
-                    // Если сообщение не от нас, показываем точку
-                    if (msg.uid !== user.uid) {
-                        document.getElementById('chat-dot').style.display = 'block';
-                    }
-                });
-
-            } else {
-                menuArea.innerHTML = `
-                    <a href="login.html" class="login-btn-link">Войти</a>
-                `;
-                document.getElementById('chat-dot').style.display = 'none';
-            }
-        });
-
-        // Скрываем точку при переходе в чат
-        document.getElementById('chat-link').onclick = () => {
-            document.getElementById('chat-dot').style.display = 'none';
-        };
-    </script>
 </body>
 </html>

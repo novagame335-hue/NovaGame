@@ -10,89 +10,35 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
-        :root {
-            --neon-red: #ff0000;
-            --dark-bg: #0a0a0a;
-            --panel-bg: #111;
-        }
-
-        body {
-            margin: 0; background: #000; color: white;
-            font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex;
-            overflow: hidden;
-        }
-
-        /* БОКОВАЯ ПАНЕЛЬ */
-        .side-panel {
-            width: 300px; background: var(--panel-bg);
-            border-right: 1px solid #222; display: flex; flex-direction: column;
-        }
-
-        .side-header {
-            padding: 25px 20px; font-weight: 800; font-size: 18px;
-            border-bottom: 1px solid #222; color: var(--neon-red);
-            text-transform: uppercase;
-        }
-
+        :root { --neon-red: #ff0000; --dark-bg: #0a0a0a; --panel-bg: #111; }
+        body { margin: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+        
+        .side-panel { width: 300px; background: var(--panel-bg); border-right: 1px solid #222; display: flex; flex-direction: column; }
+        .side-header { padding: 25px 20px; font-weight: 800; font-size: 18px; border-bottom: 1px solid #222; color: var(--neon-red); text-transform: uppercase; }
         #chat-list { flex: 1; overflow-y: auto; }
-
-        .chat-item {
-            padding: 15px 20px; border-bottom: 1px solid #1a1a1a;
-            cursor: pointer; transition: 0.3s;
-        }
+        .chat-item { padding: 15px 20px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.3s; }
         .chat-item:hover { background: #1a1a1a; }
         .chat-item.active { background: #222; border-left: 4px solid var(--neon-red); }
 
-        /* ОКНО ЧАТА */
         .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--dark-bg); }
+        #msg-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
-        #msg-area {
-            flex: 1; padding: 20px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 15px;
-        }
-
-        /* --- НОВАЯ СТРУКТУРА СООБЩЕНИЙ --- */
-        .msg-wrapper {
-            display: flex; align-items: flex-end; gap: 10px; max-width: 85%;
-        }
-        
+        /* КОНТЕЙНЕР СООБЩЕНИЯ */
+        .msg-wrapper { display: flex; align-items: flex-end; gap: 10px; max-width: 85%; }
         .msg-wrapper.sent { align-self: flex-end; flex-direction: row-reverse; }
         .msg-wrapper.received { align-self: flex-start; }
 
-        .chat-avatar {
-            width: 38px; height: 38px; border-radius: 50%;
-            object-fit: cover; border: 1px solid rgba(255,0,0,0.3);
-            flex-shrink: 0; background: #222;
-        }
+        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,0,0,0.3); flex-shrink: 0; background: #222; }
 
-        .msg {
-            padding: 12px 16px; border-radius: 18px; font-size: 14px;
-            line-height: 1.4; position: relative; word-wrap: break-word;
-        }
-        
+        .msg { padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
         .sent .msg { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .received .msg { background: #1a1a1a; color: #eee; border-bottom-left-radius: 2px; border: 1px solid #333; }
 
-        .admin-label {
-            display: block; font-size: 9px; font-weight: 900;
-            margin-bottom: 4px; color: #ffda00; text-transform: uppercase;
-        }
+        .admin-label { display: block; font-size: 10px; font-weight: 900; margin-bottom: 4px; color: #ffda00; text-transform: uppercase; }
 
-        /* ВВОД */
-        .input-area {
-            padding: 20px; background: var(--panel-bg);
-            display: flex; gap: 12px; border-top: 1px solid #222;
-        }
-
-        #msg-input {
-            flex: 1; background: #000; border: 1px solid #333;
-            padding: 14px; color: white; border-radius: 10px; outline: none;
-        }
-
-        button {
-            background: var(--neon-red); color: white; border: none;
-            padding: 0 25px; border-radius: 10px; font-weight: bold; cursor: pointer;
-        }
+        .input-area { padding: 20px; background: var(--panel-bg); display: flex; gap: 12px; border-top: 1px solid #222; }
+        #msg-input { flex: 1; background: #000; border: 1px solid #333; padding: 14px; color: white; border-radius: 10px; outline: none; }
+        button { background: var(--neon-red); color: white; border: none; padding: 0 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -134,7 +80,6 @@
                 db.ref('users/' + user.uid).once('value').then((snap) => {
                     const userData = snap.val();
                     isAdmin = (userData && userData.role === 'admin');
-                    
                     if (isAdmin) {
                         document.getElementById('side-title').innerText = "АДМИН-ПАНЕЛЬ";
                         loadTicketList();
@@ -155,13 +100,14 @@
                     const uid = child.key;
                     const item = document.createElement('div');
                     item.className = `chat-item ${currentChatUid === uid ? 'active' : ''}`;
-                    item.innerHTML = `<h4>Тикет: ${uid.substring(0,8)}</h4><p>Открыть диалог</p>`;
+                    item.innerHTML = `<h4>Тикет: ${uid.substring(0,8)}</h4><p>Открыть переписку</p>`;
                     item.onclick = () => { currentChatUid = uid; loadMessages(uid); loadTicketList(); };
                     list.appendChild(item);
                 });
             });
         }
 
+        // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ ---
         function loadMessages(ticketId) {
             const msgArea = document.getElementById('msg-area');
             msgArea.innerHTML = "";
@@ -173,28 +119,34 @@
                 const wrapper = document.createElement('div');
                 wrapper.className = isMy ? 'msg-wrapper sent' : 'msg-wrapper received';
 
-                // Запрос аватарки отправителя
-                db.ref('users/' + data.senderUid).once('value').then((uSnap) => {
-                    const uData = uSnap.val();
-                    let avatarUrl = "default-avatar.png";
-
-                    if (data.role === 'admin') {
-                        avatarUrl = "pod.jpg"; 
-                    } else if (uData && uData.profilePic) {
-                        avatarUrl = uData.profilePic;
-                    }
-
-                    wrapper.innerHTML = `
-                        <img src="${avatarUrl}" class="chat-avatar" onerror="this.src='default-avatar.png'">
-                        <div class="msg">
-                            ${data.role === 'admin' ? '<span class="admin-label">Support</span>' : ''}
-                            ${data.text}
-                        </div>
-                    `;
-                    msgArea.appendChild(wrapper);
-                    msgArea.scrollTop = msgArea.scrollHeight;
-                });
+                // ЛОГИКА АВАТАРКИ
+                let avatarUrl = "default-avatar.png";
+                
+                if (data.role === 'admin') {
+                    // Если сообщение от админа — СРАЗУ ставим pod.jpg
+                    renderMessage(wrapper, "pod.jpg", data, isMy);
+                } else {
+                    // Если от юзера — ищем его фото в базе
+                    db.ref('users/' + data.senderUid).once('value').then((uSnap) => {
+                        const uData = uSnap.val();
+                        if (uData && uData.profilePic) avatarUrl = uData.profilePic;
+                        renderMessage(wrapper, avatarUrl, data, isMy);
+                    });
+                }
             });
+        }
+
+        function renderMessage(wrapper, imgBtn, data, isMy) {
+            const msgArea = document.getElementById('msg-area');
+            wrapper.innerHTML = `
+                <img src="${imgBtn}" class="chat-avatar" onerror="this.src='default-avatar.png'">
+                <div class="msg">
+                    ${data.role === 'admin' ? '<span class="admin-label">Nova Game Support</span>' : ''}
+                    ${data.text}
+                </div>
+            `;
+            msgArea.appendChild(wrapper);
+            msgArea.scrollTop = msgArea.scrollHeight;
         }
 
         function sendMessage() {

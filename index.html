@@ -2,132 +2,71 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NovaGame — Главная</title>
     
     <style>
-        :root {
-            --neon-red: #ff0000;
-            --dark-bg: #0a0a0a;
-            --card-bg: #121212;
-        }
-
         body {
             margin: 0;
-            padding: 0;
-            background: #050505;
+            background: #000;
             color: white;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            overflow-x: hidden;
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        /* --- ШАПКА (HEADER) --- */
         header {
-            background: rgba(17, 17, 17, 0.95);
-            padding: 15px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid var(--neon-red);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            background: #000;
+            border-bottom: 2px solid #ff0000;
         }
 
         .logo {
+            color: #ff0000;
             font-size: 24px;
-            font-weight: 900;
-            color: var(--neon-red);
+            font-weight: bold;
             text-decoration: none;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-        }
-
-        nav {
-            display: flex;
-            align-items: center;
-        }
-
-        nav a {
-            color: #ccc;
-            text-decoration: none;
-            margin-left: 25px;
-            font-weight: 600;
-            font-size: 15px;
-            transition: 0.3s;
             text-transform: uppercase;
         }
 
-        nav a:hover { 
-            color: var(--neon-red); 
-            text-shadow: 0 0 8px var(--neon-red);
-        }
-
-        /* --- ГЛАВНЫЙ КОНТЕНТ --- */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
         }
 
         .hero {
             text-align: center;
-            padding: 80px 20px;
-            background: radial-gradient(circle at center, #250000 0%, #050505 100%);
-            border-radius: 20px;
-            margin-bottom: 40px;
-            border: 1px solid rgba(255, 0, 0, 0.1);
+            padding: 50px 20px;
         }
 
-        .hero h1 { 
-            font-size: clamp(32px, 5vw, 56px); 
-            margin: 0 0 15px 0;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-        }
-        
-        .hero p { 
-            color: #aaa; 
-            font-size: clamp(14px, 2vw, 18px);
-            max-width: 600px;
-            margin: 0 auto;
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
         }
 
-        /* --- СЕТКА ТОВАРОВ --- */
-        .grid {
-            display: grid;
-            /* Автоматическое распределение: 3 в ряд на ПК, 2 на планшете, 1 на телефоне */
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+        .hero p {
+            color: #888;
         }
+    </style>
+</head>
+<body>
 
-        .card {
-            background: var(--card-bg);
-            border: 1px solid #222;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-        }
+    <header>
+        <a href="index.html" class="logo">NOVA GAME</a>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="chat.html">Чат</a>
+            <a href="profile.html">Профиль</a>
+            <a href="login.html">Выход</a>
+        </nav>
+    </header>
 
-        .card:hover {
-            border-color: var(--neon-red);
-            transform: translateY(-10px);
-            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.2);
-        }
+    <div class="hero">
+        <h1>Магазин NovaGame</h1>
+        <p>Лучшие товары по самым низким ценам</p>
+    </div>
 
-        .card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            background: #222;
-        }
-
-        .card h3 { margin: 10px 0; font-size: 20px; }
-        
-        .price {
+</body>
+</html>

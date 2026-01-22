@@ -10,260 +10,135 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --neon-red: #ff0000; --dark-bg: #0a0a0a; --panel-bg: #111; }
-        body { margin: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; overflow: hidden; }
-        
-        /* БОКОВАЯ ПАНЕЛЬ */
-        .side-panel { 
-            width: 320px; 
-            background: var(--panel-bg); 
-            border-right: 1px solid #222; 
-            display: flex; 
-            flex-direction: column; 
-            transition: 0.3s;
-            z-index: 10;
+        :root { 
+            --neon-red: #ff0000; 
+            --bg: #000; 
+            --panel: #111;
+            --border: #222;
         }
-        
-        .side-header { 
-            padding: 25px 20px; 
-            font-weight: 900; 
-            font-size: 20px; 
-            border-bottom: 1px solid #222; 
-            color: var(--neon-red); 
-            text-transform: uppercase;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            background: var(--bg); color: white;
+            font-family: 'Segoe UI', sans-serif; overflow: hidden;
+        }
+
+        .app-wrapper {
+            display: flex; width: 100%; height: 100vh; position: relative;
+        }
+
+        /* --- СПИСОК ЧАТОВ --- */
+        .side-panel {
+            width: 350px; background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; flex-shrink: 0;
+            transition: 0.3s ease;
+        }
+
+        .side-header {
+            padding: 20px; font-weight: 900; color: var(--neon-red);
+            border-bottom: 1px solid var(--border); font-size: 18px;
         }
 
         #chat-list { flex: 1; overflow-y: auto; }
-        
-        .chat-item { 
-            display: flex; align-items: center; gap: 12px; 
-            padding: 15px 20px; border-bottom: 1px solid #1a1a1a; cursor: pointer;
-        }
-        .chat-item.active { background: #1e1e1e; border-left: 4px solid var(--neon-red); }
-        .list-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
-
-        /* ОСНОВНОЙ ЧАТ */
-        .main-chat { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            background: var(--dark-bg); 
-            position: relative;
-            transition: 0.3s;
+        .chat-item {
+            padding: 15px; border-bottom: 1px solid #1a1a1a;
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
         }
 
-        /* Шапка чата для мобилок (кнопка назад) */
-        .chat-mobile-header {
-            display: none;
-            padding: 15px;
-            background: #111;
-            border-bottom: 1px solid #222;
-            align-items: center;
-            gap: 15px;
+        /* --- ОКНО ПЕРЕПИСКИ --- */
+        .main-chat {
+            flex: 1; display: flex; flex-direction: column;
+            background: var(--bg); transition: 0.3s ease;
+            z-index: 10;
+        }
+
+        .chat-header {
+            padding: 10px 15px; background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px;
         }
 
         .back-btn {
-            background: none;
-            border: 1px solid #333;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
+            display: none; background: none; border: 1px solid #333;
+            color: white; padding: 5px 10px; border-radius: 8px; cursor: pointer;
         }
 
-        #msg-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        #msg-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { padding: 8px 12px; border-radius: 12px; max-width: 80%; font-size: 14px; }
+        .my { align-self: flex-end; background: var(--neon-red); }
+        .other { align-self: flex-start; background: #222; border: 1px solid #333; }
 
-        .msg-row { display: flex; align-items: flex-end; gap: 8px; max-width: 90%; }
-        .msg-row.my { align-self: flex-end; flex-direction: row-reverse; }
-        .msg-row.other { align-self: flex-start; }
+        .input-area {
+            padding: 15px; background: var(--panel);
+            display: flex; gap: 10px; border-top: 1px solid var(--border);
+        }
 
-        .chat-pic { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        #msg-input {
+            flex: 1; background: #000; border: 1px solid #333;
+            color: white; padding: 10px; border-radius: 8px; outline: none;
+        }
 
-        .bubble { padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-word; }
-        .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
-        .other .bubble { background: #1a1a1a; color: #eee; border: 1px solid #333; border-bottom-left-radius: 2px; }
+        .send-btn { background: var(--neon-red); border: none; color: white; padding: 0 15px; border-radius: 8px; font-weight: bold; }
 
-        .input-area { padding: 15px; background: var(--panel-bg); display: flex; gap: 10px; border-top: 1px solid #222; }
-        #msg-input { flex: 1; background: #000; border: 1px solid #333; padding: 12px; color: white; border-radius: 10px; outline: none; font-size: 16px; }
-        .send-btn { background: var(--neon-red); color: white; border: none; padding: 0 15px; border-radius: 10px; font-weight: bold; }
-
-        /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
+        /* --- МОБИЛЬНАЯ ЛОГИКА (WHATSAPP STYLE) --- */
         @media (max-width: 768px) {
             .side-panel {
-                width: 100%;
-                position: absolute;
-                height: 100%;
-                left: 0;
-                top: 0;
+                width: 100%; position: absolute; left: 0; top: 0; height: 100%;
             }
             .main-chat {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                left: 100%; /* Прячем за экран вправо */
-                top: 0;
-                z-index: 20;
+                width: 100%; position: absolute; left: 100%; top: 0; height: 100%;
             }
+            .back-btn { display: block; }
+
             /* Когда чат открыт */
-            body.chat-open .main-chat { left: 0; }
-            .chat-mobile-header { display: flex; }
-            
-            .side-header { font-size: 18px; padding: 15px; }
+            body.chat-open .side-panel { transform: translateX(-100%); }
+            body.chat-open .main-chat { transform: translateX(-100%); }
         }
     </style>
 </head>
 <body>
 
-    <div class="side-panel" id="side-panel">
-        <div class="side-header">
-            <span id="side-title">ЧАТ</span>
+<div class="app-wrapper">
+    <div class="side-panel">
+        <div class="side-header">ПОДДЕРЖКА</div>
+        <div id="chat-list">
+            <div class="chat-item" onclick="openChat()">
+                <img src="pod.jpg" style="width:40px; height:40px; border-radius:50%">
+                <div>
+                    <div style="font-weight:bold">Nova Support</div>
+                    <div style="font-size:12px; color:#666">Онлайн</div>
+                </div>
+            </div>
         </div>
-        <div id="chat-list"></div>
-        <a href="index.html" style="padding: 15px; color: #666; text-decoration: none; text-align: center; font-size: 12px; border-top: 1px solid #1a1a1a;">← НА ГЛАВНУЮ</a>
+        <a href="index.html" style="padding:15px; text-align:center; color:#444; text-decoration:none; font-size:12px">← НА ГЛАВНУЮ</a>
     </div>
 
-    <div class="main-chat" id="main-chat">
-        <div class="chat-mobile-header">
-            <button class="back-btn" onclick="closeChat()">‹ Назад</button>
-            <span id="chat-with-name" style="font-weight: bold; font-size: 14px;">Поддержка</span>
+    <div class="main-chat">
+        <div class="chat-header">
+            <button class="back-btn" onclick="closeChat()">Назад</button>
+            <div style="font-weight:bold">Поддержка</div>
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off">
+            <input type="text" id="msg-input" placeholder="Сообщение...">
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
+</div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
-            authDomain: "novagame-b15b6.firebaseapp.com",
-            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
-            projectId: "novagame-b15b6",
-            storageBucket: "novagame-b15b6.firebasestorage.app",
-            messagingSenderId: "7572791951",
-            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
-        };
+<script>
+    // Функции переключения для мобилок
+    function openChat() {
+        document.body.classList.add('chat-open');
+    }
+    function closeChat() {
+        document.body.classList.remove('chat-open');
+    }
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+    // Твой Firebase конфиг и логика...
+    // (Оставь отправку сообщений как была в предыдущем коде)
+</script>
 
-        let isAdmin = false;
-        let currentChatUid = null;
-
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                db.ref('users/' + user.uid).once('value').then((snap) => {
-                    const userData = snap.val();
-                    isAdmin = (userData && userData.role === 'admin');
-                    
-                    if (isAdmin) {
-                        document.getElementById('side-title').innerText = "АДМИН ПАНЕЛЬ";
-                        loadTicketList();
-                    } else {
-                        document.getElementById('side-title').innerText = "ПОДДЕРЖКА";
-                        currentChatUid = user.uid;
-                        showUserSidebar();
-                        loadMessages(user.uid);
-                    }
-                });
-            } else { window.location.href = "login.html"; }
-        });
-
-        function openChat() {
-            document.body.classList.add('chat-open');
-        }
-
-        function closeChat() {
-            document.body.classList.remove('chat-open');
-        }
-
-        function showUserSidebar() {
-            document.getElementById('chat-list').innerHTML = `
-                <div class="chat-item active" onclick="openChat()">
-                    <img src="pod.jpg" class="list-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
-                    <div>
-                        <h4 style="margin:0; font-size:14px;">Nova Game Support</h4>
-                        <p style="margin:0; font-size:11px; color:#ff0000;">Онлайн</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        function loadTicketList() {
-            db.ref('support_tickets').on('value', (snapshot) => {
-                const list = document.getElementById('chat-list');
-                list.innerHTML = "";
-                snapshot.forEach((child) => {
-                    const uid = child.key;
-                    const item = document.createElement('div');
-                    item.className = `chat-item ${currentChatUid === uid ? 'active' : ''}`;
-                    item.innerHTML = `
-                        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="list-avatar">
-                        <div><h4 style="margin:0; font-size:14px;">Клиент: ${uid.substring(0,6)}</h4></div>
-                    `;
-                    item.onclick = () => { 
-                        currentChatUid = uid; 
-                        loadMessages(uid); 
-                        loadTicketList(); 
-                        openChat();
-                    };
-                    list.appendChild(item);
-                });
-            });
-        }
-
-        function loadMessages(ticketId) {
-            const msgArea = document.getElementById('msg-area');
-            msgArea.innerHTML = "";
-            db.ref(`support_tickets/${ticketId}/messages`).off();
-            db.ref(`support_tickets/${ticketId}/messages`).on('child_added', (snapshot) => {
-                const data = snapshot.val();
-                const isMy = data.senderUid === auth.currentUser.uid;
-                const row = document.createElement('div');
-                row.className = isMy ? 'msg-row my' : 'msg-row other';
-
-                let photo = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-                if (data.role === 'admin') {
-                    photo = "pod.jpg";
-                    render(row, photo, data);
-                } else {
-                    db.ref('users/' + data.senderUid).once('value').then((uSnap) => {
-                        const uData = uSnap.val();
-                        if (uData && uData.profilePic) photo = uData.profilePic;
-                        render(row, photo, data);
-                    });
-                }
-            });
-        }
-
-        function render(row, photo, data) {
-            row.innerHTML = `
-                <img src="${photo}" class="chat-pic" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
-                <div class="bubble">${data.text}</div>
-            `;
-            const area = document.getElementById('msg-area');
-            area.appendChild(row);
-            area.scrollTop = area.scrollHeight;
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if (!text || !currentChatUid) return;
-            db.ref(`support_tickets/${currentChatUid}/messages`).push({
-                senderUid: auth.currentUser.uid,
-                text: text,
-                role: isAdmin ? "admin" : "user"
-            });
-            input.value = "";
-        }
-        document.getElementById('msg-input').onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
-    </script>
 </body>
 </html>

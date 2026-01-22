@@ -13,32 +13,47 @@
         :root { --neon-red: #ff0000; --dark-bg: #0a0a0a; --panel-bg: #111; }
         body { margin: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; overflow: hidden; }
         
-        .side-panel { width: 300px; background: var(--panel-bg); border-right: 1px solid #222; display: flex; flex-direction: column; }
+        /* ЛЕВАЯ ПАНЕЛЬ */
+        .side-panel { width: 320px; background: var(--panel-bg); border-right: 1px solid #222; display: flex; flex-direction: column; }
         .side-header { padding: 25px 20px; font-weight: 800; font-size: 18px; border-bottom: 1px solid #222; color: var(--neon-red); text-transform: uppercase; }
+        
         #chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { padding: 15px 20px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.3s; }
+        
+        /* Элемент в списке чатов */
+        .chat-item { 
+            display: flex; align-items: center; gap: 12px; padding: 15px 20px; 
+            border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.3s;
+        }
         .chat-item:hover { background: #1a1a1a; }
         .chat-item.active { background: #222; border-left: 4px solid var(--neon-red); }
+        
+        .list-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid #333; flex-shrink: 0; }
+        .chat-info h4 { margin: 0 0 4px 0; font-size: 14px; color: #fff; }
+        .chat-info p { margin: 0; font-size: 11px; color: #666; }
 
+        /* ОКНО ЧАТА */
         .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--dark-bg); }
-        #msg-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        #msg-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
 
-        /* КОНТЕЙНЕР СООБЩЕНИЯ */
-        .msg-wrapper { display: flex; align-items: flex-end; gap: 10px; max-width: 85%; }
-        .msg-wrapper.sent { align-self: flex-end; flex-direction: row-reverse; }
-        .msg-wrapper.received { align-self: flex-start; }
+        /* СООБЩЕНИЯ */
+        .msg-container { display: flex; align-items: flex-end; gap: 12px; max-width: 85%; }
+        .msg-container.my-msg { align-self: flex-end; flex-direction: row-reverse; }
+        .msg-container.other-msg { align-self: flex-start; flex-direction: row; }
 
-        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,0,0,0.3); flex-shrink: 0; background: #222; }
+        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--neon-red); flex-shrink: 0; background: #222; }
 
-        .msg { padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
-        .sent .msg { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
-        .received .msg { background: #1a1a1a; color: #eee; border-bottom-left-radius: 2px; border: 1px solid #333; }
+        .bubble { padding: 12px 18px; border-radius: 20px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+        .my-msg .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 4px; }
+        .other-msg .bubble { background: #1a1a1a; color: #eee; border-bottom-left-radius: 4px; border: 1px solid #333; }
 
-        .admin-label { display: block; font-size: 10px; font-weight: 900; margin-bottom: 4px; color: #ffda00; text-transform: uppercase; }
+        .admin-badge { display: block; font-size: 10px; font-weight: 900; color: #ffda00; margin-bottom: 4px; text-transform: uppercase; }
 
+        /* ВВОД */
         .input-area { padding: 20px; background: var(--panel-bg); display: flex; gap: 12px; border-top: 1px solid #222; }
-        #msg-input { flex: 1; background: #000; border: 1px solid #333; padding: 14px; color: white; border-radius: 10px; outline: none; }
-        button { background: var(--neon-red); color: white; border: none; padding: 0 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #msg-input { flex: 1; background: #000; border: 1px solid #333; padding: 14px; color: white; border-radius: 12px; outline: none; }
+        button { background: var(--neon-red); color: white; border: none; padding: 0 25px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+
+        .back-link { padding: 15px; color: #444; text-decoration: none; text-align: center; font-size: 11px; border-top: 1px solid #1a1a1a; }
     </style>
 </head>
 <body>
@@ -46,13 +61,13 @@
     <div class="side-panel">
         <div class="side-header" id="side-title">Загрузка...</div>
         <div id="chat-list"></div>
-        <a href="index.html" style="padding: 15px; color: #444; text-decoration: none; text-align: center; font-size: 12px;">← НА ГЛАВНУЮ</a>
+        <a href="index.html" class="back-link">← НА ГЛАВНУЮ</a>
     </div>
 
     <div class="main-chat">
         <div id="msg-area"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="Введите сообщение...">
+            <input type="text" id="msg-input" placeholder="Напишите сообщение..." autocomplete="off">
             <button onclick="sendMessage()">ОТПРАВИТЬ</button>
         </div>
     </div>
@@ -80,18 +95,35 @@
                 db.ref('users/' + user.uid).once('value').then((snap) => {
                     const userData = snap.val();
                     isAdmin = (userData && userData.role === 'admin');
+                    
                     if (isAdmin) {
-                        document.getElementById('side-title').innerText = "АДМИН-ПАНЕЛЬ";
+                        document.getElementById('side-title').innerText = "Панель Админа";
                         loadTicketList();
                     } else {
-                        document.getElementById('side-title').innerText = "ПОДДЕРЖКА";
+                        document.getElementById('side-title').innerText = "Поддержка";
                         currentChatUid = user.uid;
+                        showUserSidebar();
                         loadMessages(user.uid);
                     }
                 });
             } else { window.location.href = "login.html"; }
         });
 
+        // Отображение "Nova Game Support" с аватаркой в сайдбаре для юзера
+        function showUserSidebar() {
+            const list = document.getElementById('chat-list');
+            list.innerHTML = `
+                <div class="chat-item active">
+                    <img src="pod.jpg" class="list-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <div class="chat-info">
+                        <h4>Nova Game Support</h4>
+                        <p>Онлайн • Поможем во всём</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Список тикетов для Админа
         function loadTicketList() {
             db.ref('support_tickets').on('value', (snapshot) => {
                 const list = document.getElementById('chat-list');
@@ -100,14 +132,20 @@
                     const uid = child.key;
                     const item = document.createElement('div');
                     item.className = `chat-item ${currentChatUid === uid ? 'active' : ''}`;
-                    item.innerHTML = `<h4>Тикет: ${uid.substring(0,8)}</h4><p>Открыть переписку</p>`;
+                    item.innerHTML = `
+                        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="list-avatar">
+                        <div class="chat-info">
+                            <h4>Пользователь: ${uid.substring(0,8)}</h4>
+                            <p>Нажмите, чтобы ответить</p>
+                        </div>
+                    `;
                     item.onclick = () => { currentChatUid = uid; loadMessages(uid); loadTicketList(); };
                     list.appendChild(item);
                 });
             });
         }
 
-        // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ ---
+        // Загрузка сообщений
         function loadMessages(ticketId) {
             const msgArea = document.getElementById('msg-area');
             msgArea.innerHTML = "";
@@ -115,37 +153,31 @@
             db.ref(`support_tickets/${ticketId}/messages`).on('child_added', (snapshot) => {
                 const data = snapshot.val();
                 const isMy = data.senderUid === auth.currentUser.uid;
-                
-                const wrapper = document.createElement('div');
-                wrapper.className = isMy ? 'msg-wrapper sent' : 'msg-wrapper received';
+                const container = document.createElement('div');
+                container.className = isMy ? 'msg-container my-msg' : 'msg-container other-msg';
 
-                // ЛОГИКА АВАТАРКИ
-                let avatarUrl = "default-avatar.png";
-                
                 if (data.role === 'admin') {
-                    // Если сообщение от админа — СРАЗУ ставим pod.jpg
-                    renderMessage(wrapper, "pod.jpg", data, isMy);
+                    draw(container, "pod.jpg", data);
                 } else {
-                    // Если от юзера — ищем его фото в базе
                     db.ref('users/' + data.senderUid).once('value').then((uSnap) => {
                         const uData = uSnap.val();
-                        if (uData && uData.profilePic) avatarUrl = uData.profilePic;
-                        renderMessage(wrapper, avatarUrl, data, isMy);
+                        const pic = (uData && uData.profilePic) ? uData.profilePic : "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                        draw(container, pic, data);
                     });
                 }
             });
         }
 
-        function renderMessage(wrapper, imgBtn, data, isMy) {
+        function draw(container, avatar, data) {
             const msgArea = document.getElementById('msg-area');
-            wrapper.innerHTML = `
-                <img src="${imgBtn}" class="chat-avatar" onerror="this.src='default-avatar.png'">
-                <div class="msg">
-                    ${data.role === 'admin' ? '<span class="admin-label">Nova Game Support</span>' : ''}
+            container.innerHTML = `
+                <img src="${avatar}" class="chat-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                <div class="bubble">
+                    ${data.role === 'admin' ? '<span class="admin-badge">SUPPORT</span>' : ''}
                     ${data.text}
                 </div>
             `;
-            msgArea.appendChild(wrapper);
+            msgArea.appendChild(container);
             msgArea.scrollTop = msgArea.scrollHeight;
         }
 
@@ -153,7 +185,6 @@
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if (!text || !currentChatUid) return;
-
             db.ref(`support_tickets/${currentChatUid}/messages`).push({
                 senderUid: auth.currentUser.uid,
                 text: text,
@@ -162,6 +193,8 @@
             });
             input.value = "";
         }
+
+        document.getElementById('msg-input').onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
     </script>
 </body>
 </html>

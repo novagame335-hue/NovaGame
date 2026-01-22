@@ -18,13 +18,22 @@
             --empty-star: #333;
         }
 
+        /* --- ФОН КАК НА ГЛАВНОЙ --- */
         body {
             margin: 0;
-            background: #000;
+            background: radial-gradient(circle at center, #350101, #000000, #220101, #000000);
+            background-size: 300% 300%;
+            animation: smoothBG 20s ease-in-out infinite;
             font-family: 'Segoe UI', Roboto, sans-serif;
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
+        }
+
+        @keyframes smoothBG {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
         }
 
         .container {
@@ -76,7 +85,7 @@
         #file-input { display: none !important; }
 
         .profile-info h2 { font-size: 34px; margin: 0; font-weight: 800; }
-        .user-id { color: #666; font-size: 14px; margin: 5px 0; letter-spacing: 1px; }
+        .user-id { color: #888; font-size: 14px; margin: 5px 0; letter-spacing: 1px; }
         
         .rating { font-size: 14px; margin-top: 8px; transition: 0.3s; }
         .rating.no-reviews { color: var(--empty-star); }
@@ -111,8 +120,8 @@
         }
         .btn-topup:hover { background: var(--neon-red); color: white; box-shadow: 0 0 20px rgba(255,0,0,0.4); }
 
-        /* --- КНОПКИ ТАБЫ --- */
-        .tabs-nav, .sub-tabs { display: flex; gap: 12px; margin: 25px 0; }
+        /* --- ТАБЫ --- */
+        .tabs-nav, .sub-tabs { display: flex; gap: 12px; margin: 25px 0; overflow-x: auto; padding-bottom: 5px; }
 
         .tab-btn {
             padding: 14px 28px;
@@ -123,6 +132,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: 0.4s;
+            white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -137,10 +147,11 @@
             background: transparent;
             border: 1px solid #333;
             border-radius: 10px;
-            color: #666;
+            color: #888;
             font-size: 14px;
             cursor: pointer;
             transition: 0.3s;
+            white-space: nowrap;
         }
 
         .sub-btn.active {
@@ -151,11 +162,12 @@
 
         /* --- КОНТЕНТ --- */
         .content-area {
-            background: rgba(10, 10, 10, 0.8);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
             border-radius: 20px;
-            padding: 80px 20px;
+            padding: 60px 20px;
             text-align: center;
-            border: 1px solid #111;
+            border: 1px solid var(--border-color);
             min-height: 250px;
             display: flex;
             flex-direction: column;
@@ -163,24 +175,24 @@
             justify-content: center;
         }
 
-        .empty-msg { color: #444; margin-bottom: 30px; font-size: 18px; }
+        .empty-msg { color: #888; margin-bottom: 30px; font-size: 18px; }
 
         .btn-main-action {
-            padding: 18px 55px;
+            padding: 18px 45px;
             background: linear-gradient(45deg, var(--neon-red), var(--dark-red));
             color: white;
             border: none;
             border-radius: 15px;
             font-weight: 900;
-            font-size: 16px;
+            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             cursor: pointer;
             box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
             transition: 0.3s;
         }
 
-        /* --- КНОПКА ЧАТА (СТИЛЬ ПЛЕЙЕРОК) --- */
+        /* --- КНОПКА ЧАТА --- */
         .chat-fab {
             position: fixed;
             bottom: 30px;
@@ -198,7 +210,6 @@
             z-index: 999;
             border: 2px solid rgba(255, 255, 255, 0.1);
         }
-        .chat-fab:hover { transform: scale(1.1); box-shadow: 0 0 35px rgba(255, 0, 0, 0.6); }
 
         .chat-icon {
             width: 30px; height: 30px; background: white;
@@ -206,7 +217,7 @@
             mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z'/></svg>") no-repeat center;
         }
 
-        .logout-btn { color: #333; background: none; border: none; cursor: pointer; margin-top: 40px; text-decoration: underline; }
+        .logout-btn { color: #666; background: none; border: none; cursor: pointer; margin-top: 40px; text-decoration: underline; font-size: 12px; }
 
         .modal-overlay {
             position: fixed;
@@ -217,6 +228,14 @@
         }
 
         .modal-card { background: #0a0a0a; padding: 40px; border-radius: 25px; text-align: center; border: 1px solid var(--neon-red); }
+
+        /* Адаптивность для мобилок */
+        @media (max-width: 600px) {
+            .profile-header { flex-direction: column; text-align: center; padding: 20px 0; }
+            .balance-section { flex-direction: column; gap: 15px; text-align: center; }
+            .profile-info h2 { font-size: 26px; }
+            .chat-fab { bottom: 20px; right: 20px; width: 55px; height: 55px; }
+        }
     </style>
 </head>
 <body>
@@ -232,7 +251,7 @@
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: ...</div>
-                <div id="user-rating" class="rating no-reviews">★★★★★ <span style="color:#444; margin-left:10px;">НЕТ ОТЗЫВОВ</span></div>
+                <div id="user-rating" class="rating no-reviews">★★★★★ <span style="color:#555; margin-left:10px;">НЕТ ОТЗЫВОВ</span></div>
             </div>
         </div>
 
@@ -335,7 +354,6 @@
                         document.getElementById('user-balance').innerText = data.balance || 0;
                         document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
 
-                        // Обновление счетчиков (если они есть в базе)
                         document.getElementById('count-items').innerText = data.itemsCount || 0;
                         document.getElementById('count-buys').innerText = data.buysCount || 0;
                         document.getElementById('count-active').innerText = data.activeCount || 0;
@@ -347,7 +365,7 @@
                             rBox.innerHTML = `★★★★★ <span style="color:#666; margin-left:10px;">ОТЗЫВОВ: ${rCount}</span>`;
                         } else {
                             rBox.className = "rating no-reviews";
-                            rBox.innerHTML = `★★★★★ <span style="color:#444; margin-left:10px;">НЕТ ОТЗЫВОВ</span>`;
+                            rBox.innerHTML = `★★★★★ <span style="color:#555; margin-left:10px;">НЕТ ОТЗЫВОВ</span>`;
                         }
                     }
                 });

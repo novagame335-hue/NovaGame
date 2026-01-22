@@ -1,72 +1,198 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaGame — Главная</title>
-    
-    <style>
-        body {
-            margin: 0;
-            background: #000;
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NovaGame — Главная</title>
+    
+    <style>
+        :root {
+            --neon-red: #ff0000;
+            --dark-bg: #0a0a0a;
+        }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #000;
-            border-bottom: 2px solid #ff0000;
-        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
 
-        .logo {
-            color: #ff0000;
-            font-size: 24px;
-            font-weight: bold;
-            text-decoration: none;
-            text-transform: uppercase;
-        }
+        /* --- ШАПКА (HEADER) --- */
+        header {
+            background: #111;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--neon-red);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--neon-red);
+            text-decoration: none;
+            letter-spacing: 2px;
+        }
 
-        .hero {
-            text-align: center;
-            padding: 50px 20px;
-        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
 
-        .hero h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
+        nav a:hover { color: var(--neon-red); }
 
-        .hero p {
-            color: #888;
-        }
-    </style>
+        /* --- ГЛАВНЫЙ КОНТЕНТ --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: radial-gradient(circle, #1a0000 0%, #000 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .hero h1 { font-size: 48px; margin-bottom: 10px; }
+        .hero p { color: #888; font-size: 18px; }
+
+        /* --- СЕТКА ТОВАРОВ (GRID) --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            border-color: var(--neon-red);
+            transform: translateY(-5px);
+        }
+
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--neon-red);
+            color: white;
+            padding: 10px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- МОБИЛЬНАЯ АДАПТАЦИЯ (MEDIA QUERIES) --- */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column; /* Логотип над меню */
+                gap: 15px;
+                padding: 15px 20px;
+            }
+
+            nav {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            nav a {
+                margin: 0;
+                font-size: 14px;
+                background: #222;
+                padding: 8px 15px;
+                border-radius: 20px;
+            }
+
+            .hero { padding: 40px 15px; }
+            .hero h1 { font-size: 28px; }
+            .hero p { font-size: 14px; }
+
+            .grid {
+                grid-template-columns: 1fr; /* Один товар в ряд на телефоне */
+                gap: 15px;
+            }
+
+            .card { padding: 15px; }
+        }
+
+        @media (max-width: 480px) {
+            .logo { font-size: 20px; }
+            nav a { font-size: 12px; padding: 6px 12px; }
+        }
+    </style>
 </head>
 <body>
 
-    <header>
-        <a href="index.html" class="logo">NOVA GAME</a>
-        <nav>
-            <a href="index.html">Главная</a>
-            <a href="chat.html">Чат</a>
-            <a href="profile.html">Профиль</a>
-            <a href="login.html">Выход</a>
-        </nav>
-    </header>
+    <header>
+        <a href="index.html" class="logo">NOVA GAME</a>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="chat.html">Чат</a>
+            <a href="profile.html">Профиль</a>
+            <a href="login.html">Выход</a>
+        </nav>
+    </header>
 
-    <div class="hero">
-        <h1>Магазин NovaGame</h1>
-        <p>Лучшие товары по самым низким ценам</p>
-    </div>
+    <div class="container">
+        <section class="hero">
+            <h1>Магазин NovaGame</h1>
+            <p>Лучшие товары по самым низким ценам</p>
+        </section>
+
+        <div class="grid">
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200" alt="Товар">
+                <h3>Товар #1</h3>
+                <p>Цена: 500 руб.</p>
+                <a href="#" class="btn">Купить</a>
+            </div>
+
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200" alt="Товар">
+                <h3>Товар #2</h3>
+                <p>Цена: 1200 руб.</p>
+                <a href="#" class="btn">Купить</a>
+            </div>
+
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200" alt="Товар">
+                <h3>Товар #3</h3>
+                <p>Цена: 800 руб.</p>
+                <a href="#" class="btn">Купить</a>
+            </div>
+        </div>
+    </div>
 
 </body>
-</html>
+</html> 

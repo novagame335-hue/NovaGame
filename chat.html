@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
         :root { --neon-red: #ff0000; --bg: #000; --panel: #111; }
@@ -49,58 +50,44 @@
             background: #000;
         }
         
-        /* --- СТИЛЬ ОБЛАЧЕК (BOHO/WHATSAPP STYLE) --- */
         .msg-row { display: flex; width: 100%; position: relative; }
         .msg-row.my { justify-content: flex-end; }
         .msg-row.other { justify-content: flex-start; }
 
         .bubble { 
-            padding: 12px 16px; 
+            padding: 10px; 
             max-width: 75%; 
             font-size: 15px; 
             line-height: 1.4;
             position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Сообщение ОТ МЕНЯ (Красное) */
-        .my .bubble { 
-            background: var(--neon-red); 
-            color: white; 
-            border-radius: 18px 18px 0px 18px; /* Скругление без левого нижнего угла */
-        }
+        .bubble img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 5px; }
+
+        .my .bubble { background: var(--neon-red); color: white; border-radius: 18px 18px 0px 18px; }
         .my .bubble:after {
-            content: "";
-            position: absolute;
-            bottom: 0; right: -8px;
-            width: 0; height: 0;
-            border-style: solid;
-            border-width: 10px 0 0 10px;
+            content: ""; position: absolute; bottom: 0; right: -8px;
+            border-style: solid; border-width: 10px 0 0 10px;
             border-color: transparent transparent transparent var(--neon-red);
         }
 
-        /* Сообщение ОТ ПОДДЕРЖКИ (Серое/Белое) */
-        .other .bubble { 
-            background: #f0f0f0; 
-            color: #000; 
-            border-radius: 18px 18px 18px 0px; /* Скругление без правого нижнего угла */
-        }
+        .other .bubble { background: #f0f0f0; color: #000; border-radius: 18px 18px 18px 0px; }
         .other .bubble:after {
-            content: "";
-            position: absolute;
-            bottom: 0; left: -8px;
-            width: 0; height: 0;
-            border-style: solid;
-            border-width: 0 0 10px 10px;
+            content: ""; position: absolute; bottom: 0; left: -8px;
+            border-style: solid; border-width: 0 0 10px 10px;
             border-color: transparent transparent #f0f0f0 transparent;
         }
 
-        .input-area { padding: 12px; background: #1a1a1a; border-top: 1px solid #333; display: flex; gap: 10px; z-index: 100; }
+        .input-area { padding: 12px; background: #1a1a1a; border-top: 1px solid #333; display: flex; gap: 10px; align-items: center; }
+        
+        .attach-btn { color: #888; font-size: 24px; cursor: pointer; padding: 0 5px; }
+        .attach-btn:hover { color: var(--neon-red); }
+
         #msg-input { 
             flex: 1; background: #000; border: 1px solid #444; padding: 12px; 
             color: white; border-radius: 20px; outline: none; font-size: 16px; 
         }
-        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; }
+        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 768px) {
             .side-panel { width: 100%; position: absolute; left: 0; top: 0; height: 100%; }
@@ -126,7 +113,11 @@
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="Напишите сообщение...">
+            <label class="attach-btn">
+                📎
+                <input type="file" id="file-input" style="display:none" accept="image/*" onchange="uploadImage(this)">
+            </label>
+            <input type="text" id="msg-input" placeholder="Сообщение...">
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -138,7 +129,7 @@
         authDomain: "novagame-b15b6.firebaseapp.com",
         databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
         projectId: "novagame-b15b6",
-        storageBucket: "novagame-b15b6.firebasestorage.app",
+        storageBucket: "novagame-b15b6.appspot.com",
         messagingSenderId: "7572791951",
         appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
     };
@@ -146,6 +137,7 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
+    const storage = firebase.storage();
 
     let isAdmin = false;
     let currentChatUid = null;
@@ -155,11 +147,7 @@
             db.ref('users/' + user.uid).on('value', (snap) => {
                 const userData = snap.val() || {};
                 isAdmin = (userData.role === 'admin');
-                
-                if (isAdmin) {
-                    document.getElementById('panel-title').innerText = "АДМИН-ПАНЕЛЬ";
-                    // Здесь должна быть твоя функция loadAdminList()
-                } else {
+                if (!isAdmin) {
                     currentChatUid = user.uid;
                     loadUserItem(userData);
                     loadMessages(user.uid);
@@ -170,18 +158,14 @@
 
     function loadUserItem(data) {
         const list = document.getElementById('chat-list');
-        const pic = 'pod.jpg'; 
-        const name = 'ПОДДЕРЖКА';
-        
         list.innerHTML = `
             <div class="chat-item" onclick="document.getElementById('app-body').classList.add('chat-active')">
-                <img src="${pic}" class="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                <img src="pod.jpg" class="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                 <div class="chat-info">
-                    <h4>${name}</h4>
+                    <h4>ПОДДЕРЖКА</h4>
                     <p>Нажми, чтобы открыть чат</p>
                 </div>
-            </div>
-        `;
+            </div>`;
     }
 
     function loadMessages(id) {
@@ -192,24 +176,47 @@
                 const m = msg.val();
                 const div = document.createElement('div');
                 div.className = m.senderUid === auth.currentUser.uid ? 'msg-row my' : 'msg-row other';
-                div.innerHTML = `<div class="bubble">${m.text}</div>`;
+                
+                let content = "";
+                if (m.imageUrl) content += `<img src="${m.imageUrl}" onclick="window.open('${m.imageUrl}')">`;
+                if (m.text) content += `<div>${m.text}</div>`;
+                
+                div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
             });
             area.scrollTop = area.scrollHeight;
         });
     }
 
+    async function uploadImage(input) {
+        if (!input.files[0] || !currentChatUid) return;
+        const file = input.files[0];
+        const fileName = Date.now() + "_" + file.name;
+        const storageRef = storage.ref(`chat_images/${currentChatUid}/${fileName}`);
+
+        try {
+            const snapshot = await storageRef.put(file);
+            const url = await snapshot.ref.getDownloadURL();
+            sendToDB(null, url);
+        } catch (e) { alert("Ошибка загрузки фото"); }
+    }
+
     function sendMessage() {
         const input = document.getElementById('msg-input');
         const text = input.value.trim();
-        if(!text || !currentChatUid) return;
-        
+        if(!text) return;
+        sendToDB(text, null);
+        input.value = "";
+    }
+
+    function sendToDB(text, url) {
+        if (!currentChatUid) return;
         db.ref(`support_tickets/${currentChatUid}/messages`).push({
             senderUid: auth.currentUser.uid,
             text: text,
+            imageUrl: url,
             timestamp: Date.now()
         });
-        input.value = "";
     }
 </script>
 </body>

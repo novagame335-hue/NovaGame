@@ -20,7 +20,6 @@
 
         .app-container { display: flex; width: 100%; height: 100%; position: relative; }
 
-        /* СПИСОК ЧАТОВ — на мобилке занимает весь экран */
         .side-panel {
             width: 350px; background: var(--panel); border-right: 1px solid #222;
             display: flex; flex-direction: column; z-index: 5; flex-shrink: 0;
@@ -28,7 +27,6 @@
 
         .side-header { padding: 20px; font-weight: bold; border-bottom: 1px solid #222; color: var(--neon-red); }
 
-        /* ЭЛЕМЕНТ СПИСКА (С АВАТАРКОЙ) */
         .chat-item {
             display: flex; align-items: center; gap: 12px; padding: 15px;
             border-bottom: 1px solid #1a1a1a; cursor: pointer;
@@ -37,7 +35,6 @@
         .chat-info h4 { margin: 0; font-size: 15px; }
         .chat-info p { margin: 0; font-size: 12px; color: #666; }
 
-        /* ОКНО ЧАТА */
         .main-chat {
             flex: 1; display: flex; flex-direction: column; background: var(--bg);
             position: relative; z-index: 10;
@@ -46,9 +43,58 @@
         .chat-header { padding: 10px 15px; background: #1a1a1a; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 10px; }
         .back-btn { display: none; background: none; border: none; color: var(--neon-red); font-size: 18px; cursor: pointer; }
 
-        #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        #msg-area { 
+            flex: 1; overflow-y: auto; padding: 20px; 
+            display: flex; flex-direction: column; gap: 15px; 
+            background: #000;
+        }
         
-        /* ВВОД СООБЩЕНИЯ */
+        /* --- СТИЛЬ ОБЛАЧЕК (BOHO/WHATSAPP STYLE) --- */
+        .msg-row { display: flex; width: 100%; position: relative; }
+        .msg-row.my { justify-content: flex-end; }
+        .msg-row.other { justify-content: flex-start; }
+
+        .bubble { 
+            padding: 12px 16px; 
+            max-width: 75%; 
+            font-size: 15px; 
+            line-height: 1.4;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Сообщение ОТ МЕНЯ (Красное) */
+        .my .bubble { 
+            background: var(--neon-red); 
+            color: white; 
+            border-radius: 18px 18px 0px 18px; /* Скругление без левого нижнего угла */
+        }
+        .my .bubble:after {
+            content: "";
+            position: absolute;
+            bottom: 0; right: -8px;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 10px 0 0 10px;
+            border-color: transparent transparent transparent var(--neon-red);
+        }
+
+        /* Сообщение ОТ ПОДДЕРЖКИ (Серое/Белое) */
+        .other .bubble { 
+            background: #f0f0f0; 
+            color: #000; 
+            border-radius: 18px 18px 18px 0px; /* Скругление без правого нижнего угла */
+        }
+        .other .bubble:after {
+            content: "";
+            position: absolute;
+            bottom: 0; left: -8px;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 0 10px 10px;
+            border-color: transparent transparent #f0f0f0 transparent;
+        }
+
         .input-area { padding: 12px; background: #1a1a1a; border-top: 1px solid #333; display: flex; gap: 10px; z-index: 100; }
         #msg-input { 
             flex: 1; background: #000; border: 1px solid #444; padding: 12px; 
@@ -56,17 +102,12 @@
         }
         .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; }
 
-        /* МОБИЛЬНАЯ АДАПТАЦИЯ (WHATSAPP STYLE) */
         @media (max-width: 768px) {
             .side-panel { width: 100%; position: absolute; left: 0; top: 0; height: 100%; }
             .main-chat { position: absolute; width: 100%; height: 100%; left: 100%; top: 0; transition: 0.3s; }
             .back-btn { display: block; }
             body.chat-active .main-chat { transform: translateX(-100%); }
         }
-
-        .bubble { padding: 10px 14px; border-radius: 15px; max-width: 80%; }
-        .my { align-self: flex-end; background: var(--neon-red); }
-        .other { align-self: flex-start; background: #222; }
     </style>
 </head>
 <body id="app-body">
@@ -117,7 +158,7 @@
                 
                 if (isAdmin) {
                     document.getElementById('panel-title').innerText = "АДМИН-ПАНЕЛЬ";
-                    loadAdminList();
+                    // Здесь должна быть твоя функция loadAdminList()
                 } else {
                     currentChatUid = user.uid;
                     loadUserItem(userData);
@@ -129,7 +170,6 @@
 
     function loadUserItem(data) {
         const list = document.getElementById('chat-list');
-        // Используем картинку поддержки pod.jpg по умолчанию для пользователя
         const pic = 'pod.jpg'; 
         const name = 'ПОДДЕРЖКА';
         

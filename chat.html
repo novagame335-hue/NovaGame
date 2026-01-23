@@ -74,8 +74,7 @@
 <div class="app-container">
     <div class="side-panel">
         <div class="side-header" id="panel-title">ЧАТЫ</div>
-        <div id="chat-list">
-            </div>
+        <div id="chat-list"></div>
         <a href="index.html" style="margin-top:auto; padding:20px; color:#444; text-decoration:none; font-size:12px; text-align:center;">← НА ГЛАВНУЮ</a>
     </div>
 
@@ -121,7 +120,6 @@
                     loadAdminList();
                 } else {
                     currentChatUid = user.uid;
-                    // ВОЗВРАЩАЕМ АККАУНТ В СПИСОК
                     loadUserItem(userData);
                     loadMessages(user.uid);
                 }
@@ -131,12 +129,13 @@
 
     function loadUserItem(data) {
         const list = document.getElementById('chat-list');
-        const pic = data.profilePic || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-        const name = data.username || 'Мой аккаунт';
+        // Используем картинку поддержки pod.jpg по умолчанию для пользователя
+        const pic = 'pod.jpg'; 
+        const name = 'ПОДДЕРЖКА';
         
         list.innerHTML = `
             <div class="chat-item" onclick="document.getElementById('app-body').classList.add('chat-active')">
-                <img src="${pic}" class="avatar">
+                <img src="${pic}" class="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                 <div class="chat-info">
                     <h4>${name}</h4>
                     <p>Нажми, чтобы открыть чат</p>

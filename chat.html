@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
         :root { --neon-red: #ff0000; --bg: #000; --panel: #111; }
@@ -62,7 +61,7 @@
             position: relative;
         }
 
-        .bubble img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 5px; }
+        .bubble img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 5px; cursor: pointer; }
 
         .my .bubble { background: var(--neon-red); color: white; border-radius: 18px 18px 0px 18px; }
         .my .bubble:after {
@@ -80,8 +79,8 @@
 
         .input-area { padding: 12px; background: #1a1a1a; border-top: 1px solid #333; display: flex; gap: 10px; align-items: center; }
         
-        .attach-btn { color: #888; font-size: 24px; cursor: pointer; padding: 0 5px; }
-        .attach-btn:hover { color: var(--neon-red); }
+        .attach-btn { color: #888; font-size: 24px; cursor: pointer; padding: 0 5px; transition: 0.2s; }
+        .attach-btn:hover { color: var(--neon-red); transform: rotate(45deg); }
 
         #msg-input { 
             flex: 1; background: #000; border: 1px solid #444; padding: 12px; 
@@ -137,26 +136,24 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-    const storage = firebase.storage();
 
-    let isAdmin = false;
     let currentChatUid = null;
 
     auth.onAuthStateChanged((user) => {
         if (user) {
             db.ref('users/' + user.uid).on('value', (snap) => {
                 const userData = snap.val() || {};
-                isAdmin = (userData.role === 'admin');
+                const isAdmin = (userData.role === 'admin');
                 if (!isAdmin) {
                     currentChatUid = user.uid;
-                    loadUserItem(userData);
+                    loadUserItem();
                     loadMessages(user.uid);
                 }
             });
         } else { window.location.href = "login.html"; }
     });
 
-    function loadUserItem(data) {
+    function loadUserItem() {
         const list = document.getElementById('chat-list');
         list.innerHTML = `
             <div class="chat-item" onclick="document.getElementById('app-body').classList.add('chat-active')">
@@ -188,17 +185,36 @@
         });
     }
 
-    async function uploadImage(input) {
+    function uploadImage(input) {
         if (!input.files[0] || !currentChatUid) return;
         const file = input.files[0];
-        const fileName = Date.now() + "_" + file.name;
-        const storageRef = storage.ref(`chat_images/${currentChatUid}/${fileName}`);
+        const reader = new FileReader();
 
-        try {
-            const snapshot = await storageRef.put(file);
-            const url = await snapshot.ref.getDownloadURL();
-            sendToDB(null, url);
-        } catch (e) { alert("Ошибка загрузки фото"); }
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+                // Сжатие изображения перед отправкой
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                sendToDB(null, compressedBase64);
+            };
+        };
+        reader.readAsDataURL(file);
     }
 
     function sendMessage() {

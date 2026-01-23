@@ -114,16 +114,16 @@
             cursor: pointer;
         }
 
-        /* --- ТАБЫ (ПРОКРУТКА НА МОБИЛКЕ) --- */
+        /* --- ТАБЫ --- */
         .tabs-nav {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             overflow-x: auto;
             padding-bottom: 10px;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
-        .tabs-nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        .tabs-nav::-webkit-scrollbar { display: none; }
 
         .tab-btn {
             padding: 12px 20px;
@@ -163,7 +163,6 @@
             border-color: var(--neon-red);
         }
 
-        /* --- КОНТЕНТ --- */
         .content-area {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 18px;
@@ -190,10 +189,9 @@
             text-transform: uppercase;
         }
 
-        /* --- ВЫХОД --- */
-        .logout-btn { color: #444; background: none; border: none; margin-top: 30px; text-decoration: underline; font-size: 13px; }
+        .logout-btn { color: #444; background: none; border: none; margin-top: 30px; text-decoration: underline; font-size: 13px; cursor: pointer; }
 
-        /* --- КНОПКА ЧАТА --- */
+        /* КНОПКА ЧАТА */
         .chat-fab {
             position: fixed;
             bottom: 25px;
@@ -223,13 +221,13 @@
         }
         .modal-card { background: #111; padding: 30px; border-radius: 20px; text-align: center; width: 80%; max-width: 300px; border: 1px solid var(--neon-red); }
 
-        /* ПРАВКИ ПОД МАЛЕНЬКИЕ ЭКРАНЫ */
-        @media (max-width: 400px) {
-            .profile-header { gap: 15px; }
-            .avatar-wrapper { width: 80px; height: 80px; }
-            .profile-info h2 { font-size: 20px; }
-            .balance-text { font-size: 20px; }
+        /* КНОПКА СМЕНЫ НИКА (ТОЛЬКО АДМИН) */
+        .admin-edit-nick {
+            background: none; border: 1px solid #444; color: #666; 
+            padding: 4px 8px; border-radius: 5px; font-size: 10px; 
+            margin-top: 5px; cursor: pointer; display: none;
         }
+        .admin-edit-nick:hover { color: var(--neon-red); border-color: var(--neon-red); }
     </style>
 </head>
 <body>
@@ -245,6 +243,7 @@
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: ...</div>
+                <button id="admin-nick-btn" class="admin-edit-nick" onclick="adminChangeNick()">СМЕНИТЬ НИК</button>
                 <div id="user-rating" class="rating">★★★★★</div>
             </div>
         </div>
@@ -317,11 +316,26 @@
                         document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
                         document.getElementById('count-items').innerText = data.itemsCount || 0;
                         document.getElementById('count-buys').innerText = data.buysCount || 0;
+
+                        // Показываем кнопку смены ника только админу
+                        if(data.role === 'admin') {
+                            document.getElementById('admin-nick-btn').style.display = 'inline-block';
+                        }
                     }
                 });
                 updateUI();
             } else { location.href = "login.html"; }
         });
+
+        // Функция только для админа
+        function adminChangeNick() {
+            const newNick = prompt("Введите новый никнейм:");
+            if (newNick && newNick.trim().length >= 3) {
+                db.ref('users/' + auth.currentUser.uid).update({
+                    username: newNick.trim()
+                });
+            }
+        }
 
         function updateUI() {
             const content = document.getElementById('content-display');
@@ -358,4 +372,3 @@
     </script>
 </body>
 </html>
-

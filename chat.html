@@ -64,6 +64,7 @@
 
         .bubble img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 5px; cursor: pointer; }
 
+        /* Мои сообщения (Красные) */
         .my .bubble { background: var(--neon-red); color: white; border-radius: 18px 18px 0px 18px; }
         .my .bubble:after {
             content: ""; position: absolute; bottom: 0; right: -8px;
@@ -71,55 +72,36 @@
             border-color: transparent transparent transparent var(--neon-red);
         }
 
-        .other .bubble { background: #f0f0f0; color: #000; border-radius: 18px 18px 18px 0px; }
+        /* Входящие сообщения (СЕРЫЕ) */
+        .other .bubble { background: #2b2b2b; color: #ffffff; border-radius: 18px 18px 18px 0px; }
         .other .bubble:after {
             content: ""; position: absolute; bottom: 0; left: -8px;
             border-style: solid; border-width: 0 0 10px 10px;
-            border-color: transparent transparent #f0f0f0 transparent;
+            border-color: transparent transparent #2b2b2b transparent;
         }
 
-        /* Область ввода с поддержкой роста */
         .input-area { 
             padding: 12px; 
             background: #1a1a1a; 
             border-top: 1px solid #333; 
             display: flex; 
             gap: 10px; 
-            align-items: flex-end; /* Кнопки прижаты к низу */
+            align-items: flex-end; 
         }
         
         .attach-btn { color: #888; font-size: 24px; cursor: pointer; padding: 0 5px 8px 5px; transition: 0.2s; }
-        .attach-btn:hover { color: var(--neon-red); transform: rotate(45deg); }
 
         #msg-input { 
-            flex: 1; 
-            background: #000; 
-            border: 1px solid #444; 
-            padding: 12px; 
-            color: white; 
-            border-radius: 20px; 
-            outline: none; 
-            font-size: 16px; 
-            resize: none; 
-            max-height: 150px; /* Макс. высота до появления скролла */
-            line-height: 1.4;
-            overflow-y: hidden;
-            font-family: sans-serif;
-            box-sizing: border-box;
+            flex: 1; background: #000; border: 1px solid #444; padding: 12px; 
+            color: white; border-radius: 20px; outline: none; font-size: 16px; 
+            resize: none; max-height: 150px; line-height: 1.4;
+            overflow-y: hidden; font-family: sans-serif; box-sizing: border-box;
         }
 
         .send-btn { 
-            background: var(--neon-red); 
-            border: none; 
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            color: white; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            flex-shrink: 0;
+            background: var(--neon-red); border: none; width: 45px; height: 45px; 
+            border-radius: 50%; color: white; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
             margin-bottom: 2px;
         }
 
@@ -175,17 +157,10 @@
     let isAdmin = false;
     let currentChatUid = null;
 
-    // Логика роста текстового поля
     function autoResize(textarea) {
-        textarea.style.height = 'auto'; // Сброс высоты
-        let newHeight = textarea.scrollHeight;
-        textarea.style.height = newHeight + 'px'; // Установка высоты по тексту
-        
-        if (newHeight > 150) {
-            textarea.style.overflowY = 'auto';
-        } else {
-            textarea.style.overflowY = 'hidden';
-        }
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+        textarea.style.overflowY = textarea.scrollHeight > 150 ? 'auto' : 'hidden';
     }
 
     auth.onAuthStateChanged((user) => {
@@ -272,8 +247,7 @@
             img.onload = function() {
                 const canvas = document.createElement('canvas');
                 const MAX_WIDTH = 800;
-                let width = img.width;
-                let height = img.height;
+                let width = img.width, height = img.height;
                 if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                 canvas.width = width; canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
@@ -289,7 +263,7 @@
         if(!text) return;
         sendToDB(text, null);
         input.value = "";
-        input.style.height = 'auto'; // Сброс высоты после отправки
+        input.style.height = 'auto';
     }
 
     function sendToDB(text, url) {

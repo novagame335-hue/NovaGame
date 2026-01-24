@@ -55,6 +55,7 @@
             width: 100px;
             height: 100px;
             flex-shrink: 0;
+            cursor: pointer;
         }
 
         .avatar-main {
@@ -191,7 +192,7 @@
 
         .logout-btn { color: #444; background: none; border: none; margin-top: 30px; text-decoration: underline; font-size: 13px; cursor: pointer; }
 
-        /* КНОПКА ЧАТА */
+        /* КНОПКА ЧАТА С ЭФФЕКТОМ ВЫДЕЛЕНИЯ */
         .chat-fab {
             position: fixed;
             bottom: 25px;
@@ -204,7 +205,24 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
+            cursor: pointer;
+            /* Плавные переходы для всех свойств */
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, background-color 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
+
+        /* Эффект при наведении */
+        .chat-fab:hover {
+            transform: scale(1.15) rotate(-5deg); /* Увеличиваем и чуть наклоняем */
+            background-color: #ff3333; /* Делаем чуть ярче */
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8); /* Мощное неоновое свечение */
+        }
+
+        /* Эффект при нажатии */
+        .chat-fab:active {
+            transform: scale(0.95);
+        }
+
         .chat-icon {
             width: 24px; height: 24px; background: white;
             -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z'/></svg>") no-repeat center;
@@ -221,7 +239,6 @@
         }
         .modal-card { background: #111; padding: 30px; border-radius: 20px; text-align: center; width: 80%; max-width: 300px; border: 1px solid var(--neon-red); }
 
-        /* КНОПКА СМЕНЫ НИКА (ТОЛЬКО АДМИН) */
         .admin-edit-nick {
             background: none; border: 1px solid #444; color: #666; 
             padding: 4px 8px; border-radius: 5px; font-size: 10px; 
@@ -317,7 +334,6 @@
                         document.getElementById('count-items').innerText = data.itemsCount || 0;
                         document.getElementById('count-buys').innerText = data.buysCount || 0;
 
-                        // Показываем кнопку смены ника только админу
                         if(data.role === 'admin') {
                             document.getElementById('admin-nick-btn').style.display = 'inline-block';
                         }
@@ -327,7 +343,6 @@
             } else { location.href = "login.html"; }
         });
 
-        // Функция только для админа
         function adminChangeNick() {
             const newNick = prompt("Введите новый никнейм:");
             if (newNick && newNick.trim().length >= 3) {

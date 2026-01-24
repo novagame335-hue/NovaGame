@@ -59,6 +59,7 @@
             font-size: 15px; 
             line-height: 1.4;
             position: relative;
+            word-wrap: break-word; /* Чтобы длинные слова не ломали верстку */
         }
 
         .bubble img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 5px; cursor: pointer; }
@@ -77,16 +78,49 @@
             border-color: transparent transparent #f0f0f0 transparent;
         }
 
-        .input-area { padding: 12px; background: #1a1a1a; border-top: 1px solid #333; display: flex; gap: 10px; align-items: center; }
+        .input-area { 
+            padding: 12px; 
+            background: #1a1a1a; 
+            border-top: 1px solid #333; 
+            display: flex; 
+            gap: 10px; 
+            align-items: flex-end; /* Важно: прижимает кнопки к низу при росте поля */
+        }
         
-        .attach-btn { color: #888; font-size: 24px; cursor: pointer; padding: 0 5px; transition: 0.2s; }
+        .attach-btn { color: #888; font-size: 24px; cursor: pointer; padding: 0 5px 8px 5px; transition: 0.2s; }
         .attach-btn:hover { color: var(--neon-red); transform: rotate(45deg); }
 
+        /* Обновленное поле ввода */
         #msg-input { 
-            flex: 1; background: #000; border: 1px solid #444; padding: 12px; 
-            color: white; border-radius: 20px; outline: none; font-size: 16px; 
+            flex: 1; 
+            background: #000; 
+            border: 1px solid #444; 
+            padding: 12px; 
+            color: white; 
+            border-radius: 20px; 
+            outline: none; 
+            font-size: 16px; 
+            resize: none; /* Запрещает ручное изменение размера */
+            max-height: 150px; /* Лимит высоты */
+            line-height: 1.4;
+            overflow-y: hidden;
+            font-family: sans-serif;
         }
-        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .send-btn { 
+            background: var(--neon-red); 
+            border: none; 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            color: white; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            flex-shrink: 0;
+            margin-bottom: 2px;
+        }
 
         @media (max-width: 768px) {
             .side-panel { width: 100%; position: absolute; left: 0; top: 0; height: 100%; }
@@ -116,7 +150,7 @@
                 📎
                 <input type="file" id="file-input" style="display:none" accept="image/*" onchange="uploadImage(this)">
             </label>
-            <input type="text" id="msg-input" placeholder="Сообщение...">
+            <textarea id="msg-input" placeholder="Сообщение..." rows="1" oninput="autoResize(this)"></textarea>
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -140,6 +174,17 @@
     let isAdmin = false;
     let currentChatUid = null;
 
+    // Функция авто-высоты
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+        if (textarea.scrollHeight > 150) {
+            textarea.style.overflowY = 'auto';
+        } else {
+            textarea.style.overflowY = 'hidden';
+        }
+    }
+
     auth.onAuthStateChanged((user) => {
         if (user) {
             db.ref('users/' + user.uid).on('value', (snap) => {
@@ -160,7 +205,6 @@
         } else { window.location.href = "login.html"; }
     });
 
-    // --- ЛОГИКА АДМИНА ---
     function loadAdminList() {
         db.ref('support_tickets').on('value', (snap) => {
             const list = document.getElementById('chat-list');
@@ -186,7 +230,6 @@
         loadMessages(uid);
     }
 
-    // --- ЛОГИКА ЮЗЕРА ---
     function loadUserItem() {
         const list = document.getElementById('chat-list');
         list.innerHTML = `
@@ -199,7 +242,6 @@
             </div>`;
     }
 
-    // --- ОБЩИЕ ФУНКЦИИ ---
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
         db.ref(`support_tickets/${id}/messages`).on('value', (snap) => {
@@ -247,6 +289,7 @@
         if(!text) return;
         sendToDB(text, null);
         input.value = "";
+        input.style.height = 'auto'; // Сброс высоты после отправки
     }
 
     function sendToDB(text, url) {

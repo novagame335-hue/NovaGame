@@ -59,7 +59,7 @@
             font-size: 15px; 
             line-height: 1.4;
             position: relative;
-            word-wrap: break-word; /* Чтобы длинные слова не ломали верстку */
+            word-wrap: break-word;
         }
 
         .bubble img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 5px; cursor: pointer; }
@@ -78,19 +78,19 @@
             border-color: transparent transparent #f0f0f0 transparent;
         }
 
+        /* Область ввода с поддержкой роста */
         .input-area { 
             padding: 12px; 
             background: #1a1a1a; 
             border-top: 1px solid #333; 
             display: flex; 
             gap: 10px; 
-            align-items: flex-end; /* Важно: прижимает кнопки к низу при росте поля */
+            align-items: flex-end; /* Кнопки прижаты к низу */
         }
         
         .attach-btn { color: #888; font-size: 24px; cursor: pointer; padding: 0 5px 8px 5px; transition: 0.2s; }
         .attach-btn:hover { color: var(--neon-red); transform: rotate(45deg); }
 
-        /* Обновленное поле ввода */
         #msg-input { 
             flex: 1; 
             background: #000; 
@@ -100,13 +100,14 @@
             border-radius: 20px; 
             outline: none; 
             font-size: 16px; 
-            resize: none; /* Запрещает ручное изменение размера */
-            max-height: 150px; /* Лимит высоты */
+            resize: none; 
+            max-height: 150px; /* Макс. высота до появления скролла */
             line-height: 1.4;
             overflow-y: hidden;
             font-family: sans-serif;
+            box-sizing: border-box;
         }
-        
+
         .send-btn { 
             background: var(--neon-red); 
             border: none; 
@@ -174,11 +175,13 @@
     let isAdmin = false;
     let currentChatUid = null;
 
-    // Функция авто-высоты
+    // Логика роста текстового поля
     function autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-        if (textarea.scrollHeight > 150) {
+        textarea.style.height = 'auto'; // Сброс высоты
+        let newHeight = textarea.scrollHeight;
+        textarea.style.height = newHeight + 'px'; // Установка высоты по тексту
+        
+        if (newHeight > 150) {
             textarea.style.overflowY = 'auto';
         } else {
             textarea.style.overflowY = 'hidden';
@@ -190,7 +193,6 @@
             db.ref('users/' + user.uid).on('value', (snap) => {
                 const userData = snap.val() || {};
                 isAdmin = (userData.role === 'admin');
-                
                 if (isAdmin) {
                     document.getElementById('panel-title').innerText = "АДМИН-ЦЕНТР";
                     loadAdminList();
@@ -250,11 +252,9 @@
                 const m = msg.val();
                 const div = document.createElement('div');
                 div.className = m.senderUid === auth.currentUser.uid ? 'msg-row my' : 'msg-row other';
-                
                 let content = "";
                 if (m.imageUrl) content += `<img src="${m.imageUrl}" onclick="window.open('${m.imageUrl}')">`;
                 if (m.text) content += `<div>${m.text}</div>`;
-                
                 div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
             });

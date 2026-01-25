@@ -47,14 +47,13 @@
             display: flex; 
             align-items: center; 
             gap: 10px; 
-            justify-content: space-between; /* Чтобы кнопка была справа */
+            justify-content: space-between;
         }
         
         .header-left { display: flex; align-items: center; gap: 10px; }
 
         .back-btn { display: none; background: none; border: none; color: var(--neon-red); font-size: 18px; cursor: pointer; }
 
-        /* СТИЛЬ ДЛЯ КНОПКИ ПЕРЕКЛЮЧЕНИЯ */
         .toggle-admin-btn {
             background: transparent;
             border: 1px solid var(--neon-red);
@@ -67,10 +66,7 @@
             text-transform: uppercase;
             font-weight: bold;
         }
-        .toggle-admin-btn:hover {
-            background: var(--neon-red);
-            color: white;
-        }
+        .toggle-admin-btn:hover { background: var(--neon-red); color: white; }
 
         #msg-area { 
             flex: 1; overflow-y: auto; padding: 20px; 
@@ -202,8 +198,8 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    let userRole = 'user'; // Роль из базы
-    let currentView = 'user'; // Что отображаем сейчас ('user' или 'admin')
+    let userRole = 'user';
+    let currentView = 'user';
     let currentChatUid = null;
 
     function autoResize(textarea) {
@@ -222,10 +218,8 @@
             db.ref('users/' + user.uid).once('value', (snap) => {
                 const userData = snap.val() || {};
                 userRole = userData.role || 'user';
-                
                 if (userRole === 'admin') {
                     document.getElementById('admin-toggle').style.display = 'block';
-                    // По умолчанию админу показываем админ-центр
                     setInterface('admin');
                 } else {
                     setInterface('user');
@@ -234,11 +228,9 @@
         } else { window.location.href = "login.html"; }
     });
 
-    // Функция переключения режима
     function toggleAdminMode() {
         currentView = (currentView === 'user' ? 'admin' : 'user');
         setInterface(currentView);
-        // Очищаем окно чата при смене режима
         document.getElementById('msg-area').innerHTML = "";
         document.getElementById('chat-target-name').innerText = "Выберите чат";
         document.getElementById('app-body').classList.remove('chat-active');
@@ -247,7 +239,6 @@
     function setInterface(mode) {
         const btn = document.getElementById('admin-toggle');
         const title = document.getElementById('panel-title');
-        
         if (mode === 'admin') {
             btn.innerText = "В обычный чат";
             title.innerText = "АДМИН-ЦЕНТР";
@@ -263,19 +254,28 @@
     }
 
     function loadAdminList() {
+        const list = document.getElementById('chat-list');
         db.ref('support_tickets').on('value', (snap) => {
-            const list = document.getElementById('chat-list');
             list.innerHTML = "";
             snap.forEach((ticket) => {
                 const uid = ticket.key;
-                list.innerHTML += `
-                    <div class="chat-item" onclick="openAdminChat('${uid}')">
-                        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar">
+                db.ref('users/' + uid).once('value', (userSnap) => {
+                    const userData = userSnap.val() || {};
+                    const avatar = userData.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                    const name = userData.username || 'Пользователь ' + uid.substring(0, 5);
+
+                    const item = document.createElement('div');
+                    item.className = 'chat-item';
+                    item.onclick = () => openAdminChat(uid);
+                    item.innerHTML = `
+                        <img src="${avatar}" class="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         <div class="chat-info">
-                            <h4>Пользователь ${uid.substring(0,5)}</h4>
+                            <h4>${name}</h4>
                             <p>Открыть переписку</p>
                         </div>
-                    </div>`;
+                    `;
+                    list.appendChild(item);
+                });
             });
         });
     }
@@ -301,7 +301,7 @@
 
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
-        db.ref(`support_tickets/${id}/messages`).off(); // Сброс старых слушателей
+        db.ref(`support_tickets/${id}/messages`).off();
         db.ref(`support_tickets/${id}/messages`).on('value', (snap) => {
             area.innerHTML = "";
             snap.forEach((msg) => {

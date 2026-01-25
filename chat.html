@@ -62,7 +62,16 @@
             word-wrap: break-word;
         }
 
-        .bubble img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 5px; cursor: pointer; }
+        /* ИСПРАВЛЕННЫЙ БЛОК ДЛЯ КАРТИНОК */
+        .bubble img { 
+            max-width: 250px; 
+            max-height: 300px; 
+            border-radius: 12px; 
+            display: block; 
+            margin-bottom: 5px; 
+            cursor: pointer;
+            object-fit: cover;
+        }
 
         /* Мои сообщения (Красные) */
         .my .bubble { background: var(--neon-red); color: white; border-radius: 18px 18px 0px 18px; }

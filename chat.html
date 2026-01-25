@@ -255,14 +255,18 @@
 
     function loadAdminList() {
         const list = document.getElementById('chat-list');
+        // Используем .on для обновления списка в реальном времени
         db.ref('support_tickets').on('value', (snap) => {
             list.innerHTML = "";
             snap.forEach((ticket) => {
                 const uid = ticket.key;
+                
+                // Исправленная логика получения аватарок и имен
                 db.ref('users/' + uid).once('value', (userSnap) => {
                     const userData = userSnap.val() || {};
-                    const avatar = userData.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-                    const name = userData.username || 'Пользователь ' + uid.substring(0, 5);
+                    // Проверяем оба варианта ключей для фото
+                    const avatar = userData.avatarUrl || userData.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                    const name = userData.username || userData.displayName || 'Пользователь ' + uid.substring(0, 5);
 
                     const item = document.createElement('div');
                     item.className = 'chat-item';

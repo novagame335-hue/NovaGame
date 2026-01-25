@@ -16,70 +16,42 @@
         .side-panel { width: 350px; background: var(--panel); border-right: 1px solid #222; display: flex; flex-direction: column; z-index: 5; flex-shrink: 0; }
         .side-header { padding: 20px; font-weight: bold; border-bottom: 1px solid #222; color: var(--neon-red); }
         #chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { display: flex; align-items: center; gap: 12px; padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: background 0.2s; }
-        .chat-item:hover { background: #1a1a1a; }
+        .chat-item { display: flex; align-items: center; gap: 12px; padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
         .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; }
-        .msg-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; align-self: flex-end; }
-        .chat-info h4 { margin: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-info p { margin: 0; font-size: 12px; color: #666; }
-        .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--bg); position: relative; z-index: 10; }
-        .chat-header { padding: 10px 15px; background: #1a1a1a; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 10px; justify-content: space-between; }
-        .header-left { display: flex; align-items: center; gap: 10px; }
-        .back-btn { display: none; background: none; border: none; color: var(--neon-red); font-size: 18px; cursor: pointer; }
-        .toggle-admin-btn { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 12px; border-radius: 15px; cursor: pointer; font-size: 12px; transition: 0.3s; text-transform: uppercase; font-weight: bold; }
-        .toggle-admin-btn:hover { background: var(--neon-red); color: white; }
-        #msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #000; }
-        .msg-row { display: flex; width: 100%; gap: 8px; }
-        .msg-row.my { justify-content: flex-end; }
-        .msg-row.other { justify-content: flex-start; }
-        .bubble { padding: 10px; max-width: 70%; font-size: 15px; line-height: 1.4; position: relative; word-wrap: break-word; }
-        .bubble img { max-width: 250px; max-height: 300px; border-radius: 12px; display: block; margin-bottom: 5px; cursor: pointer; object-fit: cover; }
-        .img-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; cursor: zoom-out; }
-        .img-modal img { max-width: 95%; max-height: 95%; border-radius: 5px; }
-        .my .bubble { background: var(--neon-red); color: white; border-radius: 18px 18px 0px 18px; }
-        .other .bubble { background: #2b2b2b; color: #ffffff; border-radius: 18px 18px 18px 0px; }
-        .input-area { padding: 12px; background: #1a1a1a; border-top: 1px solid #333; display: flex; gap: 10px; align-items: flex-end; }
-        .attach-btn { color: #888; font-size: 24px; cursor: pointer; padding: 0 5px 8px 5px; }
-        #msg-input { flex: 1; background: #000; border: 1px solid #444; padding: 12px; color: white; border-radius: 20px; outline: none; font-size: 16px; resize: none; max-height: 150px; box-sizing: border-box; }
-        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        @media (max-width: 768px) {
-            .side-panel { width: 100%; position: absolute; left: 0; top: 0; height: 100%; }
-            .main-chat { position: absolute; width: 100%; height: 100%; left: 100%; top: 0; transition: 0.3s; }
-            .back-btn { display: block; }
-            body.chat-active .main-chat { transform: translateX(-100%); }
-        }
+        .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #333; }
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--bg); position: relative; }
+        .chat-header { padding: 10px 15px; background: #1a1a1a; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; }
+        #msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg-row { display: flex; width: 100%; gap: 10px; align-items: flex-end; }
+        .msg-row.my { flex-direction: row-reverse; }
+        .bubble { padding: 10px 15px; max-width: 70%; border-radius: 18px; font-size: 15px; word-wrap: break-word; }
+        .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
+        .other .bubble { background: #2b2b2b; color: white; border-bottom-left-radius: 2px; }
+        .input-area { padding: 15px; background: #1a1a1a; display: flex; gap: 10px; }
+        #msg-input { flex: 1; background: #000; border: 1px solid #444; padding: 12px; color: white; border-radius: 20px; outline: none; }
+        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; }
+        .toggle-admin-btn { background: none; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; cursor: pointer; border-radius: 10px; }
     </style>
 </head>
-<body id="app-body">
+<body>
 
 <div class="app-container">
     <div class="side-panel">
         <div class="side-header" id="panel-title">ЗАГРУЗКА...</div>
         <div id="chat-list"></div>
-        <a href="index.html" style="margin-top:auto; padding:20px; color:#444; text-decoration:none; font-size:12px; text-align:center;">← НА ГЛАВНУЮ</a>
     </div>
 
     <div class="main-chat">
         <div class="chat-header">
-            <div class="header-left">
-                <button class="back-btn" onclick="document.getElementById('app-body').classList.remove('chat-active')">← Назад</button>
-                <div id="chat-target-name" style="font-weight:bold;">Выберите чат</div>
-            </div>
+            <div id="chat-target-name">Выберите чат</div>
             <button id="admin-toggle" class="toggle-admin-btn" style="display:none;" onclick="toggleAdminMode()">Админ-центр</button>
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
-            <label class="attach-btn">
-                📎 <input type="file" id="file-input" style="display:none" accept="image/*" onchange="uploadImage(this)">
-            </label>
-            <textarea id="msg-input" placeholder="Сообщение..." rows="1" oninput="autoResize(this)"></textarea>
+            <textarea id="msg-input" placeholder="Сообщение..." rows="1"></textarea>
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
-</div>
-
-<div id="img-modal" class="img-modal" onclick="this.style.display='none'">
-    <img id="modal-content">
 </div>
 
 <script>
@@ -96,174 +68,94 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-    const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+    const defPhoto = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
-    let userRole = 'user';
-    let currentView = 'user';
-    let currentChatUid = null;
+    let userRole = 'user', currentView = 'user', currentChatUid = null;
 
-    function autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }
-
-    function openImageModal(url) {
-        document.getElementById('modal-content').src = url;
-        document.getElementById('img-modal').style.display = "flex";
-    }
-
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(user => {
         if (user) {
-            db.ref('users/' + user.uid).once('value', (snap) => {
-                const userData = snap.val() || {};
-                userRole = userData.role || 'user';
-                if (userRole === 'admin') {
-                    document.getElementById('admin-toggle').style.display = 'block';
-                    setInterface('admin');
-                } else {
-                    setInterface('user');
-                }
+            db.ref('users/' + user.uid).once('value', s => {
+                userRole = s.val()?.role || 'user';
+                if(userRole === 'admin') document.getElementById('admin-toggle').style.display = 'block';
+                setInterface(userRole === 'admin' ? 'admin' : 'user');
             });
         } else { window.location.href = "login.html"; }
     });
 
-    function toggleAdminMode() {
-        currentView = (currentView === 'user' ? 'admin' : 'user');
-        setInterface(currentView);
-        document.getElementById('msg-area').innerHTML = "";
-        document.getElementById('chat-target-name').innerText = "Выберите чат";
-        document.getElementById('app-body').classList.remove('chat-active');
-    }
-
     function setInterface(mode) {
-        const btn = document.getElementById('admin-toggle');
         const title = document.getElementById('panel-title');
         if (mode === 'admin') {
-            btn.innerText = "В обычный чат";
             title.innerText = "АДМИН-ЦЕНТР";
             loadAdminList();
         } else {
-            btn.innerText = "Админ-центр";
             title.innerText = "ЧАТЫ";
             currentChatUid = auth.currentUser.uid;
             loadUserItem();
             loadMessages(currentChatUid);
-            document.getElementById('chat-target-name').innerText = "Техподдержка";
         }
     }
 
     function loadAdminList() {
         const list = document.getElementById('chat-list');
-        db.ref('support_tickets').on('value', (snap) => {
+        db.ref('support_tickets').on('value', snap => {
             list.innerHTML = "";
-            if (!snap.exists()) return;
-            snap.forEach((ticket) => {
+            snap.forEach(ticket => {
                 const uid = ticket.key;
-                db.ref('users/' + uid).once('value', (uSnap) => {
-                    const uData = uSnap.val() || {};
-                    const avatar = uData.avatarUrl || uData.photoURL || uData.userAvatar || uData.image || defaultAvatar;
-                    const name = uData.username || 'Пользователь ' + uid.substring(0, 5);
-                    const item = document.createElement('div');
-                    item.className = 'chat-item';
-                    item.onclick = () => openAdminChat(uid, name);
-                    item.innerHTML = `
-                        <img src="${avatar}" class="avatar" onerror="this.src='${defaultAvatar}'">
-                        <div class="chat-info">
-                            <h4>${name}</h4>
-                            <p>Открыть переписку</p>
-                        </div>`;
-                    list.appendChild(item);
+                db.ref('users/' + uid).once('value', uSnap => {
+                    const u = uSnap.val() || {};
+                    const pic = u.avatarUrl || u.photoURL || defPhoto;
+                    const div = document.createElement('div');
+                    div.className = 'chat-item';
+                    div.onclick = () => { currentChatUid = uid; loadMessages(uid); };
+                    div.innerHTML = `<img src="${pic}" class="avatar"><div><h4>${u.username || uid}</h4></div>`;
+                    list.appendChild(div);
                 });
             });
         });
-    }
-
-    function openAdminChat(uid, name) {
-        currentChatUid = uid;
-        document.getElementById('chat-target-name').innerText = name;
-        document.getElementById('app-body').classList.add('chat-active');
-        loadMessages(uid);
     }
 
     function loadUserItem() {
         const list = document.getElementById('chat-list');
-        list.innerHTML = `
-            <div class="chat-item" onclick="document.getElementById('app-body').classList.add('chat-active')">
-                <img src="pod.jpg" class="avatar" onerror="this.src='${defaultAvatar}'">
-                <div class="chat-info">
-                    <h4>ПОДДЕРЖКА</h4>
-                    <p>Нажми, чтобы открыть чат</p>
-                </div>
-            </div>`;
+        list.innerHTML = `<div class="chat-item"><img src="pod.jpg" class="avatar"><div><h4>Поддержка</h4></div></div>`;
     }
 
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
-        db.ref(`support_tickets/${id}/messages`).off();
-        db.ref(`support_tickets/${id}/messages`).on('value', (snap) => {
+        db.ref(`support_tickets/${id}/messages`).on('value', snap => {
             area.innerHTML = "";
-            snap.forEach((msg) => {
+            snap.forEach(msg => {
                 const m = msg.val();
                 const isMy = m.senderUid === auth.currentUser.uid;
-                const div = document.createElement('div');
-                div.className = isMy ? 'msg-row my' : 'msg-row other';
+                const row = document.createElement('div');
+                row.className = 'msg-row ' + (isMy ? 'my' : 'other');
 
-                db.ref('users/' + m.senderUid).once('value', (uSnap) => {
-                    const uData = uSnap.val() || {};
-                    const uPhoto = uData.avatarUrl || uData.photoURL || uData.userAvatar || uData.image || defaultAvatar;
-                    
-                    let content = "";
-                    if (m.imageUrl) content += `<img src="${m.imageUrl}" onclick="openImageModal('${m.imageUrl}')">`;
-                    if (m.text) content += `<div>${m.text}</div>`;
-
-                    div.innerHTML = `
-                        ${!isMy ? `<img src="${uPhoto}" class="msg-avatar" onerror="this.src='${defaultAvatar}'">` : ''}
-                        <div class="bubble">${content}</div>
-                        ${isMy ? `<img src="${uPhoto}" class="msg-avatar" onerror="this.src='${defaultAvatar}'">` : ''}
-                    `;
+                // Получаем фото автора сообщения
+                db.ref('users/' + m.senderUid).once('value', uSnap => {
+                    const u = uSnap.val() || {};
+                    const photo = u.avatarUrl || u.photoURL || defPhoto;
+                    row.innerHTML = `<img src="${photo}" class="msg-avatar"><div class="bubble">${m.text}</div>`;
                 });
-                area.appendChild(div);
-            });
-            setTimeout(() => { area.scrollTop = area.scrollHeight; }, 100);
-        });
-    }
 
-    function uploadImage(input) {
-        if (!input.files[0] || !currentChatUid) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.src = e.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 800;
-                let width = img.width, height = img.height;
-                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                canvas.width = width; canvas.height = height;
-                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                sendToDB(null, canvas.toDataURL('image/jpeg', 0.7));
-            };
-        };
-        reader.readAsDataURL(input.files[0]);
+                area.appendChild(row);
+            });
+            area.scrollTop = area.scrollHeight;
+        });
     }
 
     function sendMessage() {
         const input = document.getElementById('msg-input');
-        const text = input.value.trim();
-        if(!text) return;
-        sendToDB(text, null);
-        input.value = "";
-        input.style.height = 'auto';
-    }
-
-    function sendToDB(text, url) {
-        if (!currentChatUid) return;
+        if (!input.value.trim() || !currentChatUid) return;
         db.ref(`support_tickets/${currentChatUid}/messages`).push({
             senderUid: auth.currentUser.uid,
-            text: text,
-            imageUrl: url,
+            text: input.value,
             timestamp: Date.now()
         });
+        input.value = "";
+    }
+
+    function toggleAdminMode() {
+        currentView = currentView === 'user' ? 'admin' : 'user';
+        setInterface(currentView);
     }
 </script>
 </body>

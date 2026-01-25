@@ -62,7 +62,6 @@
             word-wrap: break-word;
         }
 
-        /* ИСПРАВЛЕННЫЙ БЛОК ДЛЯ КАРТИНОК */
         .bubble img { 
             max-width: 250px; 
             max-height: 300px; 
@@ -72,6 +71,15 @@
             cursor: pointer;
             object-fit: cover;
         }
+
+        /* --- МОДАЛЬНОЕ ОКНО ДЛЯ ПРОСМОТРА КАРТИНКИ --- */
+        .img-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            justify-content: center; align-items: center; z-index: 2000;
+            cursor: zoom-out;
+        }
+        .img-modal img { max-width: 95%; max-height: 95%; border-radius: 5px; box-shadow: 0 0 20px rgba(255,0,0,0.2); }
 
         /* Мои сообщения (Красные) */
         .my .bubble { background: var(--neon-red); color: white; border-radius: 18px 18px 0px 18px; }
@@ -148,6 +156,10 @@
     </div>
 </div>
 
+<div id="img-modal" class="img-modal" onclick="this.style.display='none'">
+    <img id="modal-content">
+</div>
+
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
@@ -170,6 +182,14 @@
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
         textarea.style.overflowY = textarea.scrollHeight > 150 ? 'auto' : 'hidden';
+    }
+
+    // Функция для открытия картинки в этой же странице
+    function openImageModal(url) {
+        const modal = document.getElementById('img-modal');
+        const modalImg = document.getElementById('modal-content');
+        modal.style.display = "flex";
+        modalImg.src = url;
     }
 
     auth.onAuthStateChanged((user) => {
@@ -237,7 +257,8 @@
                 const div = document.createElement('div');
                 div.className = m.senderUid === auth.currentUser.uid ? 'msg-row my' : 'msg-row other';
                 let content = "";
-                if (m.imageUrl) content += `<img src="${m.imageUrl}" onclick="window.open('${m.imageUrl}')">`;
+                // ОБНОВЛЕННЫЙ ВЫЗОВ ФУНКЦИИ ПРИ КЛИКЕ
+                if (m.imageUrl) content += `<img src="${m.imageUrl}" onclick="openImageModal('${m.imageUrl}')">`;
                 if (m.text) content += `<div>${m.text}</div>`;
                 div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);

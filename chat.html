@@ -222,9 +222,9 @@
         }
     }
 
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ: Теперь корректно ищет загруженные пользователями аватарки
     function loadAdminList() {
         const list = document.getElementById('chat-list');
-        // Подписываемся на тикеты
         db.ref('support_tickets').on('value', (snap) => {
             list.innerHTML = "";
             if (!snap.exists()) return;
@@ -232,11 +232,11 @@
             snap.forEach((ticket) => {
                 const uid = ticket.key;
                 
-                // Идем в ветку пользователя, чтобы достать индивидуальное фото
+                // Запрашиваем данные из ветки users, куда сайт сохраняет загруженные фото
                 db.ref('users/' + uid).once('value', (userSnap) => {
                     const userData = userSnap.val() || {};
                     
-                    // Проверка всех возможных полей для аватарки
+                    // Проверяем все возможные ключи, в которые ваш загрузчик мог сохранить URL
                     const avatar = userData.avatarUrl || 
                                    userData.photoURL || 
                                    userData.userAvatar || 

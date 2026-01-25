@@ -16,21 +16,22 @@
         .side-panel { width: 350px; background: var(--panel); border-right: 1px solid #222; display: flex; flex-direction: column; z-index: 5; flex-shrink: 0; }
         .side-header { padding: 20px; font-weight: bold; border-bottom: 1px solid #222; color: var(--neon-red); }
         #chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { display: flex; align-items: center; gap: 12px; padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; }
-        .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #333; }
+        .chat-item { display: flex; align-items: center; gap: 12px; padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: background 0.2s; }
+        .chat-item:hover { background: #1a1a1a; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; border: 1px solid #222; }
+        .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; }
         .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--bg); position: relative; }
         .chat-header { padding: 10px 15px; background: #1a1a1a; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; }
         #msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .msg-row { display: flex; width: 100%; gap: 10px; align-items: flex-end; }
         .msg-row.my { flex-direction: row-reverse; }
-        .bubble { padding: 10px 15px; max-width: 70%; border-radius: 18px; font-size: 15px; word-wrap: break-word; }
+        .bubble { padding: 10px 15px; max-width: 70%; border-radius: 18px; font-size: 15px; word-wrap: break-word; line-height: 1.4; }
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: #2b2b2b; color: white; border-bottom-left-radius: 2px; }
-        .input-area { padding: 15px; background: #1a1a1a; display: flex; gap: 10px; }
-        #msg-input { flex: 1; background: #000; border: 1px solid #444; padding: 12px; color: white; border-radius: 20px; outline: none; }
-        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; }
-        .toggle-admin-btn { background: none; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; cursor: pointer; border-radius: 10px; }
+        .input-area { padding: 15px; background: #1a1a1a; display: flex; gap: 10px; border-top: 1px solid #222; }
+        #msg-input { flex: 1; background: #000; border: 1px solid #444; padding: 12px; color: white; border-radius: 20px; outline: none; resize: none; }
+        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .toggle-admin-btn { background: none; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 12px; cursor: pointer; border-radius: 15px; font-weight: bold; text-transform: uppercase; font-size: 11px; }
     </style>
 </head>
 <body>
@@ -43,12 +44,12 @@
 
     <div class="main-chat">
         <div class="chat-header">
-            <div id="chat-target-name">Выберите чат</div>
+            <div id="chat-target-name" style="font-weight: bold;">Выберите чат</div>
             <button id="admin-toggle" class="toggle-admin-btn" style="display:none;" onclick="toggleAdminMode()">Админ-центр</button>
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
-            <textarea id="msg-input" placeholder="Сообщение..." rows="1"></textarea>
+            <textarea id="msg-input" placeholder="Введите сообщение..." rows="1"></textarea>
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -75,15 +76,26 @@
     auth.onAuthStateChanged(user => {
         if (user) {
             db.ref('users/' + user.uid).once('value', s => {
-                userRole = s.val()?.role || 'user';
+                const data = s.val() || {};
+                userRole = data.role || 'user';
                 if(userRole === 'admin') document.getElementById('admin-toggle').style.display = 'block';
-                setInterface(userRole === 'admin' ? 'admin' : 'user');
+                setInterface(currentView === 'admin' ? 'admin' : 'user');
             });
         } else { window.location.href = "login.html"; }
     });
 
+    // Функция для получения фото (ищет везде)
+    async function getUserPhoto(uid) {
+        const snap = await db.ref('users/' + uid).once('value');
+        const data = snap.val() || {};
+        return data.avatarUrl || data.photoURL || data.userAvatar || data.image || defPhoto;
+    }
+
     function setInterface(mode) {
         const title = document.getElementById('panel-title');
+        const list = document.getElementById('chat-list');
+        list.innerHTML = "";
+        
         if (mode === 'admin') {
             title.innerText = "АДМИН-ЦЕНТР";
             loadAdminList();
@@ -92,6 +104,7 @@
             currentChatUid = auth.currentUser.uid;
             loadUserItem();
             loadMessages(currentChatUid);
+            document.getElementById('chat-target-name').innerText = "Поддержка NovaGame";
         }
     }
 
@@ -101,13 +114,19 @@
             list.innerHTML = "";
             snap.forEach(ticket => {
                 const uid = ticket.key;
-                db.ref('users/' + uid).once('value', uSnap => {
+                db.ref('users/' + uid).once('value', async uSnap => {
                     const u = uSnap.val() || {};
-                    const pic = u.avatarUrl || u.photoURL || defPhoto;
+                    const pic = await getUserPhoto(uid);
+                    const name = u.username || u.displayName || 'ID: ' + uid.substring(0,6);
+                    
                     const div = document.createElement('div');
                     div.className = 'chat-item';
-                    div.onclick = () => { currentChatUid = uid; loadMessages(uid); };
-                    div.innerHTML = `<img src="${pic}" class="avatar"><div><h4>${u.username || uid}</h4></div>`;
+                    div.onclick = () => { 
+                        currentChatUid = uid; 
+                        document.getElementById('chat-target-name').innerText = name;
+                        loadMessages(uid); 
+                    };
+                    div.innerHTML = `<img src="${pic}" class="avatar" onerror="this.src='${defPhoto}'"><div><h4>${name}</h4><p>Открыть чат</p></div>`;
                     list.appendChild(div);
                 });
             });
@@ -116,45 +135,50 @@
 
     function loadUserItem() {
         const list = document.getElementById('chat-list');
-        list.innerHTML = `<div class="chat-item"><img src="pod.jpg" class="avatar"><div><h4>Поддержка</h4></div></div>`;
+        list.innerHTML = `<div class="chat-item active"><img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'"><div><h4>Поддержка</h4><p>Технический отдел</p></div></div>`;
     }
 
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
-        db.ref(`support_tickets/${id}/messages`).on('value', snap => {
+        db.ref(`support_tickets/${id}/messages`).off(); // Очистка старых слушателей
+        db.ref(`support_tickets/${id}/messages`).on('value', async snap => {
             area.innerHTML = "";
-            snap.forEach(msg => {
-                const m = msg.val();
+            const messages = [];
+            snap.forEach(msg => { messages.push(msg.val()); });
+
+            for (const m of messages) {
                 const isMy = m.senderUid === auth.currentUser.uid;
                 const row = document.createElement('div');
                 row.className = 'msg-row ' + (isMy ? 'my' : 'other');
-
-                // Получаем фото автора сообщения
-                db.ref('users/' + m.senderUid).once('value', uSnap => {
-                    const u = uSnap.val() || {};
-                    const photo = u.avatarUrl || u.photoURL || defPhoto;
-                    row.innerHTML = `<img src="${photo}" class="msg-avatar"><div class="bubble">${m.text}</div>`;
-                });
-
+                
+                const photo = await getUserPhoto(m.senderUid);
+                
+                row.innerHTML = `
+                    <img src="${photo}" class="msg-avatar" onerror="this.src='${defPhoto}'">
+                    <div class="bubble">${m.text}</div>
+                `;
                 area.appendChild(row);
-            });
+            }
             area.scrollTop = area.scrollHeight;
         });
     }
 
     function sendMessage() {
         const input = document.getElementById('msg-input');
-        if (!input.value.trim() || !currentChatUid) return;
+        const text = input.value.trim();
+        if (!text || !currentChatUid) return;
+        
         db.ref(`support_tickets/${currentChatUid}/messages`).push({
             senderUid: auth.currentUser.uid,
-            text: input.value,
+            text: text,
             timestamp: Date.now()
         });
         input.value = "";
     }
 
     function toggleAdminMode() {
-        currentView = currentView === 'user' ? 'admin' : 'user';
+        currentView = (currentView === 'user' ? 'admin' : 'user');
+        document.getElementById('admin-toggle').innerText = currentView === 'admin' ? "В ОБЫЧНЫЙ ЧАТ" : "АДМИН-ЦЕНТР";
         setInterface(currentView);
     }
 </script>

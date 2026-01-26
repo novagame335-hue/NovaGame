@@ -39,7 +39,6 @@
             transform: translateX(100%); transition: transform 0.3s ease; z-index: 5;
         }
         
-        /* Логика переключения экранов на мобилках */
         .app-container.chat-active .main-chat { transform: translateX(0); }
 
         .chat-header { background: var(--panel); padding: 10px 15px; display: flex; align-items: center; gap: 10px; min-height: 60px; border-bottom: 1px solid #222; }
@@ -58,7 +57,6 @@
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
 
-        /* ВВОД */
         .input-area { background: var(--panel); padding: 10px 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #222; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
         #msg-input { flex: 1; background: #000; border: 1px solid #333; padding: 12px 18px; color: white; border-radius: 25px; outline: none; font-size: 16px; }
         .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; }
@@ -78,7 +76,7 @@
     <div class="side-panel">
         <div class="side-header">
             <span id="title-text">ЧАТ</span>
-            <button id="admin-switch" class="switch-btn" onclick="toggleMode()" style="display:none;">АДМИН-ЦЕНТР</button>
+            <button id="admin-switch" class="switch-btn" onclick="toggleMode()" style="display:none;">ПАНЕЛЬ УПРАВЛЕНИЯ</button>
         </div>
         <div id="chat-list"></div>
     </div>
@@ -158,7 +156,6 @@
 
     function loadAdminList() {
         const list = document.getElementById('chat-list');
-        // Отписываемся от старых слушателей, если были
         db.ref('support_tickets').off();
         db.ref('support_tickets').on('value', (snap) => {
             if (!is_admin_mode) return;
@@ -174,7 +171,7 @@
                         loadMessages(uid);
                         openChat();
                     };
-                    // Для админа выводим ID пользователя
+                    // Правка: теперь выводит ID пользователя в списке
                     item.innerHTML = `<img src="${user.photo}" class="avatar"><div class="chat-info"><strong>${user.name}</strong><p>ID: ${uid.toUpperCase()}</p></div>`;
                     list.appendChild(item);
                 });
@@ -186,25 +183,20 @@
         const list = document.getElementById('chat-list');
         const myUid = auth.currentUser.uid;
         
-        // Слушаем последнее сообщение в тикете пользователя для превью
+        // Правка: теперь выводит последнее сообщение в списке
         db.ref(`support_tickets/${myUid}/messages`).limitToLast(1).on('value', (snap) => {
             if (is_admin_mode) return;
             
-            let lastMsgText = "Нажмите, чтобы открыть чат";
-            snap.forEach(child => {
-                const m = child.val();
-                lastMsgText = m.text;
-            });
-
-            // Обрезаем длинный текст для превью
-            if (lastMsgText.length > 30) lastMsgText = lastMsgText.substring(0, 30) + "...";
+            let previewText = "Нажмите, чтобы открыть чат";
+            snap.forEach(child => { previewText = child.val().text; });
+            if (previewText.length > 35) previewText = previewText.substring(0, 35) + "...";
 
             list.innerHTML = `
                 <div class="chat-item" onclick="startUserChat()">
                     <img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'">
                     <div class="chat-info">
                         <strong>Поддержка NovaGame</strong>
-                        <p>${lastMsgText}</p>
+                        <p>${previewText}</p>
                     </div>
                 </div>`;
         });
@@ -212,7 +204,7 @@
 
     function startUserChat() {
         currentChatUid = auth.currentUser.uid;
-        document.getElementById('chat-target-name').innerText = "Поддержка";
+        document.getElementById('chat-target-name').innerText = "Поддержка NovaGame";
         loadMessages(currentChatUid);
         openChat();
     }

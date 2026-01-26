@@ -158,6 +158,8 @@
 
     function loadAdminList() {
         const list = document.getElementById('chat-list');
+        // Отписываемся от старых слушателей, если были
+        db.ref('support_tickets').off();
         db.ref('support_tickets').on('value', (snap) => {
             if (!is_admin_mode) return;
             list.innerHTML = "";
@@ -172,6 +174,7 @@
                         loadMessages(uid);
                         openChat();
                     };
+                    // Для админа выводим ID пользователя
                     item.innerHTML = `<img src="${user.photo}" class="avatar"><div class="chat-info"><strong>${user.name}</strong><p>ID: ${uid.toUpperCase()}</p></div>`;
                     list.appendChild(item);
                 });
@@ -181,14 +184,30 @@
 
     function loadUserSidebar() {
         const list = document.getElementById('chat-list');
-        list.innerHTML = `
-            <div class="chat-item" onclick="startUserChat()">
-                <img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'">
-                <div class="chat-info">
-                    <strong>Поддержка NovaGame</strong>
-                    <p>Нажмите, чтобы открыть чат</p>
-                </div>
-            </div>`;
+        const myUid = auth.currentUser.uid;
+        
+        // Слушаем последнее сообщение в тикете пользователя для превью
+        db.ref(`support_tickets/${myUid}/messages`).limitToLast(1).on('value', (snap) => {
+            if (is_admin_mode) return;
+            
+            let lastMsgText = "Нажмите, чтобы открыть чат";
+            snap.forEach(child => {
+                const m = child.val();
+                lastMsgText = m.text;
+            });
+
+            // Обрезаем длинный текст для превью
+            if (lastMsgText.length > 30) lastMsgText = lastMsgText.substring(0, 30) + "...";
+
+            list.innerHTML = `
+                <div class="chat-item" onclick="startUserChat()">
+                    <img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'">
+                    <div class="chat-info">
+                        <strong>Поддержка NovaGame</strong>
+                        <p>${lastMsgText}</p>
+                    </div>
+                </div>`;
+        });
     }
 
     function startUserChat() {

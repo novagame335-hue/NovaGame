@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
         :root { --neon-red: #ff0000; --bg: #000; --panel: #111; --msg-other: #222; }
@@ -65,7 +64,6 @@
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
 
-        /* ИСПРАВЛЕННАЯ ОБЛАСТЬ ВВОДА */
         .input-area { 
             background: var(--panel); 
             padding: 10px 15px; 
@@ -76,12 +74,11 @@
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
         }
         
-        /* КНОПКА СКРЕПКИ */
         .attach-btn { 
             background: none; 
             border: none; 
             color: #888; 
-            font-size: 28px; /* Увеличил размер */
+            font-size: 28px; 
             cursor: pointer; 
             padding: 0 8px; 
             line-height: 1;
@@ -155,7 +152,6 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-    const storage = firebase.storage();
     const defPhoto = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
     let isAdmin = false;
@@ -236,7 +232,7 @@
             let previewText = "Нажмите, чтобы открыть чат";
             snap.forEach(child => { 
                 const m = child.val();
-                previewText = m.type === 'image' ? '📎 Фотография' : m.text;
+                previewText = (m.type === 'image' || m.url) ? '📎 Фотография' : m.text;
             });
             if (previewText.length > 35) previewText = previewText.substring(0, 35) + "...";
 
@@ -269,8 +265,10 @@
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
                 
-                let content = (data.type === 'image') 
-                    ? `<img src="${data.url}" onclick="window.open('${data.url}', '_blank')">` 
+                // Рендерим и старые URL (Storage) и новые Base64 (image)
+                let imageUrl = data.url || data.image;
+                let content = imageUrl 
+                    ? `<img src="${imageUrl}" onclick="window.open('${imageUrl}', '_blank')">` 
                     : data.text;
 
                 div.innerHTML = `<div class="bubble">${content}</div>`;
@@ -292,26 +290,43 @@
         input.value = "";
     }
 
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ БЕЗ STORAGE
     function handlePhotoUpload(input) {
         const file = input.files[0];
         if (!file || !currentChatUid) return;
 
-        const fileName = Date.now() + "_" + file.name;
-        const storageRef = storage.ref(`chat_photos/${currentChatUid}/${fileName}`);
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 600; // Сжимаем до 600px
+                let width = img.width;
+                let height = img.height;
 
-        storageRef.put(file).then(snapshot => {
-            return snapshot.ref.getDownloadURL();
-        }).then(url => {
-            db.ref(`support_tickets/${currentChatUid}/messages`).push({
-                senderUid: auth.currentUser.uid,
-                url: url,
-                type: 'image',
-                timestamp: Date.now()
-            });
-        }).catch(error => {
-            alert("Ошибка при загрузке. Убедитесь, что Firebase Storage активен.");
-        });
-        
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Получаем сжатую строку Base64
+                const base64Data = canvas.toDataURL('image/jpeg', 0.6); 
+                
+                // Сохраняем в Realtime Database как обычный текст
+                db.ref(`support_tickets/${currentChatUid}/messages`).push({
+                    senderUid: auth.currentUser.uid,
+                    image: base64Data, // Поле image вместо url
+                    type: 'image',
+                    timestamp: Date.now()
+                });
+            };
+        };
+        reader.readAsDataURL(file);
         input.value = "";
     }
 </script>

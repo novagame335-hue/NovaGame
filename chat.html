@@ -232,9 +232,9 @@
             let previewText = "Нажмите, чтобы открыть чат";
             snap.forEach(child => { 
                 const m = child.val();
-                previewText = (m.type === 'image' || m.url) ? '📎 Фотография' : m.text;
+                previewText = (m.type === 'image' || m.image || m.url) ? '📎 Фотография' : m.text;
             });
-            if (previewText.length > 35) previewText = previewText.substring(0, 35) + "...";
+            if (previewText && previewText.length > 35) previewText = previewText.substring(0, 35) + "...";
 
             list.innerHTML = `
                 <div class="chat-item" onclick="startUserChat()">
@@ -265,11 +265,10 @@
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
                 
-                // Рендерим и старые URL (Storage) и новые Base64 (image)
-                let imageUrl = data.url || data.image;
+                let imageUrl = data.image || data.url;
                 let content = imageUrl 
                     ? `<img src="${imageUrl}" onclick="window.open('${imageUrl}', '_blank')">` 
-                    : data.text;
+                    : (data.text || "");
 
                 div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
@@ -290,7 +289,6 @@
         input.value = "";
     }
 
-    // ИСПРАВЛЕННАЯ ФУНКЦИЯ БЕЗ STORAGE
     function handlePhotoUpload(input) {
         const file = input.files[0];
         if (!file || !currentChatUid) return;
@@ -301,7 +299,7 @@
             img.src = e.target.result;
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 600; // Сжимаем до 600px
+                const MAX_WIDTH = 400; // Оптимальный размер для текста в базе
                 let width = img.width;
                 let height = img.height;
 
@@ -314,15 +312,15 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                // Получаем сжатую строку Base64
-                const base64Data = canvas.toDataURL('image/jpeg', 0.6); 
+                const base64Data = canvas.toDataURL('image/jpeg', 0.5); 
                 
-                // Сохраняем в Realtime Database как обычный текст
                 db.ref(`support_tickets/${currentChatUid}/messages`).push({
                     senderUid: auth.currentUser.uid,
-                    image: base64Data, // Поле image вместо url
+                    image: base64Data, 
                     type: 'image',
                     timestamp: Date.now()
+                }).catch(err => {
+                    alert("Ошибка: файл слишком тяжелый. Попробуйте другое фото.");
                 });
             };
         };

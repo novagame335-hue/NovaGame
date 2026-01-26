@@ -171,7 +171,6 @@
                         loadMessages(uid);
                         openChat();
                     };
-                    // Правка: теперь выводит ID пользователя в списке
                     item.innerHTML = `<img src="${user.photo}" class="avatar"><div class="chat-info"><strong>${user.name}</strong><p>ID: ${uid.toUpperCase()}</p></div>`;
                     list.appendChild(item);
                 });
@@ -183,7 +182,6 @@
         const list = document.getElementById('chat-list');
         const myUid = auth.currentUser.uid;
         
-        // Правка: теперь выводит последнее сообщение в списке
         db.ref(`support_tickets/${myUid}/messages`).limitToLast(1).on('value', (snap) => {
             if (is_admin_mode) return;
             
@@ -195,7 +193,7 @@
                 <div class="chat-item" onclick="startUserChat()">
                     <img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'">
                     <div class="chat-info">
-                        <strong>Поддержка NovaGame</strong>
+                        <strong>Поддержка</strong>
                         <p>${previewText}</p>
                     </div>
                 </div>`;
@@ -204,7 +202,7 @@
 
     function startUserChat() {
         currentChatUid = auth.currentUser.uid;
-        document.getElementById('chat-target-name').innerText = "Поддержка NovaGame";
+        document.getElementById('chat-target-name').innerText = "Поддержка";
         loadMessages(currentChatUid);
         openChat();
     }

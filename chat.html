@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
         :root { --neon-red: #ff0000; --bg: #000; --panel: #111; --msg-other: #222; }
@@ -16,7 +17,6 @@
 
         .app-container { display: flex; width: 100%; height: 100%; position: relative; overflow: hidden; }
 
-        /* СПИСОК ЧАТОВ (ЭКРАН 1) */
         .side-panel { 
             width: 100%; max-width: 400px; background: var(--panel); border-right: 1px solid #222; 
             display: flex; flex-direction: column; z-index: 2; transition: 0.3s ease;
@@ -32,7 +32,6 @@
         .chat-info strong { display: block; font-size: 16px; margin-bottom: 4px; }
         .chat-info p { margin: 0; font-size: 12px; color: #666; font-family: monospace; }
 
-        /* ОКНО ЧАТА (ЭКРАН 2) */
         .main-chat { 
             position: absolute; right: 0; top: 0; width: 100%; height: 100%; 
             background: #050505; display: flex; flex-direction: column; 
@@ -54,11 +53,25 @@
             padding: 10px 15px; max-width: 75%; font-size: 15px; border-radius: 18px; line-height: 1.4;
             word-wrap: break-word;
         }
+        /* Стиль для картинок внутри пузырька */
+        .bubble img { 
+            max-width: 100%; 
+            border-radius: 10px; 
+            display: block; 
+            margin: 5px 0; 
+            cursor: pointer;
+        }
+        
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
 
         .input-area { background: var(--panel); padding: 10px 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #222; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+        
         #msg-input { flex: 1; background: #000; border: 1px solid #333; padding: 12px 18px; color: white; border-radius: 25px; outline: none; font-size: 16px; }
+        
+        .attach-btn { background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 0 5px; transition: 0.2s; }
+        .attach-btn:hover { color: var(--neon-red); }
+        
         .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; }
 
         .switch-btn { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer; text-transform: uppercase; }
@@ -88,6 +101,9 @@
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
+            <input type="file" id="photo-input" style="display:none" accept="image/*" onchange="handlePhotoUpload(this)">
+            <button class="attach-btn" onclick="document.getElementById('photo-input').click()">📎</button>
+            
             <input type="text" id="msg-input" placeholder="Введите сообщение..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
@@ -108,6 +124,7 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
+    const storage = firebase.storage(); // Инициализация хранилища
     const defPhoto = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
     let isAdmin = false;
@@ -186,7 +203,10 @@
             if (is_admin_mode) return;
             
             let previewText = "Нажмите, чтобы открыть чат";
-            snap.forEach(child => { previewText = child.val().text; });
+            snap.forEach(child => { 
+                const m = child.val();
+                previewText = m.type === 'image' ? '📎 Фотография' : m.text;
+            });
             if (previewText.length > 35) previewText = previewText.substring(0, 35) + "...";
 
             list.innerHTML = `
@@ -217,7 +237,15 @@
                 const isMy = data.senderUid === auth.currentUser.uid;
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
-                div.innerHTML = `<div class="bubble">${data.text}</div>`;
+                
+                let content = "";
+                if (data.type === 'image') {
+                    content = `<img src="${data.url}" onclick="window.open('${data.url}', '_blank')">`;
+                } else {
+                    content = data.text;
+                }
+
+                div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
             });
             area.scrollTop = area.scrollHeight;
@@ -230,9 +258,37 @@
         db.ref(`support_tickets/${currentChatUid}/messages`).push({
             senderUid: auth.currentUser.uid,
             text: input.value.trim(),
+            type: 'text',
             timestamp: Date.now()
         });
         input.value = "";
+    }
+
+    // Обработка загрузки фото
+    function handlePhotoUpload(input) {
+        const file = input.files[0];
+        if (!file || !currentChatUid) return;
+
+        const fileName = Date.now() + "_" + file.name;
+        const storageRef = storage.ref(`chat_photos/${currentChatUid}/${fileName}`);
+
+        // Загрузка
+        storageRef.put(file).then(snapshot => {
+            return snapshot.ref.getDownloadURL();
+        }).then(url => {
+            // Запись ссылки в базу
+            db.ref(`support_tickets/${currentChatUid}/messages`).push({
+                senderUid: auth.currentUser.uid,
+                url: url,
+                type: 'image',
+                timestamp: Date.now()
+            });
+        }).catch(error => {
+            console.error(error);
+            alert("Ошибка при загрузке фото");
+        });
+        
+        input.value = ""; // Сброс инпута
     }
 </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NovaGame — Админ-Центр</title>
+    <title>NovaGame — Поддержка</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -12,22 +12,18 @@
     <style>
         :root { --neon-red: #ff0000; --bg: #000; --panel: #111; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
-        
         .app-container { display: flex; width: 100%; height: 100%; }
         
-        /* Боковая панель */
-        .side-panel { width: 350px; background: var(--panel); border-right: 1px solid #222; display: flex; flex-direction: column; flex-shrink: 0; }
-        .side-header { padding: 20px; font-weight: bold; border-bottom: 1px solid #222; color: var(--neon-red); text-transform: uppercase; font-size: 18px; letter-spacing: 1px; }
+        /* Панель */
+        .side-panel { width: 350px; background: var(--panel); border-right: 1px solid #222; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; }
+        .side-header { padding: 20px; font-weight: bold; border-bottom: 1px solid #222; color: var(--neon-red); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         #chat-list { flex: 1; overflow-y: auto; }
         
-        /* Элемент списка чатов */
-        .chat-item { display: flex; align-items: center; gap: 12px; padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
+        .chat-item { display: flex; align-items: center; gap: 12px; padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
         .chat-item:hover { background: #1a1a1a; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #333; border: 1px solid #444; }
-        .chat-info h4 { margin: 0 0 4px 0; font-size: 16px; color: #fff; }
-        .chat-info p { margin: 0; font-size: 12px; color: #666; font-family: monospace; }
-
-        /* Основное окно чата */
+        .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #333; border: 1px solid #444; }
+        
+        /* Чат */
         .main-chat { flex: 1; display: flex; flex-direction: column; background: #050505; }
         .chat-header { padding: 15px; background: #111; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
         #msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
@@ -36,31 +32,41 @@
         .msg-row.my { flex-direction: row-reverse; }
         .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #333; }
         
-        .bubble { padding: 10px 15px; max-width: 70%; border-radius: 18px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
+        .bubble { padding: 10px 15px; max-width: 70%; border-radius: 18px; font-size: 15px; }
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: #2b2b2b; color: white; border-bottom-left-radius: 2px; }
 
         .input-area { padding: 15px; background: #111; border-top: 1px solid #222; display: flex; gap: 10px; }
         #msg-input { flex: 1; background: #000; border: 1px solid #333; padding: 12px; color: white; border-radius: 25px; outline: none; }
-        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px; }
+        
+        /* Кнопка переключения */
+        .switch-btn { 
+            background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); 
+            padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 10px; font-weight: bold;
+            text-transform: uppercase; transition: 0.3s; display: none;
+        }
+        .switch-btn:hover { background: var(--neon-red); color: white; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="side-panel">
-        <div class="side-header" id="panel-title">АДМИН-ЦЕНТР</div>
+        <div class="side-header">
+            <span id="title-text">ЧАТ</span>
+            <button id="admin-switch" class="switch-btn" onclick="toggleMode()">Панель управления</button>
+        </div>
         <div id="chat-list"></div>
     </div>
 
     <div class="main-chat">
         <div class="chat-header">
-            <div id="chat-target-name" style="font-weight: bold; color: #888;">Выберите диалог из списка</div>
+            <div id="chat-target-name" style="font-weight: bold; color: #888;">Загрузка...</div>
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="Введите ответ..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="send-btn" onclick="sendMessage()">➤</button>
+            <input type="text" id="msg-input" placeholder="Введите сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button style="background:var(--neon-red); border:none; width:40px; height:40px; border-radius:50%; color:white; cursor:pointer;" onclick="sendMessage()">➤</button>
         </div>
     </div>
 </div>
@@ -81,48 +87,79 @@
     const db = firebase.database();
     const defPhoto = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
+    let isAdmin = false;
+    let is_admin_mode = false; // По умолчанию режим юзера
     let currentChatUid = null;
 
     auth.onAuthStateChanged((user) => {
         if (user) {
-            loadAdminList();
+            db.ref('users/' + user.uid).once('value', (snap) => {
+                const data = snap.val() || {};
+                isAdmin = (data.role === 'admin');
+                
+                if (isAdmin) {
+                    document.getElementById('admin-switch').style.display = 'block';
+                }
+                
+                // Начинаем в режиме пользователя
+                switchToUserMode();
+            });
         } else { window.location.href = "login.html"; }
     });
 
-    // Получаем профиль (имя и profilePic)
     async function getUserData(uid) {
         const snap = await db.ref('users/' + uid).once('value');
         const d = snap.val() || {};
-        return {
-            name: d.username || "Игрок",
-            photo: d.profilePic || defPhoto
-        };
+        return { name: d.username || "Игрок", photo: d.profilePic || defPhoto };
+    }
+
+    function toggleMode() {
+        if (!isAdmin) return;
+        is_admin_mode = !is_admin_mode;
+        if (is_admin_mode) {
+            switchToAdminMode();
+        } else {
+            switchToUserMode();
+        }
+    }
+
+    function switchToAdminMode() {
+        document.getElementById('title-text').innerText = "АДМИН-ЦЕНТР";
+        document.getElementById('admin-switch').innerText = "В ОБЫЧНЫЙ ЧАТ";
+        document.getElementById('chat-target-name').innerText = "Выберите диалог";
+        loadAdminList();
+    }
+
+    function switchToUserMode() {
+        document.getElementById('title-text').innerText = "ЧАТ";
+        document.getElementById('admin-switch').innerText = "ПАНЕЛЬ УПРАВЛЕНИЯ";
+        document.getElementById('chat-target-name').innerText = "Поддержка NovaGame";
+        currentChatUid = auth.currentUser.uid;
+        loadUserSidebar();
+        loadMessages(currentChatUid);
     }
 
     function loadAdminList() {
         const list = document.getElementById('chat-list');
         db.ref('support_tickets').on('value', (snap) => {
+            if (!is_admin_mode) return;
             list.innerHTML = "";
             snap.forEach((child) => {
                 const uid = child.key;
                 getUserData(uid).then(user => {
                     const item = document.createElement('div');
                     item.className = 'chat-item';
-                    item.onclick = () => {
-                        currentChatUid = uid;
-                        document.getElementById('chat-target-name').innerText = user.name + " (" + uid.substring(0,8) + ")";
-                        loadMessages(uid);
-                    };
-                    item.innerHTML = `
-                        <img src="${user.photo}" class="avatar" onerror="this.src='${defPhoto}'">
-                        <div class="chat-info">
-                            <h4>${user.name}</h4>
-                            <p>ID: ${uid.toUpperCase()}</p> </div>
-                    `;
+                    item.onclick = () => { currentChatUid = uid; document.getElementById('chat-target-name').innerText = user.name + " (" + uid.substring(0,6) + ")"; loadMessages(uid); };
+                    item.innerHTML = `<img src="${user.photo}" class="avatar"><div style="font-size:14px"><strong>${user.name}</strong><br><small style="color:#666">ID: ${uid.substring(0,10)}...</small></div>`;
                     list.appendChild(item);
                 });
             });
         });
+    }
+
+    function loadUserSidebar() {
+        const list = document.getElementById('chat-list');
+        list.innerHTML = `<div class="chat-item"><img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'"><div><strong>ТЕХПОДДЕРЖКА</strong><br><small>NovaGame Team</small></div></div>`;
     }
 
     function loadMessages(id) {
@@ -132,16 +169,12 @@
             area.innerHTML = "";
             const msgs = [];
             snap.forEach(m => msgs.push(m.val()));
-
             for (const m of msgs) {
                 const isMy = m.senderUid === auth.currentUser.uid;
                 const user = await getUserData(m.senderUid);
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
-                div.innerHTML = `
-                    <img src="${user.photo}" class="msg-avatar" onerror="this.src='${defPhoto}'">
-                    <div class="bubble">${m.text}</div>
-                `;
+                div.innerHTML = `<img src="${user.photo}" class="msg-avatar" onerror="this.src='${defPhoto}'"><div class="bubble">${m.text}</div>`;
                 area.appendChild(div);
             }
             area.scrollTop = area.scrollHeight;

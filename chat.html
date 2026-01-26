@@ -53,26 +53,57 @@
             padding: 10px 15px; max-width: 75%; font-size: 15px; border-radius: 18px; line-height: 1.4;
             word-wrap: break-word;
         }
-        /* Стиль для картинок внутри пузырька */
         .bubble img { 
             max-width: 100%; 
             border-radius: 10px; 
             display: block; 
             margin: 5px 0; 
             cursor: pointer;
+            border: 1px solid #333;
         }
         
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
 
-        .input-area { background: var(--panel); padding: 10px 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #222; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+        /* ИСПРАВЛЕННАЯ ОБЛАСТЬ ВВОДА */
+        .input-area { 
+            background: var(--panel); 
+            padding: 10px 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            border-top: 1px solid #222; 
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+        }
         
-        #msg-input { flex: 1; background: #000; border: 1px solid #333; padding: 12px 18px; color: white; border-radius: 25px; outline: none; font-size: 16px; }
+        /* КНОПКА СКРЕПКИ */
+        .attach-btn { 
+            background: none; 
+            border: none; 
+            color: #888; 
+            font-size: 28px; /* Увеличил размер */
+            cursor: pointer; 
+            padding: 0 8px; 
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .attach-btn:active { transform: scale(0.9); color: var(--neon-red); }
+
+        #msg-input { 
+            flex: 1; 
+            background: #000; 
+            border: 1px solid #333; 
+            padding: 12px 18px; 
+            color: white; 
+            border-radius: 25px; 
+            outline: none; 
+            font-size: 16px; 
+        }
         
-        .attach-btn { background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 0 5px; transition: 0.2s; }
-        .attach-btn:hover { color: var(--neon-red); }
-        
-        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; }
+        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 
         .switch-btn { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer; text-transform: uppercase; }
 
@@ -102,9 +133,9 @@
         <div id="msg-area"></div>
         <div class="input-area">
             <input type="file" id="photo-input" style="display:none" accept="image/*" onchange="handlePhotoUpload(this)">
-            <button class="attach-btn" onclick="document.getElementById('photo-input').click()">📎</button>
+            <button type="button" class="attach-btn" onclick="document.getElementById('photo-input').click()">📎</button>
             
-            <input type="text" id="msg-input" placeholder="Введите сообщение..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
+            <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -124,7 +155,7 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-    const storage = firebase.storage(); // Инициализация хранилища
+    const storage = firebase.storage();
     const defPhoto = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
     let isAdmin = false;
@@ -238,12 +269,9 @@
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
                 
-                let content = "";
-                if (data.type === 'image') {
-                    content = `<img src="${data.url}" onclick="window.open('${data.url}', '_blank')">`;
-                } else {
-                    content = data.text;
-                }
+                let content = (data.type === 'image') 
+                    ? `<img src="${data.url}" onclick="window.open('${data.url}', '_blank')">` 
+                    : data.text;
 
                 div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
@@ -264,7 +292,6 @@
         input.value = "";
     }
 
-    // Обработка загрузки фото
     function handlePhotoUpload(input) {
         const file = input.files[0];
         if (!file || !currentChatUid) return;
@@ -272,11 +299,9 @@
         const fileName = Date.now() + "_" + file.name;
         const storageRef = storage.ref(`chat_photos/${currentChatUid}/${fileName}`);
 
-        // Загрузка
         storageRef.put(file).then(snapshot => {
             return snapshot.ref.getDownloadURL();
         }).then(url => {
-            // Запись ссылки в базу
             db.ref(`support_tickets/${currentChatUid}/messages`).push({
                 senderUid: auth.currentUser.uid,
                 url: url,
@@ -284,11 +309,10 @@
                 timestamp: Date.now()
             });
         }).catch(error => {
-            console.error(error);
-            alert("Ошибка при загрузке фото");
+            alert("Ошибка при загрузке. Убедитесь, что Firebase Storage активен.");
         });
         
-        input.value = ""; // Сброс инпута
+        input.value = "";
     }
 </script>
 </body>

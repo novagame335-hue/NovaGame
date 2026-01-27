@@ -67,7 +67,6 @@
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
 
-        /* ИСПРАВЛЕННАЯ СТРОКА ВВОДА (МАЛЕНЬКАЯ ПО УМОЛЧАНИЮ) */
         .input-area { 
             background: var(--panel); 
             padding: 8px 12px; 
@@ -88,12 +87,13 @@
             outline: none; 
             font-size: 15px; 
             resize: none;
-            min-height: 20px; /* Делаем её тонкой */
+            min-height: 40px; /* Фиксированная база */
             max-height: 120px; 
             font-family: inherit;
             line-height: 1.3;
             overflow-y: hidden;
             display: block;
+            box-sizing: border-box;
         }
         
         .attach-btn { 
@@ -109,7 +109,7 @@
         .send-btn { 
             background: var(--neon-red); 
             border: none; 
-            width: 38px; /* Чуть меньше для компактности */
+            width: 38px; 
             height: 38px; 
             border-radius: 50%; 
             color: white; 
@@ -176,15 +176,21 @@
     let is_admin_mode = false;
     let currentChatUid = null;
 
-    // ПРАВИЛЬНЫЙ АВТО-РОСТ: СБРАСЫВАЕМ И ВЫЧИСЛЯЕМ
+    // ПРАВИЛЬНЫЙ АВТО-РОСТ: СБРАСЫВАЕМ И ВЫЧИСЛЯЕМ МГНОВЕННО
     function autoHeight(el) {
-        el.style.height = 'auto'; 
-        el.style.height = (el.scrollHeight) + 'px';
-        if (el.scrollHeight > 120) {
+        el.style.height = '40px'; // Сброс до базовой высоты
+        const scrollH = el.scrollHeight;
+        el.style.height = (scrollH > 120 ? 120 : scrollH) + 'px';
+        
+        if (scrollH > 120) {
             el.style.overflowY = 'auto';
         } else {
             el.style.overflowY = 'hidden';
         }
+        
+        // Скроллим чат вниз, так как поле ввода "подъедает" место
+        const area = document.getElementById('msg-area');
+        area.scrollTop = area.scrollHeight;
     }
 
     auth.onAuthStateChanged((user) => {
@@ -306,7 +312,7 @@
             timestamp: Date.now()
         });
         input.value = "";
-        input.style.height = 'auto'; // Сброс к минимальной высоте
+        input.style.height = '40px'; // Возвращаем к базе
     }
 
     function handlePhotoUpload(input) {

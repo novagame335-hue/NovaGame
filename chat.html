@@ -183,18 +183,31 @@
     let isAdmin = false;
     let is_admin_mode = false;
     let currentChatUid = null;
+    let statusWatcher = null; // Для хранения подписки на статус
 
-    // --- ФУНКЦИЯ ВРЕМЕНИ ---
+    // --- УЛУЧШЕННАЯ ФУНКЦИЯ ВРЕМЕНИ ---
     function formatLastSeen(timestamp) {
-        if (!timestamp) return "давно";
+        if (!timestamp) return "был(а) в сети давно";
         const date = new Date(timestamp);
         const now = new Date();
-        const diff = (now - date) / 1000;
+        const diffInSeconds = Math.floor((now - date) / 1000);
 
         const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
-        if (diff < 60) return "только что";
-        if (date.toDateString() === now.toDateString()) return `был(а) в сети в ${timeStr}`;
+        if (diffInSeconds < 30) return "только что";
+        if (diffInSeconds < 60) return "был(а) в сети 1 мин. назад";
+        
+        // Если сегодня
+        if (date.toDateString() === now.toDateString()) {
+            return `был(а) в сети в ${timeStr}`;
+        }
+        
+        // Если вчера
+        const yesterday = new Date();
+        yesterday.setDate(now.getDate() - 1);
+        if (date.toDateString() === yesterday.toDateString()) {
+            return `был(а) в сети вчера в ${timeStr}`;
+        }
         
         return `был(а) в сети ${date.toLocaleDateString()} в ${timeStr}`;
     }
@@ -205,6 +218,7 @@
         const connectedRef = db.ref('.info/connected');
         connectedRef.on('value', (snap) => {
             if (snap.val() === true) {
+                // При дисконнекте сохраняем текущее время
                 statusRef.onDisconnect().set({ 
                     state: 'offline', 
                     last_changed: firebase.database.ServerValue.TIMESTAMP 
@@ -217,7 +231,6 @@
         });
     }
 
-    // --- UI HELPERS ---
     function openLightbox(src) {
         document.getElementById('lightbox-img').src = src;
         document.getElementById('lightbox').classList.add('active');
@@ -233,7 +246,6 @@
         area.scrollTop = area.scrollHeight;
     }
 
-    // --- AUTH ---
     auth.onAuthStateChanged((user) => {
         if (user) {
             setupPresence(user.uid);
@@ -256,8 +268,6 @@
         if (!isAdmin) return;
         is_admin_mode = !is_admin_mode;
         closeChat();
-        document.getElementById('chat-target-name').innerText = "Выберите чат";
-        document.getElementById('chat-target-status').innerText = "";
         if (is_admin_mode) switchToAdminMode();
         else switchToUserMode();
     }
@@ -272,7 +282,6 @@
         loadUserSidebar();
     }
 
-    // --- ADMIN LIST ---
     function loadAdminList() {
         const list = document.getElementById('chat-list');
         db.ref('support_tickets').off();
@@ -310,9 +319,12 @@
         });
     }
 
+    // Следим за статусом собеседника в шапке
     function watchTargetStatus(uid) {
         const statusLabel = document.getElementById('chat-target-status');
-        db.ref(`/status/${uid}`).off();
+        if (statusWatcher) db.ref(`/status/${statusWatcher}`).off(); // Сброс старой слежки
+        statusWatcher = uid;
+
         db.ref(`/status/${uid}`).on('value', s => {
             const data = s.val() || {};
             if (data.state === 'online') {
@@ -325,7 +337,6 @@
         });
     }
 
-    // --- USER ---
     function loadUserSidebar() {
         const list = document.getElementById('chat-list');
         const myUid = auth.currentUser.uid;
@@ -353,9 +364,11 @@
     }
 
     function openChat() { document.getElementById('app').classList.add('chat-active'); }
-    function closeChat() { document.getElementById('app').classList.remove('chat-active'); }
+    function closeChat() { 
+        document.getElementById('app').classList.remove('chat-active');
+        document.getElementById('chat-target-status').innerText = "";
+    }
 
-    // --- MESSAGING ---
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
         db.ref(`support_tickets/${id}/messages`).off();
@@ -411,6 +424,18 @@
         reader.readAsDataURL(file);
         input.value = "";
     }
+
+    // Таймер для обновления текста статуса каждую минуту
+    setInterval(() => {
+        if (currentChatUid && !document.getElementById('chat-target-status').classList.contains('online')) {
+            db.ref(`/status/${currentChatUid}`).once('value', s => {
+                const data = s.val() || {};
+                if (data.state !== 'online') {
+                    document.getElementById('chat-target-status').innerText = formatLastSeen(data.last_changed);
+                }
+            });
+        }
+    }, 60000);
 </script>
 </body>
 </html>

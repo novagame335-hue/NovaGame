@@ -87,10 +87,10 @@
             outline: none; 
             font-size: 15px; 
             resize: none;
-            min-height: 40px; /* Фиксированная база */
+            height: 40px; /* Фиксированная начальная высота */
             max-height: 120px; 
             font-family: inherit;
-            line-height: 1.3;
+            line-height: 20px; /* Явно задаем высоту строки для точности */
             overflow-y: hidden;
             display: block;
             box-sizing: border-box;
@@ -102,7 +102,7 @@
             color: #888; 
             font-size: 24px; 
             cursor: pointer; 
-            padding: 0 4px 6px 4px; 
+            padding: 0 4px 10px 4px; 
             line-height: 1;
         }
 
@@ -176,19 +176,25 @@
     let is_admin_mode = false;
     let currentChatUid = null;
 
-    // ПРАВИЛЬНЫЙ АВТО-РОСТ: СБРАСЫВАЕМ И ВЫЧИСЛЯЕМ МГНОВЕННО
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ: Растет только когда реально нужно
     function autoHeight(el) {
-        el.style.height = '40px'; // Сброс до базовой высоты
-        const scrollH = el.scrollHeight;
-        el.style.height = (scrollH > 120 ? 120 : scrollH) + 'px';
+        el.style.height = '40px'; // Временный сброс для замера
+        const newHeight = el.scrollHeight;
         
-        if (scrollH > 120) {
+        // Если контента больше чем на 40px, увеличиваем
+        if (newHeight > 40) {
+            el.style.height = (newHeight > 120 ? 120 : newHeight) + 'px';
+        } else {
+            el.style.height = '40px';
+        }
+
+        if (newHeight > 120) {
             el.style.overflowY = 'auto';
         } else {
             el.style.overflowY = 'hidden';
         }
         
-        // Скроллим чат вниз, так как поле ввода "подъедает" место
+        // Прокрутка чата
         const area = document.getElementById('msg-area');
         area.scrollTop = area.scrollHeight;
     }
@@ -312,7 +318,7 @@
             timestamp: Date.now()
         });
         input.value = "";
-        input.style.height = '40px'; // Возвращаем к базе
+        input.style.height = '40px'; 
     }
 
     function handlePhotoUpload(input) {

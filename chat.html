@@ -121,6 +121,20 @@
             margin-bottom: 2px;
         }
 
+        /* --- НОВОЕ: Стили для просмотра фото в этом же окне --- */
+        .lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .lightbox.active { display: flex; opacity: 1; }
+        .lightbox img { max-width: 95%; max-height: 90%; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .lightbox-close { 
+            position: absolute; top: 20px; right: 20px; 
+            color: white; font-size: 35px; cursor: pointer; user-select: none;
+        }
+
         @media (min-width: 769px) {
             .side-panel { width: 350px; position: relative; transform: none !important; }
             .main-chat { position: relative; transform: none !important; flex: 1; border-left: 1px solid #222; }
@@ -148,16 +162,18 @@
         <div class="input-area">
             <input type="file" id="photo-input" style="display:none" accept="image/*" onchange="handlePhotoUpload(this)">
             <button type="button" class="attach-btn" onclick="document.getElementById('photo-input').click()">📎</button>
-            
             <textarea id="msg-input" placeholder="Сообщение..." rows="1" oninput="autoHeight(this)"></textarea>
-            
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 </div>
 
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="">
+</div>
+
 <script>
-    // Конфигурация Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
         authDomain: "novagame-b15b6.firebaseapp.com",
@@ -168,7 +184,6 @@
         appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
     };
 
-    // Инициализация
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
@@ -178,29 +193,35 @@
     let is_admin_mode = false;
     let currentChatUid = null;
 
-    // Авто-высота: поднимает строку только когда первая заполнится
+    // --- ФУНКЦИИ LIGHTBOX ---
+    function openLightbox(src) {
+        const lb = document.getElementById('lightbox');
+        const img = document.getElementById('lightbox-img');
+        img.src = src;
+        lb.classList.add('active');
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+    }
+
     function autoHeight(el) {
         el.style.height = '40px'; 
         const newHeight = el.scrollHeight;
-        
-        // Рост происходит только если контент не влезает в 40px
         if (newHeight > 40) {
             el.style.height = (newHeight > 120 ? 120 : newHeight) + 'px';
         } else {
             el.style.height = '40px';
         }
-
         if (newHeight > 120) {
             el.style.overflowY = 'auto';
         } else {
             el.style.overflowY = 'hidden';
         }
-        
         const area = document.getElementById('msg-area');
         area.scrollTop = area.scrollHeight;
     }
 
-    // Слушатель авторизации
     auth.onAuthStateChanged((user) => {
         if (user) {
             db.ref('users/' + user.uid).once('value', (snap) => {
@@ -209,22 +230,15 @@
                 if (isAdmin) document.getElementById('admin-switch').style.display = 'block';
                 switchToUserMode();
             });
-        } else { 
-            window.location.href = "login.html"; 
-        }
+        } else { window.location.href = "login.html"; }
     });
 
-    // Получение данных юзера
     async function getUserData(uid) {
         const snap = await db.ref('users/' + uid).once('value');
         const d = snap.val() || {};
-        return { 
-            name: d.username || "Игрок", 
-            photo: d.profilePic || defPhoto 
-        };
+        return { name: d.username || "Игрок", photo: d.profilePic || defPhoto };
     }
 
-    // Переключение режимов (Админ/Юзер)
     function toggleMode() {
         if (!isAdmin) return;
         is_admin_mode = !is_admin_mode;
@@ -244,7 +258,6 @@
         loadUserSidebar();
     }
 
-    // Список чатов для админа
     function loadAdminList() {
         const list = document.getElementById('chat-list');
         db.ref('support_tickets').off();
@@ -262,23 +275,16 @@
                         loadMessages(uid);
                         openChat();
                     };
-                    item.innerHTML = `
-                        <img src="${user.photo}" class="avatar">
-                        <div class="chat-info">
-                            <strong>${user.name}</strong>
-                            <p>ID: ${uid.toUpperCase()}</p>
-                        </div>`;
+                    item.innerHTML = `<img src="${user.photo}" class="avatar"><div class="chat-info"><strong>${user.name}</strong><p>ID: ${uid.toUpperCase()}</p></div>`;
                     list.appendChild(item);
                 });
             });
         });
     }
 
-    // Боковая панель для пользователя
     function loadUserSidebar() {
         const list = document.getElementById('chat-list');
         const myUid = auth.currentUser.uid;
-        
         db.ref(`support_tickets/${myUid}/messages`).limitToLast(1).on('value', (snap) => {
             if (is_admin_mode) return;
             let previewText = "Нажмите, чтобы открыть чат";
@@ -289,10 +295,7 @@
             list.innerHTML = `
                 <div class="chat-item" onclick="startUserChat()">
                     <img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'">
-                    <div class="chat-info">
-                        <strong>Поддержка</strong>
-                        <p>${previewText}</p>
-                    </div>
+                    <div class="chat-info"><strong>Поддержка</strong><p>${previewText}</p></div>
                 </div>`;
         });
     }
@@ -304,11 +307,9 @@
         openChat();
     }
 
-    // Управление окном чата
     function openChat() { document.getElementById('app').classList.add('chat-active'); }
     function closeChat() { document.getElementById('app').classList.remove('chat-active'); }
 
-    // Загрузка сообщений
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
         db.ref(`support_tickets/${id}/messages`).off();
@@ -319,8 +320,9 @@
                 const isMy = data.senderUid === auth.currentUser.uid;
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
+                // ИЗМЕНЕНО: Теперь вместо window.open вызывается openLightbox
                 let content = data.image 
-                    ? `<img src="${data.image}" onclick="window.open('${data.image}', '_blank')">` 
+                    ? `<img src="${data.image}" onclick="openLightbox('${data.image}')">` 
                     : (data.text || "");
                 div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
@@ -329,7 +331,6 @@
         });
     }
 
-    // Отправка текста
     function sendMessage() {
         const input = document.getElementById('msg-input');
         if (!input.value.trim() || !currentChatUid) return;
@@ -343,7 +344,6 @@
         input.style.height = '40px'; 
     }
 
-    // Загрузка фото
     function handlePhotoUpload(input) {
         const file = input.files[0];
         if (!file || !currentChatUid) return;

@@ -53,31 +53,46 @@
             word-wrap: break-word;
         }
 
-        /* ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ КАРТИНОК */
         .bubble img { 
-            width: 220px;            /* Ограниченная ширина */
-            height: 220px;           /* Ограниченная высота */
-            object-fit: cover;       /* Сохранение пропорций при обрезке */
+            width: 220px; 
+            height: 220px; 
+            object-fit: cover; 
             border-radius: 12px; 
             display: block; 
             margin: 5px 0; 
             cursor: pointer;
             border: 1px solid rgba(255,255,255,0.1);
-            transition: opacity 0.2s;
         }
-        .bubble img:hover { opacity: 0.8; }
         
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
 
+        /* ИСПРАВЛЕННАЯ ОБЛАСТЬ ВВОДА */
         .input-area { 
             background: var(--panel); 
             padding: 10px 15px; 
             display: flex; 
-            align-items: center; 
+            align-items: flex-end; /* Выравнивание кнопок по низу при росте поля */
             gap: 10px; 
             border-top: 1px solid #222; 
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+        }
+        
+        #msg-input { 
+            flex: 1; 
+            background: #000; 
+            border: 1px solid #333; 
+            padding: 10px 15px; 
+            color: white; 
+            border-radius: 20px; 
+            outline: none; 
+            font-size: 16px; 
+            resize: none; /* Запрет ручного изменения размера */
+            max-height: 150px; /* Максимальная высота перед появлением скролла */
+            min-height: 40px;
+            font-family: inherit;
+            line-height: 1.4;
+            overflow-y: auto;
         }
         
         .attach-btn { 
@@ -86,29 +101,24 @@
             color: #888; 
             font-size: 28px; 
             cursor: pointer; 
-            padding: 0 8px; 
+            padding: 0 0 5px 0; 
             line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
         }
-        .attach-btn:active { transform: scale(0.9); color: var(--neon-red); }
 
-        #msg-input { 
-            flex: 1; 
-            background: #000; 
-            border: 1px solid #333; 
-            padding: 12px 18px; 
+        .send-btn { 
+            background: var(--neon-red); 
+            border: none; 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
             color: white; 
-            border-radius: 25px; 
-            outline: none; 
-            font-size: 16px; 
+            cursor: pointer; 
+            flex-shrink: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 2px;
         }
-        
-        .send-btn { background: var(--neon-red); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-
-        .switch-btn { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer; text-transform: uppercase; }
 
         @media (min-width: 769px) {
             .side-panel { width: 350px; position: relative; transform: none !important; }
@@ -123,7 +133,7 @@
     <div class="side-panel">
         <div class="side-header">
             <span id="title-text">ЧАТ</span>
-            <button id="admin-switch" class="switch-btn" onclick="toggleMode()" style="display:none;">ПАНЕЛЬ УПРАВЛЕНИЯ</button>
+            <button id="admin-switch" class="switch-btn" onclick="toggleMode()" style="display:none; background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer;">ПАНЕЛЬ УПРАВЛЕНИЯ</button>
         </div>
         <div id="chat-list"></div>
     </div>
@@ -138,7 +148,8 @@
             <input type="file" id="photo-input" style="display:none" accept="image/*" onchange="handlePhotoUpload(this)">
             <button type="button" class="attach-btn" onclick="document.getElementById('photo-input').click()">📎</button>
             
-            <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
+            <textarea id="msg-input" placeholder="Сообщение..." rows="1" oninput="autoHeight(this)"></textarea>
+            
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -163,6 +174,12 @@
     let isAdmin = false;
     let is_admin_mode = false;
     let currentChatUid = null;
+
+    // ФУНКЦИЯ АВТОМАТИЧЕСКОЙ ВЫСОТЫ
+    function autoHeight(el) {
+        el.style.height = '40px'; 
+        el.style.height = (el.scrollHeight) + 'px';
+    }
 
     auth.onAuthStateChanged((user) => {
         if (user) {
@@ -191,18 +208,13 @@
 
     function switchToAdminMode() {
         document.getElementById('title-text').innerText = "АДМИН-ЦЕНТР";
-        document.getElementById('admin-switch').innerText = "В ОБЫЧНЫЙ ЧАТ";
         loadAdminList();
     }
 
     function switchToUserMode() {
         document.getElementById('title-text').innerText = "ЧАТ";
-        document.getElementById('admin-switch').innerText = "ПАНЕЛЬ УПРАВЛЕНИЯ";
         loadUserSidebar();
     }
-
-    function openChat() { document.getElementById('app').classList.add('chat-active'); }
-    function closeChat() { document.getElementById('app').classList.remove('chat-active'); }
 
     function loadAdminList() {
         const list = document.getElementById('chat-list');
@@ -234,14 +246,11 @@
         
         db.ref(`support_tickets/${myUid}/messages`).limitToLast(1).on('value', (snap) => {
             if (is_admin_mode) return;
-            
             let previewText = "Нажмите, чтобы открыть чат";
             snap.forEach(child => { 
                 const m = child.val();
-                previewText = (m.type === 'image' || m.image || m.url) ? '📎 Фотография' : m.text;
+                previewText = (m.type === 'image' || m.image) ? '📎 Фотография' : m.text;
             });
-            if (previewText && previewText.length > 35) previewText = previewText.substring(0, 35) + "...";
-
             list.innerHTML = `
                 <div class="chat-item" onclick="startUserChat()">
                     <img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'">
@@ -260,6 +269,9 @@
         openChat();
     }
 
+    function openChat() { document.getElementById('app').classList.add('chat-active'); }
+    function closeChat() { document.getElementById('app').classList.remove('chat-active'); }
+
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
         db.ref(`support_tickets/${id}/messages`).off();
@@ -270,12 +282,7 @@
                 const isMy = data.senderUid === auth.currentUser.uid;
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
-                
-                let imageUrl = data.image || data.url;
-                let content = imageUrl 
-                    ? `<img src="${imageUrl}" onclick="window.open('${imageUrl}', '_blank')">` 
-                    : (data.text || "");
-
+                let content = data.image ? `<img src="${data.image}" onclick="window.open('${data.image}', '_blank')">` : (data.text || "");
                 div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
             });
@@ -293,12 +300,12 @@
             timestamp: Date.now()
         });
         input.value = "";
+        input.style.height = '40px'; // Сброс высоты после отправки
     }
 
     function handlePhotoUpload(input) {
         const file = input.files[0];
         if (!file || !currentChatUid) return;
-
         const reader = new FileReader();
         reader.onload = function(e) {
             const img = new Image();
@@ -308,7 +315,6 @@
                 const MAX_WIDTH = 400; 
                 let width = img.width;
                 let height = img.height;
-
                 if (width > MAX_WIDTH) {
                     height *= MAX_WIDTH / width;
                     width = MAX_WIDTH;
@@ -317,16 +323,12 @@
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                
                 const base64Data = canvas.toDataURL('image/jpeg', 0.5); 
-                
                 db.ref(`support_tickets/${currentChatUid}/messages`).push({
                     senderUid: auth.currentUser.uid,
                     image: base64Data, 
                     type: 'image',
                     timestamp: Date.now()
-                }).catch(err => {
-                    alert("Ошибка: файл слишком тяжелый. Попробуйте другое фото.");
                 });
             };
         };

@@ -52,14 +52,20 @@
             padding: 10px 15px; max-width: 75%; font-size: 15px; border-radius: 18px; line-height: 1.4;
             word-wrap: break-word;
         }
+
+        /* ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ КАРТИНОК */
         .bubble img { 
-            max-width: 100%; 
-            border-radius: 10px; 
+            width: 220px;            /* Ограниченная ширина */
+            height: 220px;           /* Ограниченная высота */
+            object-fit: cover;       /* Сохранение пропорций при обрезке */
+            border-radius: 12px; 
             display: block; 
             margin: 5px 0; 
             cursor: pointer;
-            border: 1px solid #333;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: opacity 0.2s;
         }
+        .bubble img:hover { opacity: 0.8; }
         
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
@@ -299,7 +305,7 @@
             img.src = e.target.result;
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 400; // Оптимальный размер для текста в базе
+                const MAX_WIDTH = 400; 
                 let width = img.width;
                 let height = img.height;
 

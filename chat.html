@@ -16,7 +16,7 @@
             --panel: #111; 
             --msg-other: #222; 
             --online: #00ff00; 
-            --offline: #555; 
+            --offline: #888; 
         }
         
         body, html { 
@@ -28,7 +28,6 @@
 
         .app-container { display: flex; width: 100%; height: 100%; position: relative; overflow: hidden; }
 
-        /* Боковая панель */
         .side-panel { 
             width: 100%; max-width: 400px; background: var(--panel); border-right: 1px solid #222; 
             display: flex; flex-direction: column; z-index: 2; transition: 0.3s ease;
@@ -59,7 +58,6 @@
         .chat-info strong { display: block; font-size: 16px; margin-bottom: 4px; }
         .chat-info p { margin: 0; font-size: 12px; color: #666; font-family: monospace; }
 
-        /* Основное окно чата */
         .main-chat { 
             position: absolute; right: 0; top: 0; width: 100%; height: 100%; 
             background: #050505; display: flex; flex-direction: column; 
@@ -76,10 +74,9 @@
         
         .header-info { flex: 1; display: flex; flex-direction: column; }
         #chat-target-name { font-weight: bold; font-size: 15px; }
-        #chat-target-status { font-size: 11px; color: #666; margin-top: 2px; }
+        #chat-target-status { font-size: 11px; color: #888; margin-top: 2px; }
         #chat-target-status.online { color: var(--online); }
 
-        /* Область сообщений */
         #msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         
         .msg-row { display: flex; width: 100%; }
@@ -97,7 +94,6 @@
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
 
-        /* Ввод сообщения */
         .input-area { 
             background: var(--panel); padding: 8px 12px; 
             display: flex; align-items: flex-end; gap: 8px; border-top: 1px solid #222; 
@@ -118,7 +114,6 @@
             display: flex; align-items: center; justify-content: center; margin-bottom: 2px; 
         }
 
-        /* Просмотр фото */
         .lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.9); z-index: 1000; display: none; 
@@ -170,7 +165,6 @@
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
         authDomain: "novagame-b15b6.firebaseapp.com",
@@ -190,14 +184,35 @@
     let is_admin_mode = false;
     let currentChatUid = null;
 
+    // --- ФУНКЦИЯ ВРЕМЕНИ ---
+    function formatLastSeen(timestamp) {
+        if (!timestamp) return "давно";
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = (now - date) / 1000;
+
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        if (diff < 60) return "только что";
+        if (date.toDateString() === now.toDateString()) return `был(а) в сети в ${timeStr}`;
+        
+        return `был(а) в сети ${date.toLocaleDateString()} в ${timeStr}`;
+    }
+
     // --- PRESENCE SYSTEM ---
     function setupPresence(uid) {
         const statusRef = db.ref(`/status/${uid}`);
         const connectedRef = db.ref('.info/connected');
         connectedRef.on('value', (snap) => {
             if (snap.val() === true) {
-                statusRef.onDisconnect().set({ state: 'offline', last_changed: firebase.database.ServerValue.TIMESTAMP });
-                statusRef.set({ state: 'online', last_changed: firebase.database.ServerValue.TIMESTAMP });
+                statusRef.onDisconnect().set({ 
+                    state: 'offline', 
+                    last_changed: firebase.database.ServerValue.TIMESTAMP 
+                });
+                statusRef.set({ 
+                    state: 'online', 
+                    last_changed: firebase.database.ServerValue.TIMESTAMP 
+                });
             }
         });
     }
@@ -218,7 +233,7 @@
         area.scrollTop = area.scrollHeight;
     }
 
-    // --- AUTH LOGIC ---
+    // --- AUTH ---
     auth.onAuthStateChanged((user) => {
         if (user) {
             setupPresence(user.uid);
@@ -237,7 +252,6 @@
         return { name: d.username || "Игрок", photo: d.profilePic || defPhoto };
     }
 
-    // --- MODES ---
     function toggleMode() {
         if (!isAdmin) return;
         is_admin_mode = !is_admin_mode;
@@ -286,10 +300,10 @@
                         <div class="chat-info"><strong>${user.name}</strong><p>ID: ${uid.toUpperCase()}</p></div>`;
                     list.appendChild(item);
                     
-                    // Live Status Dot
-                    db.ref(`/status/${uid}/state`).on('value', s => {
+                    db.ref(`/status/${uid}`).on('value', s => {
+                        const data = s.val() || {};
                         const dot = document.getElementById(`dot-${uid}`);
-                        if(dot) dot.className = `status-dot ${s.val() === 'online' ? 'online' : ''}`;
+                        if(dot) dot.className = `status-dot ${data.state === 'online' ? 'online' : ''}`;
                     });
                 });
             });
@@ -298,15 +312,20 @@
 
     function watchTargetStatus(uid) {
         const statusLabel = document.getElementById('chat-target-status');
-        db.ref(`/status/${uid}/state`).off();
-        db.ref(`/status/${uid}/state`).on('value', s => {
-            const isOnline = s.val() === 'online';
-            statusLabel.innerText = isOnline ? 'в сети' : 'не в сети';
-            statusLabel.className = isOnline ? 'online' : '';
+        db.ref(`/status/${uid}`).off();
+        db.ref(`/status/${uid}`).on('value', s => {
+            const data = s.val() || {};
+            if (data.state === 'online') {
+                statusLabel.innerText = 'в сети';
+                statusLabel.classList.add('online');
+            } else {
+                statusLabel.innerText = formatLastSeen(data.last_changed);
+                statusLabel.classList.remove('online');
+            }
         });
     }
 
-    // --- USER SIDEBAR ---
+    // --- USER ---
     function loadUserSidebar() {
         const list = document.getElementById('chat-list');
         const myUid = auth.currentUser.uid;

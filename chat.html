@@ -10,27 +10,56 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --neon-red: #ff0000; --bg: #000; --panel: #111; --msg-other: #222; }
+        :root { 
+            --neon-red: #ff0000; 
+            --bg: #000; 
+            --panel: #111; 
+            --msg-other: #222; 
+            --online: #00ff00; 
+            --offline: #555; 
+        }
         
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
+        body, html { 
+            margin: 0; padding: 0; height: 100%; 
+            background: var(--bg); color: white; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            overflow: hidden; 
+        }
 
         .app-container { display: flex; width: 100%; height: 100%; position: relative; overflow: hidden; }
 
+        /* Боковая панель */
         .side-panel { 
             width: 100%; max-width: 400px; background: var(--panel); border-right: 1px solid #222; 
             display: flex; flex-direction: column; z-index: 2; transition: 0.3s ease;
         }
         
-        .side-header { padding: 15px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; min-height: 60px; }
+        .side-header { 
+            padding: 15px; border-bottom: 1px solid #222; 
+            display: flex; justify-content: space-between; align-items: center; min-height: 60px; 
+        }
         .side-header span { color: var(--neon-red); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
         #chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+        .chat-item { 
+            display: flex; align-items: center; padding: 15px; 
+            border-bottom: 1px solid #1a1a1a; cursor: pointer; position: relative; 
+        }
         .chat-item:active { background: #1a1a1a; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; background: #333; border: 1px solid #444; }
+        
+        .avatar-container { position: relative; margin-right: 15px; }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #333; border: 1px solid #444; display: block; }
+        
+        .status-dot { 
+            position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; 
+            border-radius: 50%; border: 2px solid var(--panel); background: var(--offline); 
+        }
+        .status-dot.online { background: var(--online); box-shadow: 0 0 5px var(--online); }
+
         .chat-info strong { display: block; font-size: 16px; margin-bottom: 4px; }
         .chat-info p { margin: 0; font-size: 12px; color: #666; font-family: monospace; }
 
+        /* Основное окно чата */
         .main-chat { 
             position: absolute; right: 0; top: 0; width: 100%; height: 100%; 
             background: #050505; display: flex; flex-direction: column; 
@@ -39,101 +68,65 @@
         
         .app-container.chat-active .main-chat { transform: translateX(0); }
 
-        .chat-header { background: var(--panel); padding: 10px 15px; display: flex; align-items: center; gap: 10px; min-height: 60px; border-bottom: 1px solid #222; }
+        .chat-header { 
+            background: var(--panel); padding: 10px 15px; 
+            display: flex; align-items: center; gap: 10px; min-height: 60px; border-bottom: 1px solid #222; 
+        }
         .back-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0 10px 0 0; }
-        #chat-target-name { font-weight: bold; flex: 1; font-size: 15px; }
+        
+        .header-info { flex: 1; display: flex; flex-direction: column; }
+        #chat-target-name { font-weight: bold; font-size: 15px; }
+        #chat-target-status { font-size: 11px; color: #666; margin-top: 2px; }
+        #chat-target-status.online { color: var(--online); }
 
+        /* Область сообщений */
         #msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         
         .msg-row { display: flex; width: 100%; }
         .msg-row.my { justify-content: flex-end; }
         
         .bubble { 
-            padding: 10px 15px; max-width: 75%; font-size: 15px; border-radius: 18px; line-height: 1.4;
-            word-wrap: break-word;
+            padding: 10px 15px; max-width: 75%; font-size: 15px; border-radius: 18px; 
+            line-height: 1.4; word-wrap: break-word; 
         }
-
         .bubble img { 
-            width: 220px; 
-            height: 220px; 
-            object-fit: cover; 
-            border-radius: 12px; 
-            display: block; 
-            margin: 5px 0; 
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
+            width: 220px; height: 220px; object-fit: cover; border-radius: 12px; 
+            display: block; margin: 5px 0; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); 
         }
         
         .my .bubble { background: var(--neon-red); color: white; border-bottom-right-radius: 2px; }
         .other .bubble { background: var(--msg-other); color: white; border-bottom-left-radius: 2px; }
 
+        /* Ввод сообщения */
         .input-area { 
-            background: var(--panel); 
-            padding: 8px 12px; 
-            display: flex; 
-            align-items: flex-end; 
-            gap: 8px; 
-            border-top: 1px solid #222; 
+            background: var(--panel); padding: 8px 12px; 
+            display: flex; align-items: flex-end; gap: 8px; border-top: 1px solid #222; 
             padding-bottom: calc(8px + env(safe-area-inset-bottom)); 
         }
         
         #msg-input { 
-            flex: 1; 
-            background: #000; 
-            border: 1px solid #333; 
-            padding: 10px 15px; 
-            color: white; 
-            border-radius: 20px; 
-            outline: none; 
-            font-size: 15px; 
-            resize: none;
-            height: 40px; 
-            max-height: 120px; 
-            font-family: inherit;
-            line-height: 20px;
-            overflow-y: hidden;
-            display: block;
-            box-sizing: border-box;
+            flex: 1; background: #000; border: 1px solid #333; padding: 10px 15px; 
+            color: white; border-radius: 20px; outline: none; font-size: 15px; 
+            resize: none; height: 40px; max-height: 120px; font-family: inherit; 
+            line-height: 20px; overflow-y: hidden; display: block; box-sizing: border-box; 
         }
         
-        .attach-btn { 
-            background: none; 
-            border: none; 
-            color: #888; 
-            font-size: 24px; 
-            cursor: pointer; 
-            padding: 0 4px 10px 4px; 
-            line-height: 1;
-        }
-
+        .attach-btn { background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 0 4px 10px 4px; line-height: 1; }
         .send-btn { 
-            background: var(--neon-red); 
-            border: none; 
-            width: 38px; 
-            height: 38px; 
-            border-radius: 50%; 
-            color: white; 
-            cursor: pointer; 
-            flex-shrink: 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin-bottom: 2px;
+            background: var(--neon-red); border: none; width: 38px; height: 38px; 
+            border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; 
+            display: flex; align-items: center; justify-content: center; margin-bottom: 2px; 
         }
 
-        /* --- НОВОЕ: Стили для просмотра фото в этом же окне --- */
-        .lightbox {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 1000;
-            display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.3s ease;
+        /* Просмотр фото */
+        .lightbox { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); z-index: 1000; display: none; 
+            align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; 
         }
         .lightbox.active { display: flex; opacity: 1; }
-        .lightbox img { max-width: 95%; max-height: 90%; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .lightbox-close { 
-            position: absolute; top: 20px; right: 20px; 
-            color: white; font-size: 35px; cursor: pointer; user-select: none;
-        }
+        .lightbox img { max-width: 95%; max-height: 90%; border-radius: 8px; }
+        .lightbox-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 35px; cursor: pointer; }
 
         @media (min-width: 769px) {
             .side-panel { width: 350px; position: relative; transform: none !important; }
@@ -148,7 +141,7 @@
     <div class="side-panel">
         <div class="side-header">
             <span id="title-text">ЧАТ</span>
-            <button id="admin-switch" class="switch-btn" onclick="toggleMode()" style="display:none; background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer;">ПАНЕЛЬ УПРАВЛЕНИЯ</button>
+            <button id="admin-switch" onclick="toggleMode()" style="display:none; background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer;">ПАНЕЛЬ УПРАВЛЕНИЯ</button>
         </div>
         <div id="chat-list"></div>
     </div>
@@ -156,12 +149,15 @@
     <div class="main-chat">
         <div class="chat-header">
             <button class="back-btn" onclick="closeChat()">←</button>
-            <div id="chat-target-name">Выберите чат</div>
+            <div class="header-info">
+                <div id="chat-target-name">Выберите чат</div>
+                <div id="chat-target-status"></div>
+            </div>
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
             <input type="file" id="photo-input" style="display:none" accept="image/*" onchange="handlePhotoUpload(this)">
-            <button type="button" class="attach-btn" onclick="document.getElementById('photo-input').click()">📎</button>
+            <button class="attach-btn" onclick="document.getElementById('photo-input').click()">📎</button>
             <textarea id="msg-input" placeholder="Сообщение..." rows="1" oninput="autoHeight(this)"></textarea>
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
@@ -170,10 +166,11 @@
 
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close">&times;</span>
-    <img id="lightbox-img" src="" alt="">
+    <img id="lightbox-img" src="">
 </div>
 
 <script>
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
         authDomain: "novagame-b15b6.firebaseapp.com",
@@ -193,37 +190,38 @@
     let is_admin_mode = false;
     let currentChatUid = null;
 
-    // --- ФУНКЦИИ LIGHTBOX ---
-    function openLightbox(src) {
-        const lb = document.getElementById('lightbox');
-        const img = document.getElementById('lightbox-img');
-        img.src = src;
-        lb.classList.add('active');
+    // --- PRESENCE SYSTEM ---
+    function setupPresence(uid) {
+        const statusRef = db.ref(`/status/${uid}`);
+        const connectedRef = db.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+            if (snap.val() === true) {
+                statusRef.onDisconnect().set({ state: 'offline', last_changed: firebase.database.ServerValue.TIMESTAMP });
+                statusRef.set({ state: 'online', last_changed: firebase.database.ServerValue.TIMESTAMP });
+            }
+        });
     }
 
-    function closeLightbox() {
-        document.getElementById('lightbox').classList.remove('active');
+    // --- UI HELPERS ---
+    function openLightbox(src) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').classList.add('active');
     }
+    function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
 
     function autoHeight(el) {
         el.style.height = '40px'; 
         const newHeight = el.scrollHeight;
-        if (newHeight > 40) {
-            el.style.height = (newHeight > 120 ? 120 : newHeight) + 'px';
-        } else {
-            el.style.height = '40px';
-        }
-        if (newHeight > 120) {
-            el.style.overflowY = 'auto';
-        } else {
-            el.style.overflowY = 'hidden';
-        }
+        el.style.height = (newHeight > 40 ? (newHeight > 120 ? 120 : newHeight) : 40) + 'px';
+        el.style.overflowY = newHeight > 120 ? 'auto' : 'hidden';
         const area = document.getElementById('msg-area');
         area.scrollTop = area.scrollHeight;
     }
 
+    // --- AUTH LOGIC ---
     auth.onAuthStateChanged((user) => {
         if (user) {
+            setupPresence(user.uid);
             db.ref('users/' + user.uid).once('value', (snap) => {
                 const data = snap.val() || {};
                 isAdmin = (data.role === 'admin');
@@ -239,11 +237,13 @@
         return { name: d.username || "Игрок", photo: d.profilePic || defPhoto };
     }
 
+    // --- MODES ---
     function toggleMode() {
         if (!isAdmin) return;
         is_admin_mode = !is_admin_mode;
         closeChat();
         document.getElementById('chat-target-name').innerText = "Выберите чат";
+        document.getElementById('chat-target-status').innerText = "";
         if (is_admin_mode) switchToAdminMode();
         else switchToUserMode();
     }
@@ -258,6 +258,7 @@
         loadUserSidebar();
     }
 
+    // --- ADMIN LIST ---
     function loadAdminList() {
         const list = document.getElementById('chat-list');
         db.ref('support_tickets').off();
@@ -269,19 +270,43 @@
                 getUserData(uid).then(user => {
                     const item = document.createElement('div');
                     item.className = 'chat-item';
+                    item.id = `item-${uid}`;
                     item.onclick = () => { 
                         currentChatUid = uid; 
                         document.getElementById('chat-target-name').innerText = user.name;
+                        watchTargetStatus(uid);
                         loadMessages(uid);
                         openChat();
                     };
-                    item.innerHTML = `<img src="${user.photo}" class="avatar"><div class="chat-info"><strong>${user.name}</strong><p>ID: ${uid.toUpperCase()}</p></div>`;
+                    item.innerHTML = `
+                        <div class="avatar-container">
+                            <img src="${user.photo}" class="avatar">
+                            <div class="status-dot" id="dot-${uid}"></div>
+                        </div>
+                        <div class="chat-info"><strong>${user.name}</strong><p>ID: ${uid.toUpperCase()}</p></div>`;
                     list.appendChild(item);
+                    
+                    // Live Status Dot
+                    db.ref(`/status/${uid}/state`).on('value', s => {
+                        const dot = document.getElementById(`dot-${uid}`);
+                        if(dot) dot.className = `status-dot ${s.val() === 'online' ? 'online' : ''}`;
+                    });
                 });
             });
         });
     }
 
+    function watchTargetStatus(uid) {
+        const statusLabel = document.getElementById('chat-target-status');
+        db.ref(`/status/${uid}/state`).off();
+        db.ref(`/status/${uid}/state`).on('value', s => {
+            const isOnline = s.val() === 'online';
+            statusLabel.innerText = isOnline ? 'в сети' : 'не в сети';
+            statusLabel.className = isOnline ? 'online' : '';
+        });
+    }
+
+    // --- USER SIDEBAR ---
     function loadUserSidebar() {
         const list = document.getElementById('chat-list');
         const myUid = auth.currentUser.uid;
@@ -294,7 +319,7 @@
             });
             list.innerHTML = `
                 <div class="chat-item" onclick="startUserChat()">
-                    <img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'">
+                    <img src="pod.jpg" class="avatar" onerror="this.src='${defPhoto}'" style="margin-right:15px">
                     <div class="chat-info"><strong>Поддержка</strong><p>${previewText}</p></div>
                 </div>`;
         });
@@ -303,6 +328,7 @@
     function startUserChat() {
         currentChatUid = auth.currentUser.uid;
         document.getElementById('chat-target-name').innerText = "Поддержка";
+        document.getElementById('chat-target-status').innerText = "администрация";
         loadMessages(currentChatUid);
         openChat();
     }
@@ -310,20 +336,18 @@
     function openChat() { document.getElementById('app').classList.add('chat-active'); }
     function closeChat() { document.getElementById('app').classList.remove('chat-active'); }
 
+    // --- MESSAGING ---
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
         db.ref(`support_tickets/${id}/messages`).off();
-        db.ref(`support_tickets/${id}/messages`).on('value', async (snap) => {
+        db.ref(`support_tickets/${id}/messages`).on('value', (snap) => {
             area.innerHTML = "";
             snap.forEach(m => {
                 const data = m.val();
                 const isMy = data.senderUid === auth.currentUser.uid;
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
-                // ИЗМЕНЕНО: Теперь вместо window.open вызывается openLightbox
-                let content = data.image 
-                    ? `<img src="${data.image}" onclick="openLightbox('${data.image}')">` 
-                    : (data.text || "");
+                let content = data.image ? `<img src="${data.image}" onclick="openLightbox('${data.image}')">` : (data.text || "");
                 div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
             });
@@ -337,8 +361,7 @@
         db.ref(`support_tickets/${currentChatUid}/messages`).push({
             senderUid: auth.currentUser.uid,
             text: input.value.trim(),
-            type: 'text',
-            timestamp: Date.now()
+            timestamp: firebase.database.ServerValue.TIMESTAMP
         });
         input.value = "";
         input.style.height = '40px'; 
@@ -348,28 +371,21 @@
         const file = input.files[0];
         if (!file || !currentChatUid) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = (e) => {
             const img = new Image();
             img.src = e.target.result;
-            img.onload = function() {
+            img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 400; 
-                let width = img.width;
-                let height = img.height;
-                if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                }
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                const base64Data = canvas.toDataURL('image/jpeg', 0.5); 
+                const MAX_WIDTH = 600; 
+                let width = img.width, height = img.height;
+                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                canvas.width = width; canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
                 db.ref(`support_tickets/${currentChatUid}/messages`).push({
                     senderUid: auth.currentUser.uid,
-                    image: base64Data, 
+                    image: canvas.toDataURL('image/jpeg', 0.6), 
                     type: 'image',
-                    timestamp: Date.now()
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
                 });
             };
         };

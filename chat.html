@@ -87,10 +87,10 @@
             outline: none; 
             font-size: 15px; 
             resize: none;
-            height: 40px; /* Фиксированная начальная высота */
+            height: 40px; 
             max-height: 120px; 
             font-family: inherit;
-            line-height: 20px; /* Явно задаем высоту строки для точности */
+            line-height: 20px;
             overflow-y: hidden;
             display: block;
             box-sizing: border-box;
@@ -142,7 +142,7 @@
     <div class="main-chat">
         <div class="chat-header">
             <button class="back-btn" onclick="closeChat()">←</button>
-            <div id="chat-target-name">Загрузка...</div>
+            <div id="chat-target-name">Выберите чат</div>
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
@@ -157,6 +157,7 @@
 </div>
 
 <script>
+    // Конфигурация Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
         authDomain: "novagame-b15b6.firebaseapp.com",
@@ -167,6 +168,7 @@
         appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
     };
 
+    // Инициализация
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
@@ -176,12 +178,12 @@
     let is_admin_mode = false;
     let currentChatUid = null;
 
-    // ИСПРАВЛЕННАЯ ФУНКЦИЯ: Растет только когда реально нужно
+    // Авто-высота: поднимает строку только когда первая заполнится
     function autoHeight(el) {
-        el.style.height = '40px'; // Временный сброс для замера
+        el.style.height = '40px'; 
         const newHeight = el.scrollHeight;
         
-        // Если контента больше чем на 40px, увеличиваем
+        // Рост происходит только если контент не влезает в 40px
         if (newHeight > 40) {
             el.style.height = (newHeight > 120 ? 120 : newHeight) + 'px';
         } else {
@@ -194,11 +196,11 @@
             el.style.overflowY = 'hidden';
         }
         
-        // Прокрутка чата
         const area = document.getElementById('msg-area');
         area.scrollTop = area.scrollHeight;
     }
 
+    // Слушатель авторизации
     auth.onAuthStateChanged((user) => {
         if (user) {
             db.ref('users/' + user.uid).once('value', (snap) => {
@@ -207,19 +209,27 @@
                 if (isAdmin) document.getElementById('admin-switch').style.display = 'block';
                 switchToUserMode();
             });
-        } else { window.location.href = "login.html"; }
+        } else { 
+            window.location.href = "login.html"; 
+        }
     });
 
+    // Получение данных юзера
     async function getUserData(uid) {
         const snap = await db.ref('users/' + uid).once('value');
         const d = snap.val() || {};
-        return { name: d.username || "Игрок", photo: d.profilePic || defPhoto };
+        return { 
+            name: d.username || "Игрок", 
+            photo: d.profilePic || defPhoto 
+        };
     }
 
+    // Переключение режимов (Админ/Юзер)
     function toggleMode() {
         if (!isAdmin) return;
         is_admin_mode = !is_admin_mode;
         closeChat();
+        document.getElementById('chat-target-name').innerText = "Выберите чат";
         if (is_admin_mode) switchToAdminMode();
         else switchToUserMode();
     }
@@ -234,6 +244,7 @@
         loadUserSidebar();
     }
 
+    // Список чатов для админа
     function loadAdminList() {
         const list = document.getElementById('chat-list');
         db.ref('support_tickets').off();
@@ -251,13 +262,19 @@
                         loadMessages(uid);
                         openChat();
                     };
-                    item.innerHTML = `<img src="${user.photo}" class="avatar"><div class="chat-info"><strong>${user.name}</strong><p>ID: ${uid.toUpperCase()}</p></div>`;
+                    item.innerHTML = `
+                        <img src="${user.photo}" class="avatar">
+                        <div class="chat-info">
+                            <strong>${user.name}</strong>
+                            <p>ID: ${uid.toUpperCase()}</p>
+                        </div>`;
                     list.appendChild(item);
                 });
             });
         });
     }
 
+    // Боковая панель для пользователя
     function loadUserSidebar() {
         const list = document.getElementById('chat-list');
         const myUid = auth.currentUser.uid;
@@ -287,9 +304,11 @@
         openChat();
     }
 
+    // Управление окном чата
     function openChat() { document.getElementById('app').classList.add('chat-active'); }
     function closeChat() { document.getElementById('app').classList.remove('chat-active'); }
 
+    // Загрузка сообщений
     function loadMessages(id) {
         const area = document.getElementById('msg-area');
         db.ref(`support_tickets/${id}/messages`).off();
@@ -300,7 +319,9 @@
                 const isMy = data.senderUid === auth.currentUser.uid;
                 const div = document.createElement('div');
                 div.className = 'msg-row ' + (isMy ? 'my' : 'other');
-                let content = data.image ? `<img src="${data.image}" onclick="window.open('${data.image}', '_blank')">` : (data.text || "");
+                let content = data.image 
+                    ? `<img src="${data.image}" onclick="window.open('${data.image}', '_blank')">` 
+                    : (data.text || "");
                 div.innerHTML = `<div class="bubble">${content}</div>`;
                 area.appendChild(div);
             });
@@ -308,6 +329,7 @@
         });
     }
 
+    // Отправка текста
     function sendMessage() {
         const input = document.getElementById('msg-input');
         if (!input.value.trim() || !currentChatUid) return;
@@ -321,6 +343,7 @@
         input.style.height = '40px'; 
     }
 
+    // Загрузка фото
     function handlePhotoUpload(input) {
         const file = input.files[0];
         if (!file || !currentChatUid) return;

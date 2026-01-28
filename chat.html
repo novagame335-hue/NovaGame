@@ -207,7 +207,7 @@
         // Если вчера
         const yesterday = new Date();
         yesterday.setDate(now.getDate() - 1);
-        if (date.toDateString() === yesterday.toDateString()) {
+        if (date.toDateString() === yesterday.setDate(now.getDate() - 1)) {
             return `был(а) в сети вчера в ${timeStr}`;
         }
         
@@ -352,7 +352,7 @@
             list.innerHTML = `
                 <div class="chat-item" onclick="startUserChat()">
                     <div class="avatar-container">
-                        <img src="Logo780.png" class="avatar" onerror="this.src='${defPhoto}'">
+                        <img src="default-avatar.png" class="avatar" onerror="this.src='${defPhoto}'">
                         <div class="status-dot online"></div>
                     </div>
                     <div class="chat-info"><strong>Поддержка</strong><p>${previewText}</p></div>

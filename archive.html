@@ -117,7 +117,10 @@
             font-size: 14px;
             line-height: 1.4;
             position: relative;
+            word-wrap: break-word;
         }
+        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+
         .msg.admin {
             align-self: flex-end;
             background: #222;
@@ -149,7 +152,6 @@
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
         }
 
-        /* Кастомный скроллбар */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
@@ -162,8 +164,7 @@
         <a href="chat.html" class="back-link">← ТЕКУЩИЕ ЧАТЫ</a>
         <h2 class="archive-title">Архив тикетов</h2>
     </div>
-    <div id="archive-list">
-        </div>
+    <div id="archive-list"></div>
 </div>
 
 <div class="main-content">
@@ -183,7 +184,6 @@
 </div>
 
 <script>
-    // КОНФИГУРАЦИЯ FIREBASE (используй свой оригинальный конфиг)
     const firebaseConfig = {
         apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
         authDomain: "novagame-b15b6.firebaseapp.com",
@@ -200,11 +200,18 @@
 
     let currentChatId = null;
 
-    // Проверка прав (только админ)
+    // Вспомогательная функция для получения имени
+    async function getUserData(uid) {
+        const snap = await db.ref('users/' + uid).once('value');
+        const d = snap.val() || {};
+        return { name: d.username || "Игрок (" + uid.substring(0,5) + ")" };
+    }
+
     auth.onAuthStateChanged(user => {
         if (user) {
             db.ref('users/' + user.uid).once('value', snap => {
-                if (snap.val().role !== 'admin') {
+                const userData = snap.val();
+                if (!userData || userData.role !== 'admin') {
                     alert("Доступ запрещен!");
                     window.location.href = "index.html";
                 } else {
@@ -216,24 +223,35 @@
         }
     });
 
-    // Загрузка списка архива
+    // Загрузка списка архива из support_tickets
     function loadArchiveList() {
-        db.ref('support_chats').on('value', snapshot => {
+        db.ref('support_tickets').on('value', snapshot => {
             const listContainer = document.getElementById('archive-list');
             listContainer.innerHTML = '';
-            const chats = snapshot.val();
+            const tickets = snapshot.val();
 
-            if (!chats) return;
+            if (!tickets) return;
 
-            for (let userId in chats) {
-                if (chats[userId].isArchived === true) {
-                    const date = new Date(chats[userId].archivedAt).toLocaleString();
+            for (let userId in tickets) {
+                if (tickets[userId].isArchived === true) {
+                    const archivedAt = tickets[userId].archivedAt;
+                    const date = archivedAt ? new Date(archivedAt).toLocaleString() : "Дата неизвестна";
+                    
                     const item = document.createElement('div');
                     item.className = `user-item ${currentChatId === userId ? 'active' : ''}`;
+                    item.id = "item-" + userId;
+                    
+                    // Сначала создаем заглушку, потом загружаем имя
                     item.innerHTML = `
-                        <div class="user-id">Пользователь: ${userId.substring(0, 8)}...</div>
+                        <div class="user-id">Загрузка...</div>
                         <div class="archive-date">Закрыт: ${date}</div>
                     `;
+                    
+                    getUserData(userId).then(user => {
+                        const nameEl = item.querySelector('.user-id');
+                        if(nameEl) nameEl.innerText = user.name;
+                    });
+
                     item.onclick = () => openArchiveChat(userId);
                     listContainer.appendChild(item);
                 }
@@ -241,17 +259,17 @@
         });
     }
 
-    // Просмотр сообщений
+    // Просмотр сообщений из вложенной папки messages
     function openArchiveChat(userId) {
         currentChatId = userId;
-        
-        // Подсвечиваем активный элемент в списке
         document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+        const activeItem = document.getElementById("item-" + userId);
+        if(activeItem) activeItem.classList.add('active');
         
         document.getElementById('archive-controls').style.display = 'flex';
         document.getElementById('display-user-id').innerText = "ID: " + userId;
 
-        db.ref('messages/' + userId).on('value', snapshot => {
+        db.ref(`support_tickets/${userId}/messages`).on('value', snapshot => {
             const container = document.getElementById('messages-container');
             container.innerHTML = '';
             const msgs = snapshot.val();
@@ -260,29 +278,45 @@
                 for (let mId in msgs) {
                     const m = msgs[mId];
                     const div = document.createElement('div');
-                    div.className = `msg ${m.role === 'admin' ? 'admin' : 'user'}`;
-                    div.innerText = m.text;
+                    
+                    // Определяем роль отправителя (если senderUid совпадает с ID чата - это юзер)
+                    const isUser = m.senderUid === userId;
+                    div.className = `msg ${isUser ? 'user' : 'admin'}`;
+                    
+                    if (m.image) {
+                        div.innerHTML = `<img src="${m.image}">`;
+                    } else {
+                        div.innerText = m.text || "";
+                    }
+                    
                     container.appendChild(div);
                 }
                 container.scrollTop = container.scrollHeight;
+            } else {
+                container.innerHTML = '<div style="text-align:center; color:#333; margin-top:20px;">История сообщений пуста</div>';
             }
         });
     }
 
-    // Восстановление чата
+    // Восстановление чата в активные
     function restoreChat() {
         if (!currentChatId) return;
 
         if (confirm("Вы уверены, что хотите вернуть этот чат в список активных?")) {
-            db.ref('support_chats/' + currentChatId).update({
+            db.ref('support_tickets/' + currentChatId).update({
                 isArchived: false,
-                status: 'active',
-                restoredAt: Date.now()
+                restoredAt: firebase.database.ServerValue.TIMESTAMP
             }).then(() => {
                 alert("Чат восстановлен!");
-                document.getElementById('messages-container').innerHTML = '';
+                document.getElementById('messages-container').innerHTML = `
+                    <div style="text-align: center; color: #333; margin-top: 100px;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">📁</div>
+                        Чат восстановлен. Вы найдете его в текущих чатах.
+                    </div>`;
                 document.getElementById('archive-controls').style.display = 'none';
                 currentChatId = null;
+            }).catch(err => {
+                alert("Ошибка восстановления: " + err.message);
             });
         }
     }

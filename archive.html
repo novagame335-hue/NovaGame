@@ -2,95 +2,290 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NovaGame — Архив Поддержки</title>
+    
     <link rel="icon" type="image/png" href="Logo780.png">
+    
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <style>
-        :root { --neon-red: #ff0000; --archive-gray: #444; }
-        body { background: #000; color: white; font-family: sans-serif; margin: 0; display: flex; height: 100vh; }
-        
-        .sidebar { width: 300px; border-right: 1px solid #222; overflow-y: auto; background: #050505; }
-        .archive-header { padding: 20px; border-bottom: 1px solid #222; text-align: center; }
-        .archive-header h2 { color: var(--archive-gray); font-size: 18px; margin: 0; }
-        
-        .user-item { padding: 15px; border-bottom: 1px solid #111; cursor: pointer; transition: 0.3s; }
-        .user-item:hover { background: #111; }
-        .user-item.active { border-left: 3px solid var(--archive-gray); background: #151515; }
 
-        .main-chat { flex: 1; display: flex; flex-direction: column; background: #080808; }
-        .messages-area { flex: 1; padding: 20px; overflow-y: auto; }
-        
-        /* Сообщения в архиве чуть более тусклые */
-        .msg { margin-bottom: 10px; padding: 10px; border-radius: 8px; max-width: 70%; }
-        .msg.admin { background: #222; align-self: flex-end; margin-left: auto; color: #aaa; }
-        .msg.user { background: #111; border: 1px solid #333; color: #888; }
-        
-        .back-link { color: var(--neon-red); text-decoration: none; font-size: 12px; display: block; margin-bottom: 10px; }
+    <style>
+        :root {
+            --neon-red: #ff0000;
+            --dark-red: #660000;
+            --archive-gray: #555;
+            --bg-black: #050505;
+        }
+
+        body {
+            margin: 0;
+            background: #000;
+            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- БОКОВАЯ ПАНЕЛЬ --- */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-black);
+            border-right: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #222;
+            text-align: center;
+        }
+
+        .back-link {
+            color: var(--neon-red);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+        .back-link:hover { text-shadow: 0 0 10px var(--neon-red); }
+
+        .archive-title {
+            font-size: 18px;
+            letter-spacing: 1px;
+            color: var(--archive-gray);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        #archive-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #111;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .user-item:hover { background: #111; }
+        .user-item.active { 
+            background: #1a1a1a; 
+            border-left: 4px solid var(--archive-gray);
+        }
+
+        .user-id { font-weight: bold; font-size: 14px; margin-bottom: 4px; }
+        .archive-date { font-size: 11px; color: #444; }
+
+        /* --- ОКНО ЧАТА --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #080808;
+        }
+
+        #archive-controls {
+            padding: 15px 25px;
+            background: #111;
+            border-bottom: 1px solid #222;
+            display: none; /* Включается при выборе чата */
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .messages-area {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* --- СООБЩЕНИЯ --- */
+        .msg {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+        }
+        .msg.admin {
+            align-self: flex-end;
+            background: #222;
+            color: #aaa;
+            border: 1px solid #333;
+        }
+        .msg.user {
+            align-self: flex-start;
+            background: #111;
+            color: #777;
+            border: 1px solid #222;
+        }
+
+        /* --- КНОПКИ --- */
+        .btn-restore {
+            background: transparent;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-restore:hover {
+            background: #00ff00;
+            color: black;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div class="archive-header">
-        <a href="chat.html" class="back-link">← ВЕРНУТЬСЯ В ТЕКУЩИЕ</a>
-        <h2>АРХИВ ЧАТОВ</h2>
+    <div class="sidebar-header">
+        <a href="chat.html" class="back-link">← ТЕКУЩИЕ ЧАТЫ</a>
+        <h2 class="archive-title">Архив тикетов</h2>
     </div>
     <div id="archive-list">
         </div>
 </div>
 
-<div class="main-chat">
+<div class="main-content">
+    <div id="archive-controls">
+        <div>
+            <span id="display-user-id" style="color: #666; font-size: 12px; font-family: monospace;"></span>
+        </div>
+        <button class="btn-restore" onclick="restoreChat()">↺ ВОССТАНОВИТЬ ДИАЛОГ</button>
+    </div>
+
     <div id="messages-container" class="messages-area">
-        <div style="text-align: center; color: #444; margin-top: 50px;">Выберите чат из списка для просмотра истории</div>
+        <div style="text-align: center; color: #333; margin-top: 100px;">
+            <div style="font-size: 40px; margin-bottom: 10px;">📁</div>
+            Выберите архивный чат для просмотра истории
+        </div>
     </div>
 </div>
 
 <script>
-    // Конфиг Firebase (тот же самый)
-    const firebaseConfig = { /* ТВОЙ КОНФИГ */ };
+    // КОНФИГУРАЦИЯ FIREBASE (используй свой оригинальный конфиг)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+        authDomain: "novagame-b15b6.firebaseapp.com",
+        databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+        projectId: "novagame-b15b6",
+        storageBucket: "novagame-b15b6.firebasestorage.app",
+        messagingSenderId: "7572791951",
+        appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
 
-    // Загрузка только архивных чатов
-    function loadArchive() {
-        db.ref('support_chats').on('value', (snapshot) => {
-            const list = document.getElementById('archive-list');
-            list.innerHTML = '';
+    let currentChatId = null;
+
+    // Проверка прав (только админ)
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            db.ref('users/' + user.uid).once('value', snap => {
+                if (snap.val().role !== 'admin') {
+                    alert("Доступ запрещен!");
+                    window.location.href = "index.html";
+                } else {
+                    loadArchiveList();
+                }
+            });
+        } else {
+            window.location.href = "login.html";
+        }
+    });
+
+    // Загрузка списка архива
+    function loadArchiveList() {
+        db.ref('support_chats').on('value', snapshot => {
+            const listContainer = document.getElementById('archive-list');
+            listContainer.innerHTML = '';
             const chats = snapshot.val();
 
-            for (let id in chats) {
-                if (chats[id].isArchived === true) {
+            if (!chats) return;
+
+            for (let userId in chats) {
+                if (chats[userId].isArchived === true) {
+                    const date = new Date(chats[userId].archivedAt).toLocaleString();
                     const item = document.createElement('div');
-                    item.className = 'user-item';
+                    item.className = `user-item ${currentChatId === userId ? 'active' : ''}`;
                     item.innerHTML = `
-                        <div style="font-weight: bold;">Юзер: ${id.substring(0,8)}</div>
-                        <div style="font-size: 10px; color: #555;">Закрыт: ${new Date(chats[id].archivedAt).toLocaleDateString()}</div>
+                        <div class="user-id">Пользователь: ${userId.substring(0, 8)}...</div>
+                        <div class="archive-date">Закрыт: ${date}</div>
                     `;
-                    item.onclick = () => showHistory(id);
-                    list.appendChild(item);
+                    item.onclick = () => openArchiveChat(userId);
+                    listContainer.appendChild(item);
                 }
             }
         });
     }
 
-    function showHistory(userId) {
-        db.ref('messages/' + userId).on('value', (snapshot) => {
+    // Просмотр сообщений
+    function openArchiveChat(userId) {
+        currentChatId = userId;
+        
+        // Подсвечиваем активный элемент в списке
+        document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById('archive-controls').style.display = 'flex';
+        document.getElementById('display-user-id').innerText = "ID: " + userId;
+
+        db.ref('messages/' + userId).on('value', snapshot => {
             const container = document.getElementById('messages-container');
-            container.innerHTML = ''; // Очищаем
+            container.innerHTML = '';
             const msgs = snapshot.val();
-            
-            for (let mId in msgs) {
-                const m = msgs[mId];
-                const div = document.createElement('div');
-                div.className = 'msg ' + (m.role === 'admin' ? 'admin' : 'user');
-                div.innerText = m.text;
-                container.appendChild(div);
+
+            if (msgs) {
+                for (let mId in msgs) {
+                    const m = msgs[mId];
+                    const div = document.createElement('div');
+                    div.className = `msg ${m.role === 'admin' ? 'admin' : 'user'}`;
+                    div.innerText = m.text;
+                    container.appendChild(div);
+                }
+                container.scrollTop = container.scrollHeight;
             }
         });
     }
 
-    loadArchive();
+    // Восстановление чата
+    function restoreChat() {
+        if (!currentChatId) return;
+
+        if (confirm("Вы уверены, что хотите вернуть этот чат в список активных?")) {
+            db.ref('support_chats/' + currentChatId).update({
+                isArchived: false,
+                status: 'active',
+                restoredAt: Date.now()
+            }).then(() => {
+                alert("Чат восстановлен!");
+                document.getElementById('messages-container').innerHTML = '';
+                document.getElementById('archive-controls').style.display = 'none';
+                currentChatId = null;
+            });
+        }
+    }
 </script>
 
 </body>

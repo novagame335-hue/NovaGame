@@ -30,6 +30,7 @@
 
         .app-container { display: flex; width: 100%; height: 100%; position: relative; overflow: hidden; }
 
+        /* --- САЙДБАР --- */
         .side-panel { 
             width: 100%; max-width: 400px; background: var(--panel); border-right: 1px solid #222; 
             display: flex; flex-direction: column; z-index: 2; transition: 0.3s ease;
@@ -60,6 +61,7 @@
         .chat-info strong { display: block; font-size: 16px; margin-bottom: 4px; }
         .chat-info p { margin: 0; font-size: 12px; color: #666; font-family: monospace; }
 
+        /* --- ОСНОВНОЙ ЧАТ --- */
         .main-chat { 
             position: absolute; right: 0; top: 0; width: 100%; height: 100%; 
             background: #050505; display: flex; flex-direction: column; 
@@ -116,6 +118,20 @@
             display: flex; align-items: center; justify-content: center; margin-bottom: 2px; 
         }
 
+        /* --- КНОПКИ АДМИНА --- */
+        .admin-btn {
+            background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); 
+            padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer; font-weight: bold;
+        }
+        .archive-nav-btn {
+            background: #222; border: 1px solid #444; color: #888; 
+            padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer;
+        }
+        .resolve-btn {
+            background: #004400; color: #00ff00; border: 1px solid #00ff00; 
+            padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; font-weight: bold;
+        }
+
         .lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.9); z-index: 1000; display: none; 
@@ -138,7 +154,10 @@
     <div class="side-panel">
         <div class="side-header">
             <span id="title-text">ЧАТ</span>
-            <button id="admin-switch" onclick="toggleMode()" style="display:none; background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; border-radius: 15px; font-size: 10px; cursor: pointer;">ПАНЕЛЬ УПРАВЛЕНИЯ</button>
+            <div style="display: flex; gap: 5px;">
+                <button id="archive-nav-btn" class="archive-nav-btn" style="display:none;" onclick="window.location.href='archive.html'">АРХИВ</button>
+                <button id="admin-switch" class="admin-btn" style="display:none;" onclick="toggleMode()">УПРАВЛЕНИЕ</button>
+            </div>
         </div>
         <div id="chat-list"></div>
     </div>
@@ -150,6 +169,7 @@
                 <div id="chat-target-name">Выберите чат</div>
                 <div id="chat-target-status"></div>
             </div>
+            <button id="resolve-btn" class="resolve-btn" style="display:none;" onclick="archiveCurrentChat()">РЕШЕНО</button>
         </div>
         <div id="msg-area"></div>
         <div class="input-area">
@@ -185,50 +205,32 @@
     let isAdmin = false;
     let is_admin_mode = false;
     let currentChatUid = null;
-    let statusWatcher = null; // Для хранения подписки на статус
+    let statusWatcher = null;
 
-    // --- УЛУЧШЕННАЯ ФУНКЦИЯ ВРЕМЕНИ ---
+    // Форматирование времени
     function formatLastSeen(timestamp) {
         if (!timestamp) return "был(а) в сети давно";
         const date = new Date(timestamp);
         const now = new Date();
         const diffInSeconds = Math.floor((now - date) / 1000);
-
         const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
         if (diffInSeconds < 30) return "только что";
         if (diffInSeconds < 60) return "был(а) в сети 1 мин. назад";
-        
-        // Если сегодня
-        if (date.toDateString() === now.toDateString()) {
-            return `был(а) в сети в ${timeStr}`;
-        }
-        
-        // Если вчера
+        if (date.toDateString() === now.toDateString()) return `был(а) в сети в ${timeStr}`;
         const yesterday = new Date();
         yesterday.setDate(now.getDate() - 1);
-        if (date.toDateString() === yesterday.toDateString()) {
-            return `был(а) в сети вчера в ${timeStr}`;
-        }
-        
+        if (date.toDateString() === yesterday.toDateString()) return `был(а) в сети вчера в ${timeStr}`;
         return `был(а) в сети ${date.toLocaleDateString()} в ${timeStr}`;
     }
 
-    // --- PRESENCE SYSTEM ---
+    // Система присутствия
     function setupPresence(uid) {
         const statusRef = db.ref(`/status/${uid}`);
         const connectedRef = db.ref('.info/connected');
         connectedRef.on('value', (snap) => {
             if (snap.val() === true) {
-                // При дисконнекте сохраняем текущее время
-                statusRef.onDisconnect().set({ 
-                    state: 'offline', 
-                    last_changed: firebase.database.ServerValue.TIMESTAMP 
-                });
-                statusRef.set({ 
-                    state: 'online', 
-                    last_changed: firebase.database.ServerValue.TIMESTAMP 
-                });
+                statusRef.onDisconnect().set({ state: 'offline', last_changed: firebase.database.ServerValue.TIMESTAMP });
+                statusRef.set({ state: 'online', last_changed: firebase.database.ServerValue.TIMESTAMP });
             }
         });
     }
@@ -243,18 +245,21 @@
         el.style.height = '40px'; 
         const newHeight = el.scrollHeight;
         el.style.height = (newHeight > 40 ? (newHeight > 120 ? 120 : newHeight) : 40) + 'px';
-        el.style.overflowY = newHeight > 120 ? 'auto' : 'hidden';
         const area = document.getElementById('msg-area');
         area.scrollTop = area.scrollHeight;
     }
 
+    // ПРОВЕРКА РОЛИ ПРИ ВХОДЕ
     auth.onAuthStateChanged((user) => {
         if (user) {
             setupPresence(user.uid);
             db.ref('users/' + user.uid).once('value', (snap) => {
                 const data = snap.val() || {};
                 isAdmin = (data.role === 'admin');
-                if (isAdmin) document.getElementById('admin-switch').style.display = 'block';
+                if (isAdmin) {
+                    document.getElementById('admin-switch').style.display = 'block';
+                    document.getElementById('archive-nav-btn').style.display = 'block';
+                }
                 switchToUserMode();
             });
         } else { window.location.href = "login.html"; }
@@ -284,6 +289,7 @@
         loadUserSidebar();
     }
 
+    // СПИСОК ДЛЯ АДМИНА
     function loadAdminList() {
         const list = document.getElementById('chat-list');
         db.ref('support_tickets').off();
@@ -292,10 +298,14 @@
             list.innerHTML = "";
             snap.forEach((child) => {
                 const uid = child.key;
+                const chatData = child.val();
+
+                // ФИЛЬТР: Не показываем архивные в активном списке
+                if (chatData.isArchived === true) return;
+
                 getUserData(uid).then(user => {
                     const item = document.createElement('div');
                     item.className = 'chat-item';
-                    item.id = `item-${uid}`;
                     item.onclick = () => { 
                         currentChatUid = uid; 
                         document.getElementById('chat-target-name').innerText = user.name;
@@ -321,12 +331,10 @@
         });
     }
 
-    // Следим за статусом собеседника в шапке
     function watchTargetStatus(uid) {
         const statusLabel = document.getElementById('chat-target-status');
-        if (statusWatcher) db.ref(`/status/${statusWatcher}`).off(); // Сброс старой слежки
+        if (statusWatcher) db.ref(`/status/${statusWatcher}`).off();
         statusWatcher = uid;
-
         db.ref(`/status/${uid}`).on('value', s => {
             const data = s.val() || {};
             if (data.state === 'online') {
@@ -368,7 +376,16 @@
         openChat();
     }
 
-    function openChat() { document.getElementById('app').classList.add('chat-active'); }
+    function openChat() { 
+        document.getElementById('app').classList.add('chat-active'); 
+        // Показываем кнопку "Решено" только если админ в режиме управления
+        if(isAdmin && is_admin_mode) {
+            document.getElementById('resolve-btn').style.display = 'block';
+        } else {
+            document.getElementById('resolve-btn').style.display = 'none';
+        }
+    }
+    
     function closeChat() { 
         document.getElementById('app').classList.remove('chat-active');
         document.getElementById('chat-target-status').innerText = "";
@@ -395,6 +412,10 @@
     function sendMessage() {
         const input = document.getElementById('msg-input');
         if (!input.value.trim() || !currentChatUid) return;
+        
+        // Если юзер пишет в архивный чат — он снова становится активным
+        db.ref(`support_tickets/${currentChatUid}`).update({ isArchived: false });
+
         db.ref(`support_tickets/${currentChatUid}/messages`).push({
             senderUid: auth.currentUser.uid,
             text: input.value.trim(),
@@ -402,6 +423,19 @@
         });
         input.value = "";
         input.style.height = '40px'; 
+    }
+
+    // ФУНКЦИЯ АРХИВАЦИИ (РЕШЕНО)
+    function archiveCurrentChat() {
+        if (!currentChatUid) return;
+        if (confirm("Проблема решена? Чат будет перемещен в архив.")) {
+            db.ref(`support_tickets/${currentChatUid}`).update({
+                isArchived: true,
+                archivedAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                closeChat();
+            });
+        }
     }
 
     function handlePhotoUpload(input) {
@@ -418,6 +452,8 @@
                 if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                 canvas.width = width; canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                
+                db.ref(`support_tickets/${currentChatUid}`).update({ isArchived: false });
                 db.ref(`support_tickets/${currentChatUid}/messages`).push({
                     senderUid: auth.currentUser.uid,
                     image: canvas.toDataURL('image/jpeg', 0.6), 
@@ -430,7 +466,6 @@
         input.value = "";
     }
 
-    // Таймер для обновления текста статуса каждую минуту
     setInterval(() => {
         if (currentChatUid && !document.getElementById('chat-target-status').classList.contains('online')) {
             db.ref(`/status/${currentChatUid}`).once('value', s => {

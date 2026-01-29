@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NovaGame — Личный Кабинет</title>
     
+    <link rel="icon" type="image/png" href="Logo780.png">
+    
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -206,19 +208,16 @@
             align-items: center;
             z-index: 100;
             cursor: pointer;
-            /* Плавные переходы для всех свойств */
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, background-color 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
 
-        /* Эффект при наведении */
         .chat-fab:hover {
-            transform: scale(1.15) rotate(-5deg); /* Увеличиваем и чуть наклоняем */
-            background-color: #ff3333; /* Делаем чуть ярче */
-            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8); /* Мощное неоновое свечение */
+            transform: scale(1.15) rotate(-5deg);
+            background-color: #ff3333;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
         }
 
-        /* Эффект при нажатии */
         .chat-fab:active {
             transform: scale(0.95);
         }
@@ -229,7 +228,6 @@
             mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z'/></svg>") no-repeat center;
         }
 
-        /* МОДАЛКА */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;

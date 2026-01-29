@@ -259,8 +259,22 @@
                 if (isAdmin) {
                     document.getElementById('admin-switch').style.display = 'block';
                     document.getElementById('archive-nav-btn').style.display = 'block';
+
+                    // ПРОВЕРКА ПАРАМЕТРА ОТКРЫТИЯ ИЗ ПРОФИЛЯ
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const openId = urlParams.get('open');
+                    if (openId) {
+                        is_admin_mode = true;
+                        switchToAdminMode();
+                        getUserData(openId).then(u => {
+                            selectChat(openId, u.name);
+                        });
+                    } else {
+                        switchToUserMode();
+                    }
+                } else {
+                    switchToUserMode();
                 }
-                switchToUserMode();
             });
         } else { window.location.href = "login.html"; }
     });
@@ -289,6 +303,19 @@
         loadUserSidebar();
     }
 
+    // ВЫБОР ЧАТА (С ПРАВКОЙ НА ПРОФИЛЬ)
+    function selectChat(uid, name) {
+        currentChatUid = uid; 
+        document.getElementById('chat-target-name').innerHTML = `
+            <a href="profile.html?id=${uid}" style="color: white; text-decoration: none; border-bottom: 1px dashed var(--neon-red);">
+                ${name} 🔗
+            </a>
+        `;
+        watchTargetStatus(uid);
+        loadMessages(uid);
+        openChat();
+    }
+
     // СПИСОК ДЛЯ АДМИНА
     function loadAdminList() {
         const list = document.getElementById('chat-list');
@@ -306,13 +333,7 @@
                 getUserData(uid).then(user => {
                     const item = document.createElement('div');
                     item.className = 'chat-item';
-                    item.onclick = () => { 
-                        currentChatUid = uid; 
-                        document.getElementById('chat-target-name').innerText = user.name;
-                        watchTargetStatus(uid);
-                        loadMessages(uid);
-                        openChat();
-                    };
+                    item.onclick = () => selectChat(uid, user.name);
                     item.innerHTML = `
                         <div class="avatar-container">
                             <img src="${user.photo}" class="avatar">

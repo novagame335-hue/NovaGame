@@ -429,11 +429,15 @@
     function archiveCurrentChat() {
         if (!currentChatUid) return;
         if (confirm("Проблема решена? Чат будет перемещен в архив.")) {
+            // Добавляем принудительное обновление флага в базу
             db.ref(`support_tickets/${currentChatUid}`).update({
                 isArchived: true,
                 archivedAt: firebase.database.ServerValue.TIMESTAMP
             }).then(() => {
+                console.log("Чат успешно архивирован");
                 closeChat();
+            }).catch((error) => {
+                alert("Ошибка при архивации: " + error.message);
             });
         }
     }

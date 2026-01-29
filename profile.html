@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NovaGame — Личный Кабинет</title>
+    <title>NovaGame — Профиль пользователя</title>
     
     <link rel="icon" type="image/png" href="Logo780.png">
     
@@ -117,6 +117,25 @@
             cursor: pointer;
         }
 
+        /* --- АДМИН ПАНЕЛЬ В ПРОФИЛЕ --- */
+        .admin-controls {
+            background: rgba(255, 0, 0, 0.05);
+            border: 1px solid var(--neon-red);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: none; /* Только для админа */
+        }
+        .admin-controls h3 { margin-top: 0; font-size: 14px; text-transform: uppercase; color: var(--neon-red); }
+        .admin-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .admin-btn {
+            background: #111; border: 1px solid #444; color: white;
+            padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;
+            transition: 0.3s;
+        }
+        .admin-btn:hover { border-color: var(--neon-red); }
+        .admin-btn.danger { border-color: #ff4444; color: #ff4444; }
+
         /* --- ТАБЫ --- */
         .tabs-nav {
             display: flex;
@@ -194,7 +213,7 @@
 
         .logout-btn { color: #444; background: none; border: none; margin-top: 30px; text-decoration: underline; font-size: 13px; cursor: pointer; }
 
-        /* КНОПКА ЧАТА С ЭФФЕКТОМ ВЫДЕЛЕНИЯ */
+        /* КНОПКА ЧАТА */
         .chat-fab {
             position: fixed;
             bottom: 25px;
@@ -208,19 +227,11 @@
             align-items: center;
             z-index: 100;
             cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, background-color 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
 
-        .chat-fab:hover {
-            transform: scale(1.15) rotate(-5deg);
-            background-color: #ff3333;
-            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
-        }
-
-        .chat-fab:active {
-            transform: scale(0.95);
-        }
+        .chat-fab:hover { transform: scale(1.15); box-shadow: 0 0 25px rgba(255, 0, 0, 0.8); }
 
         .chat-icon {
             width: 24px; height: 24px; background: white;
@@ -237,41 +248,46 @@
         }
         .modal-card { background: #111; padding: 30px; border-radius: 20px; text-align: center; width: 80%; max-width: 300px; border: 1px solid var(--neon-red); }
 
-        .admin-edit-nick {
-            background: none; border: 1px solid #444; color: #666; 
-            padding: 4px 8px; border-radius: 5px; font-size: 10px; 
-            margin-top: 5px; cursor: pointer; display: none;
-        }
-        .admin-edit-nick:hover { color: var(--neon-red); border-color: var(--neon-red); }
+        /* СКРЫТИЕ ЭЛЕМЕНТОВ ПРИ ПРОСМОТРЕ ЧУЖОГО ПРОФИЛЯ */
+        .only-owner { display: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div id="admin-panel" class="admin-controls">
+            <h3>Управление пользователем</h3>
+            <div class="admin-actions">
+                <button class="admin-btn" onclick="adminEditBalance()">ИЗМЕНИТЬ БАЛАНС</button>
+                <button class="admin-btn" onclick="adminChangeNick()">ИЗМЕНИТЬ НИК</button>
+                <button class="admin-btn" onclick="impersonateUser()">ВОЙТИ В АККАУНТ</button>
+                <button id="admin-ban-btn" class="admin-btn danger" onclick="adminToggleBan()">ЗАБАНИТЬ</button>
+            </div>
+        </div>
+
         <div class="profile-header">
-            <label for="file-input" class="avatar-wrapper">
+            <label for="file-input" class="avatar-wrapper" id="avatar-label">
                 <img id="user-pic" src="default-avatar.png" class="avatar-main">
-                <div class="edit-btn"></div>
+                <div class="edit-btn only-owner" id="avatar-edit-icon"></div>
             </label>
             <input type="file" id="file-input" accept="image/*" onchange="changeAvatar(this)">
 
             <div class="profile-info">
                 <h2 id="user-name">Загрузка...</h2>
                 <div id="user-id-display" class="user-id">ID: ...</div>
-                <button id="admin-nick-btn" class="admin-edit-nick" onclick="adminChangeNick()">СМЕНИТЬ НИК</button>
                 <div id="user-rating" class="rating">★★★★★</div>
             </div>
         </div>
 
-        <div class="balance-section">
+        <div id="balance-card" class="balance-section" style="display: none;">
             <div class="balance-text"><span id="user-balance">0</span> <span>₽</span></div>
-            <button class="btn-topup" onclick="alert('Скоро!')">ПОПОЛНИТЬ</button>
+            <button class="btn-topup only-owner" id="topup-btn" onclick="alert('Скоро!')">ПОПОЛНИТЬ</button>
         </div>
 
         <div class="tabs-nav">
-            <button id="main-items" class="tab-btn active" onclick="switchMainTab('items')">Мои товары <span id="count-items">0</span></button>
-            <button id="main-buys" class="tab-btn" onclick="switchMainTab('buys')">Покупки <span id="count-buys">0</span></button>
-            <button id="main-sales" class="tab-btn" onclick="switchMainTab('sales')">Продажи <span id="count-sales">0</span></button>
+            <button id="main-items" class="tab-btn active" onclick="switchMainTab('items')">Товары <span id="count-items">0</span></button>
+            <button id="main-buys" class="tab-btn only-owner" id="tab-buys" onclick="switchMainTab('buys')">Покупки <span id="count-buys">0</span></button>
+            <button id="main-sales" class="tab-btn only-owner" id="tab-sales" onclick="switchMainTab('sales')">Продажи <span id="count-sales">0</span></button>
         </div>
 
         <div class="sub-tabs">
@@ -283,7 +299,7 @@
 
         <center style="padding-bottom: 100px;">
             <a href="index.html" style="color:var(--neon-red); text-decoration:none; font-weight:bold; display:block; margin-top:30px; font-size: 14px;">← В МАРКЕТ</a>
-            <button class="logout-btn" onclick="toggleModal(true)">Выйти из аккаунта</button>
+            <button id="logout-link" class="logout-btn only-owner" onclick="toggleModal(true)">Выйти из аккаунта</button>
         </center>
     </div>
 
@@ -303,9 +319,6 @@
     </div>
 
     <script>
-        let currentMainTab = 'items';
-        let currentSubTab = 'active';
-
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -320,40 +333,105 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                db.ref('users/' + user.uid).on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        document.getElementById('user-name').innerText = data.username || "User";
-                        document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
-                        document.getElementById('user-balance').innerText = data.balance || 0;
-                        document.getElementById('user-id-display').innerText = "ID: " + user.uid.substring(0, 8).toUpperCase();
-                        document.getElementById('count-items').innerText = data.itemsCount || 0;
-                        document.getElementById('count-buys').innerText = data.buysCount || 0;
+        let currentMainTab = 'items';
+        let currentSubTab = 'active';
+        
+        // Получаем ID из URL (просмотр чужого профиля)
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetUid = urlParams.get('id'); 
 
-                        if(data.role === 'admin') {
-                            document.getElementById('admin-nick-btn').style.display = 'inline-block';
-                        }
+        auth.onAuthStateChanged((me) => {
+            if (me) {
+                // Если ID в ссылке нет, значит мы в своем профиле
+                if (!targetUid) targetUid = me.uid;
+                
+                const isMyProfile = (me.uid === targetUid);
+
+                // Проверяем роль текущего пользователя
+                db.ref('users/' + me.uid).once('value', (snap) => {
+                    const myData = snap.val();
+                    const isAdmin = myData && myData.role === 'admin';
+
+                    if (isMyProfile) {
+                        // Показываем элементы личного кабинета
+                        document.querySelectorAll('.only-owner').forEach(el => el.style.display = 'block');
+                        document.getElementById('balance-card').style.display = 'flex';
                     }
+
+                    if (isAdmin) {
+                        // Показываем админку, если мы смотрим НЕ свой профиль (или даже свой)
+                        document.getElementById('admin-panel').style.display = 'block';
+                        document.getElementById('balance-card').style.display = 'flex';
+                    }
+
+                    loadTargetProfile(targetUid, isAdmin);
                 });
-                updateUI();
+
             } else { location.href = "login.html"; }
         });
 
+        function loadTargetProfile(uid, isAdmin) {
+            db.ref('users/' + uid).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('user-name').innerText = data.username || "User";
+                    document.getElementById('user-pic').src = data.profilePic || "default-avatar.png";
+                    document.getElementById('user-balance').innerText = data.balance || 0;
+                    document.getElementById('user-id-display').innerText = "ID: " + uid.substring(0, 8).toUpperCase();
+                    document.getElementById('count-items').innerText = data.itemsCount || 0;
+                    
+                    if (isAdmin) {
+                        const banBtn = document.getElementById('admin-ban-btn');
+                        banBtn.innerText = data.isBanned ? "РАЗБАНИТЬ" : "ЗАБАНИТЬ";
+                        banBtn.style.color = data.isBanned ? "#00ff00" : "#ff4444";
+                    }
+                }
+            });
+            updateUI();
+        }
+
+        // АДМИН: Смена никнейма (целевому юзеру)
         function adminChangeNick() {
-            const newNick = prompt("Введите новый никнейм:");
+            const newNick = prompt("Введите новый никнейм для пользователя:");
             if (newNick && newNick.trim().length >= 3) {
-                db.ref('users/' + auth.currentUser.uid).update({
-                    username: newNick.trim()
-                });
+                db.ref('users/' + targetUid).update({ username: newNick.trim() });
+            }
+        }
+
+        // АДМИН: Изменение баланса
+        function adminEditBalance() {
+            const newBal = prompt("Введите новую сумму баланса:");
+            if (newBal !== null) {
+                db.ref('users/' + targetUid).update({ balance: parseFloat(newBal) || 0 });
+            }
+        }
+
+        // АДМИН: Бан / Разбан
+        function adminToggleBan() {
+            db.ref('users/' + targetUid).once('value', snap => {
+                const isBanned = snap.val().isBanned || false;
+                db.ref('users/' + targetUid).update({ isBanned: !isBanned });
+                alert(isBanned ? "Пользователь разблокирован" : "Пользователь заблокирован");
+            });
+        }
+
+        // АДМИН: Подмена личности
+        function impersonateUser() {
+            if (confirm("Войти в систему под именем этого пользователя? (До первой перезагрузки сессии)")) {
+                sessionStorage.setItem('impersonate_uid', targetUid);
+                window.location.href = "index.html";
             }
         }
 
         function updateUI() {
             const content = document.getElementById('content-display');
             let msg = currentMainTab === 'items' ? "Нет товаров" : (currentMainTab === 'buys' ? "Нет покупок" : "Нет продаж");
-            content.innerHTML = `<div class="empty-msg">${msg}</div><button class="btn-main-action">Добавить</button>`;
+            content.innerHTML = `<div class="empty-msg">${msg}</div>`;
+            
+            // Кнопка "Добавить" видна только в своем профиле в товарах
+            if (targetUid === auth.currentUser.uid && currentMainTab === 'items') {
+                content.innerHTML += `<button class="btn-main-action" onclick="location.href='add.html'">Добавить</button>`;
+            }
         }
 
         function switchMainTab(tab) {
@@ -374,7 +452,7 @@
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    db.ref('users/' + auth.currentUser.uid).update({ profilePic: e.target.result });
+                    db.ref('users/' + targetUid).update({ profilePic: e.target.result });
                 };
                 reader.readAsDataURL(input.files[0]);
             }

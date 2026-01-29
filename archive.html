@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>NovaGame — Архив Поддержки</title>
+    <link rel="icon" type="image/png" href="Logo780.png">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --neon-red: #ff0000; --archive-gray: #444; }
+        body { background: #000; color: white; font-family: sans-serif; margin: 0; display: flex; height: 100vh; }
+        
+        .sidebar { width: 300px; border-right: 1px solid #222; overflow-y: auto; background: #050505; }
+        .archive-header { padding: 20px; border-bottom: 1px solid #222; text-align: center; }
+        .archive-header h2 { color: var(--archive-gray); font-size: 18px; margin: 0; }
+        
+        .user-item { padding: 15px; border-bottom: 1px solid #111; cursor: pointer; transition: 0.3s; }
+        .user-item:hover { background: #111; }
+        .user-item.active { border-left: 3px solid var(--archive-gray); background: #151515; }
+
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: #080808; }
+        .messages-area { flex: 1; padding: 20px; overflow-y: auto; }
+        
+        /* Сообщения в архиве чуть более тусклые */
+        .msg { margin-bottom: 10px; padding: 10px; border-radius: 8px; max-width: 70%; }
+        .msg.admin { background: #222; align-self: flex-end; margin-left: auto; color: #aaa; }
+        .msg.user { background: #111; border: 1px solid #333; color: #888; }
+        
+        .back-link { color: var(--neon-red); text-decoration: none; font-size: 12px; display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="archive-header">
+        <a href="chat.html" class="back-link">← ВЕРНУТЬСЯ В ТЕКУЩИЕ</a>
+        <h2>АРХИВ ЧАТОВ</h2>
+    </div>
+    <div id="archive-list">
+        </div>
+</div>
+
+<div class="main-chat">
+    <div id="messages-container" class="messages-area">
+        <div style="text-align: center; color: #444; margin-top: 50px;">Выберите чат из списка для просмотра истории</div>
+    </div>
+</div>
+
+<script>
+    // Конфиг Firebase (тот же самый)
+    const firebaseConfig = { /* ТВОЙ КОНФИГ */ };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Загрузка только архивных чатов
+    function loadArchive() {
+        db.ref('support_chats').on('value', (snapshot) => {
+            const list = document.getElementById('archive-list');
+            list.innerHTML = '';
+            const chats = snapshot.val();
+
+            for (let id in chats) {
+                if (chats[id].isArchived === true) {
+                    const item = document.createElement('div');
+                    item.className = 'user-item';
+                    item.innerHTML = `
+                        <div style="font-weight: bold;">Юзер: ${id.substring(0,8)}</div>
+                        <div style="font-size: 10px; color: #555;">Закрыт: ${new Date(chats[id].archivedAt).toLocaleDateString()}</div>
+                    `;
+                    item.onclick = () => showHistory(id);
+                    list.appendChild(item);
+                }
+            }
+        });
+    }
+
+    function showHistory(userId) {
+        db.ref('messages/' + userId).on('value', (snapshot) => {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = ''; // Очищаем
+            const msgs = snapshot.val();
+            
+            for (let mId in msgs) {
+                const m = msgs[mId];
+                const div = document.createElement('div');
+                div.className = 'msg ' + (m.role === 'admin' ? 'admin' : 'user');
+                div.innerText = m.text;
+                container.appendChild(div);
+            }
+        });
+    }
+
+    loadArchive();
+</script>
+
+</body>
+</html>

@@ -84,6 +84,11 @@
         .support-text a {
             color: #ff0000;
             text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .support-text a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -102,7 +107,6 @@
     </div>
 
     <script>
-        // Конфигурация твоего проекта
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -113,17 +117,14 @@
             appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
         };
         
-        // Инициализация
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // 1. Функция выхода
         function handleLogout() {
             auth.signOut().then(() => {
-                // Очищаем историю переходов, чтобы нельзя было нажать "назад"
                 window.location.replace("login.html");
             }).catch((err) => {
                 console.error("Logout error:", err);
@@ -131,20 +132,15 @@
             });
         }
 
-        // 2. Слушатель статуса (в реальном времени)
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // Если залогинен, следим за флагом бана в БД
                 db.ref('users/' + user.uid + '/isBanned').on('value', (snapshot) => {
                     const isBanned = snapshot.val();
-                    
-                    // Если админ прямо сейчас убрал бан (false), возвращаем игрока на главную
                     if (isBanned === false) {
                         window.location.href = "index.html";
                     }
                 });
             } else {
-                // Если не залогинен — на страницу входа
                 if (!window.location.href.includes('login.html')) {
                     window.location.href = "login.html";
                 }

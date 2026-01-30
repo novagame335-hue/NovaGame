@@ -97,7 +97,6 @@
             opacity: 0.5;
         }
 
-        /* --- ПРАВКА: КНОПКИ НА ПК --- */
         .header-right {
             display: flex;
             align-items: center;
@@ -146,9 +145,8 @@
             object-fit: cover;
         }
 
-        /* --- НИЖНЯЯ ПАНЕЛЬ ДЛЯ ТЕЛЕФОНА --- */
         .mobile-nav {
-            display: none; /* Скрыта на ПК */
+            display: none;
             position: fixed;
             bottom: 0;
             left: 0;
@@ -159,7 +157,7 @@
             justify-content: space-around;
             align-items: center;
             z-index: 1000;
-            padding-bottom: env(safe-area-inset-bottom); /* Поддержка iPhone с челкой */
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .login-btn-link {
@@ -173,19 +171,16 @@
             transition: 0.3s;
         }
 
-        /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
         @media (max-width: 850px) {
             header {
                 padding: 0 20px;
                 height: 70px;
             }
 
-            /* В шапке оставляем только лого и поиск */
             .header-right {
-                display: none; /* Скрываем кнопки в шапке */
+                display: none;
             }
             
-            /* Если пользователь не вошел, показываем кнопку входа в шапке */
             .header-right.guest-only {
                 display: flex;
                 margin-left: 15px;
@@ -194,13 +189,12 @@
             .brand-name { font-size: 20px; }
             .logo-img { height: 35px; }
 
-            /* Показываем нижнюю панель */
             .mobile-nav {
                 display: flex;
             }
 
             .container-main {
-                padding-bottom: 80px; /* Чтобы контент не перекрывался нижней панелью */
+                padding-bottom: 80px;
             }
         }
     </style>
@@ -223,11 +217,11 @@
         </div>
 
         <div class="header-right" id="pc-nav">
-            </div>
+        </div>
     </header>
 
     <nav class="mobile-nav" id="mobile-nav">
-        </nav>
+    </nav>
 
     <div style="height: 100px;"></div>
 
@@ -251,8 +245,16 @@
             const mobileNav = document.getElementById('mobile-nav');
             
             if (user) {
+                // --- ПРАВКА: СТРАЖ БАНА ---
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const userData = snapshot.val();
+                    
+                    // Если флаг бана активен — немедленный редирект
+                    if (userData && userData.isBanned === true) {
+                        window.location.href = "banned.html";
+                        return; // Прекращаем выполнение кода для забаненного
+                    }
+
                     const profilePic = (userData && userData.profilePic) ? userData.profilePic : 'default-avatar.png';
                     
                     // Шаблон кнопок (Новости, Чат, Профиль)
@@ -274,6 +276,8 @@
 
                     pcNav.innerHTML = navHtml;
                     mobileNav.innerHTML = navHtml;
+                    mobileNav.style.display = 'flex'; // Показываем панель вошедшему
+                    pcNav.classList.remove('guest-only');
                 });
             } else {
                 const loginHtml = `<a href="login.html" class="login-btn-link">Войти</a>`;

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доступ ограничен — NovaGame</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .ban-card {
+            padding: 40px;
+            border: 1px solid #ff0000;
+            background: rgba(255, 0, 0, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.2);
+            max-width: 400px;
+        }
+        h1 { color: #ff0000; font-size: 48px; margin: 0; }
+        p { color: #888; margin: 20px 0; line-height: 1.6; }
+        .support-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: white;
+            text-decoration: none;
+            border: 1px solid white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+        .support-link:hover { background: white; color: black; }
+    </style>
+</head>
+<body>
+    <div class="ban-card">
+        <h1>BANNED</h1>
+        <p>Ваш аккаунт был заблокирован за нарушение правил сообщества. <br>Доступ к маркету ограничен.</p>
+        <a href="mailto:support@novagame.com" class="support-link">Апелляция (Email)</a>
+        <br>
+        <button onclick="firebase.auth().signOut().then(() => location.href='login.html')" style="background:none; border:none; color:#444; margin-top:20px; cursor:pointer; text-decoration:underline;">Выйти из аккаунта</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script>
+        // Инициализация (используй свой конфиг)
+        const firebaseConfig = { /* ТВОЙ КОНФИГ */ };
+        firebase.initializeApp(firebaseConfig);
+
+        // Проверка: если админ внезапно разбанил, пока юзер сидит на этой странице
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                firebase.database().ref('users/' + user.uid + '/isBanned').on('value', snap => {
+                    if (snap.val() !== true) {
+                        window.location.href = "index.html"; // Разбанили — пускаем обратно
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

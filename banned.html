@@ -81,14 +81,17 @@
             color: #555;
         }
 
-        .support-text a {
+        /* Стиль для кликабельной почты */
+        .support-link {
             color: #ff0000;
             text-decoration: none;
             font-weight: bold;
+            transition: 0.3s;
         }
-        
-        .support-text a:hover {
+
+        .support-link:hover {
             text-decoration: underline;
+            filter: brightness(1.2);
         }
     </style>
 </head>
@@ -102,7 +105,10 @@
         <button class="btn-logout" onclick="handleLogout()">Выйти из системы</button>
 
         <div class="support-text">
-            Связаться с администратором: <a href="mailto:novagame335@gmail.com">novagame335@gmail.com</a>
+            Связаться с администратором: <br>
+            <a href="mailto:novagame335@gmail.com?subject=Заявка на разблокировку NovaGame" class="support-link">
+                novagame335@gmail.com
+            </a>
         </div>
     </div>
 

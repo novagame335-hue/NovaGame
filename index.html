@@ -178,7 +178,7 @@
             }
 
             .header-right {
-                display: none;
+                display: flex; /* На мобильных оставляем только аватар через JS */
             }
             
             .header-right.guest-only {
@@ -245,20 +245,19 @@
             const mobileNav = document.getElementById('mobile-nav');
             
             if (user) {
-                // --- ПРАВКА: СТРАЖ БАНА ---
+                // СТРАЖ БАНА
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const userData = snapshot.val();
                     
-                    // Если флаг бана активен — немедленный редирект
                     if (userData && userData.isBanned === true) {
                         window.location.href = "banned.html";
-                        return; // Прекращаем выполнение кода для забаненного
+                        return;
                     }
 
                     const profilePic = (userData && userData.profilePic) ? userData.profilePic : 'default-avatar.png';
                     
-                    // Шаблон кнопок (Новости, Чат, Профиль)
-                    const navHtml = `
+                    // Шаблон всех кнопок навигации
+                    const navButtonsHtml = `
                         <a href="news.html" class="nav-item">
                             <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                             <span class="nav-label">Новости</span>
@@ -274,17 +273,37 @@
                         </a>
                     `;
 
-                    pcNav.innerHTML = navHtml;
-                    mobileNav.innerHTML = navHtml;
-                    mobileNav.style.display = 'flex'; // Показываем панель вошедшему
+                    // РАЗДЕЛЕНИЕ ЛОГИКИ ТЕЛЕФОН / ПК
+                    if (window.innerWidth <= 850) {
+                        // Для телефона: вверху только аватар, все кнопки в нижнюю панель
+                        pcNav.innerHTML = `
+                            <a href="profile.html" class="nav-item">
+                                <img src="${profilePic}" class="header-avatar">
+                            </a>
+                        `;
+                        mobileNav.innerHTML = navButtonsHtml;
+                        mobileNav.style.display = 'flex';
+                    } else {
+                        // Для ПК: всё в верхнюю шапку, нижнюю панель убираем
+                        pcNav.innerHTML = navButtonsHtml;
+                        mobileNav.innerHTML = '';
+                        mobileNav.style.display = 'none';
+                    }
+                    
                     pcNav.classList.remove('guest-only');
                 });
             } else {
                 const loginHtml = `<a href="login.html" class="login-btn-link">Войти</a>`;
                 pcNav.innerHTML = loginHtml;
-                mobileNav.style.display = 'none'; // Скрываем панель, если не вошел
+                mobileNav.style.display = 'none';
                 pcNav.classList.add('guest-only');
             }
+        });
+
+        // Следим за поворотом экрана/изменением размера, чтобы кнопки не прыгали
+        window.addEventListener('resize', () => {
+            // Можно добавить логику обновления без перезагрузки, если нужно
+            // Но для надежности перерисовываем состояние при смене брейкпоинта
         });
     </script>
 </body>

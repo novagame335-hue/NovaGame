@@ -18,10 +18,10 @@
             min-height: 100vh;
         }
 
+        /* ШАПКА СО ВСЕМИ КНОПКАМИ */
         header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             background: #000;
             padding: 0 20px;
             height: 70px;
@@ -31,12 +31,45 @@
             z-index: 1000;
         }
 
-        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: white; }
+        .header-left { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+        .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; }
         .logo-img { height: 35px; }
         .brand-name { font-size: 20px; font-weight: bold; }
         .brand-name span { color: #f00; }
 
-        /* Сетка компактных карточек */
+        /* ПОИСКОВИК */
+        .search-box {
+            flex: 1;
+            margin: 0 20px;
+            max-width: 500px;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: white;
+            outline: none;
+        }
+
+        /* КНОПКИ НАВИГАЦИИ */
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .nav-link {
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .nav-icon { width: 22px; height: 22px; fill: white; }
+
+        /* СЕТКА */
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -57,63 +90,55 @@
             flex-direction: column;
             aspect-ratio: 2/3;
         }
+        .game-card:hover { border-color: #f00; transform: translateY(-5px); }
+        .game-img { width: 100%; height: 75%; object-fit: cover; }
+        .game-name { padding: 8px; font-size: 11px; text-align: center; color: #fff; margin: 0; }
 
-        .game-card:hover {
-            border-color: #f00;
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.2);
-        }
-
-        .game-img { width: 100%; height: 75%; object-fit: cover; background: #0a0a0a; }
-        
-        .game-name {
-            padding: 8px;
-            font-size: 12px;
-            text-align: center;
-            font-weight: 600;
-            color: #fff;
-            margin: 0;
-        }
-
-        /* Карточка-кнопка "+ Добавить" */
+        /* КАРТОЧКА АДМИНА */
         .add-card {
-            display: none; /* Покажется только админу */
-            border: 2px dashed #333;
+            display: none;
+            border: 2px dashed #444;
             background: transparent;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             cursor: pointer;
-            color: #444;
         }
-
-        .add-card:hover { border-color: #f00; color: #f00; }
-        .add-icon { font-size: 40px; margin-bottom: 5px; }
-        .add-text { font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .add-icon { font-size: 30px; color: #f00; }
+        .add-text { font-size: 10px; color: #888; margin-top: 5px; text-align: center; }
 
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #f00; }
 
-        @media (max-width: 480px) {
-            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        @media (max-width: 700px) {
+            .search-box { display: none; } /* Скрываем поиск на мелких экранах для места */
+            .brand-name { display: none; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="brand">
-            <img src="logo.png" alt="NG" class="logo-img">
-            <div class="brand-name">Nova<span>Game</span></div>
-        </a>
-        <div id="user-nav"></div>
+        <div class="header-left">
+            <a href="index.html" class="brand">
+                <img src="logo.png" alt="NG" class="logo-img">
+                <div class="brand-name">Nova<span>Game</span></div>
+            </a>
+        </div>
+
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Поиск игр...">
+        </div>
+
+        <div class="header-right" id="user-nav">
+            </div>
     </header>
 
     <div class="games-grid" id="games-container">
         <div class="game-card add-card" id="add-game-btn" onclick="location.href='add-game.html'">
             <div class="add-icon">+</div>
-            <div class="add-text">Выставить товар</div>
+            <div class="add-text">ВЫСТАВИТЬ<br>ТОВАР</div>
         </div>
-        </div>
+    </div>
 
     <script>
         const firebaseConfig = {
@@ -130,32 +155,23 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // Загрузка товаров
         function loadGames() {
             const container = document.getElementById('games-container');
             db.ref('games').on('value', (snapshot) => {
-                // Чистим всё, кроме кнопки "Добавить"
                 const existingCards = container.querySelectorAll('.game-card:not(.add-card)');
                 existingCards.forEach(c => c.remove());
-
-                if (snapshot.exists()) {
-                    snapshot.forEach((child) => {
-                        const game = child.val();
-                        const card = document.createElement('a');
-                        card.href = `category.html?id=${child.key}`;
-                        card.className = 'game-card';
-                        card.innerHTML = `
-                            <img src="${game.image}" class="game-img">
-                            <p class="game-name">${game.name}</p>
-                        `;
-                        container.appendChild(card);
-                    });
-                }
+                snapshot.forEach((child) => {
+                    const game = child.val();
+                    const card = document.createElement('a');
+                    card.href = `category.html?id=${child.key}`;
+                    card.className = 'game-card';
+                    card.innerHTML = `<img src="${game.image}" class="game-img"><p class="game-name">${game.name}</p>`;
+                    container.appendChild(card);
+                });
             });
         }
         loadGames();
 
-        // Проверка админа и юзера
         auth.onAuthStateChanged((user) => {
             const nav = document.getElementById('user-nav');
             const addBtn = document.getElementById('add-game-btn');
@@ -163,12 +179,20 @@
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const data = snapshot.val();
-                    // Проверка роли: роль "admin" как на твоем скриншоте
-                    if (data && data.role === "admin") {
-                        addBtn.style.display = 'flex';
-                    }
+                    if (data && data.role === "admin") addBtn.style.display = 'flex';
+                    
                     const pic = data.profilePic || 'default-avatar.png';
-                    nav.innerHTML = `<a href="profile.html"><img src="${pic}" class="header-avatar"></a>`;
+                    nav.innerHTML = `
+                        <a href="news.html" class="nav-link">
+                            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                            Новости
+                        </a>
+                        <a href="chat.html" class="nav-link">
+                            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>
+                            Чат
+                        </a>
+                        <a href="profile.html"><img src="${pic}" class="header-avatar"></a>
+                    `;
                 });
             } else {
                 nav.innerHTML = `<a href="login.html" style="color:#f00; text-decoration:none; font-weight:bold;">Войти</a>`;

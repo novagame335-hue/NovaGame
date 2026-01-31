@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NovaGame — Маркетплейс</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -12,7 +12,6 @@
     <style>
         body {
             margin: 0;
-            background: #000;
             background: radial-gradient(circle at center, #1a0101, #000);
             font-family: 'Segoe UI', sans-serif;
             color: white;
@@ -23,7 +22,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(0, 0, 0, 0.95);
+            background: #000;
             padding: 0 20px;
             height: 70px;
             border-bottom: 1px solid #222;
@@ -32,90 +31,70 @@
             z-index: 1000;
         }
 
-        .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #fff; }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: white; }
         .logo-img { height: 35px; }
-        .brand-name { font-size: 20px; font-weight: 800; }
-        .brand-name span { color: #ff0000; }
+        .brand-name { font-size: 20px; font-weight: bold; }
+        .brand-name span { color: #f00; }
 
-        /* КОМПАКТНАЯ СЕТКА */
+        /* Сетка компактных карточек */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Маленькие карточки */
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 15px;
-            padding: 90px 20px 30px;
-            max-width: 1100px;
+            padding: 100px 20px 40px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        /* КАРТОЧКА ИГРЫ */
         .game-card {
             background: #111;
-            border-radius: 12px;
-            overflow: hidden;
+            border-radius: 10px;
             border: 1px solid #222;
             text-decoration: none;
+            overflow: hidden;
             transition: 0.3s;
             display: flex;
             flex-direction: column;
-            aspect-ratio: 3/4; /* Соотношение сторон как у постеров */
+            aspect-ratio: 2/3;
         }
 
         .game-card:hover {
-            border-color: #ff0000;
+            border-color: #f00;
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.2);
         }
 
-        .game-img {
-            width: 100%;
-            height: 80%;
-            object-fit: cover;
-        }
-
-        .game-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #161616;
-            padding: 5px;
-        }
-
+        .game-img { width: 100%; height: 75%; object-fit: cover; background: #0a0a0a; }
+        
         .game-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #eee;
+            padding: 8px;
+            font-size: 12px;
             text-align: center;
+            font-weight: 600;
+            color: #fff;
             margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        /* КАРТОЧКА "ДОБАВИТЬ" */
+        /* Карточка-кнопка "+ Добавить" */
         .add-card {
-            display: none; /* Скрыта по умолчанию */
+            display: none; /* Покажется только админу */
             border: 2px dashed #333;
             background: transparent;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             flex-direction: column;
             cursor: pointer;
             color: #444;
         }
 
-        .add-card:hover {
-            border-color: #ff0000;
-            color: #ff0000;
-        }
-
+        .add-card:hover { border-color: #f00; color: #f00; }
         .add-icon { font-size: 40px; margin-bottom: 5px; }
-        .add-text { font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .add-text { font-size: 11px; font-weight: bold; text-transform: uppercase; }
 
-        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid #ff0000; object-fit: cover; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #f00; }
 
         @media (max-width: 480px) {
-            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 85px 10px; }
+            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
         }
     </style>
 </head>
@@ -126,14 +105,13 @@
             <img src="logo.png" alt="NG" class="logo-img">
             <div class="brand-name">Nova<span>Game</span></div>
         </a>
-        <div id="user-nav">
-            </div>
+        <div id="user-nav"></div>
     </header>
 
     <div class="games-grid" id="games-container">
         <div class="game-card add-card" id="add-game-btn" onclick="location.href='add-game.html'">
             <div class="add-icon">+</div>
-            <div class="add-text">Добавить</div>
+            <div class="add-text">Выставить товар</div>
         </div>
         </div>
 
@@ -152,33 +130,32 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // Загрузка маленьких карточек игр
+        // Загрузка товаров
         function loadGames() {
             const container = document.getElementById('games-container');
-            // Оставляем кнопку добавления, остальное очищаем перед загрузкой
             db.ref('games').on('value', (snapshot) => {
-                // Удаляем старые карточки, кроме кнопки "Добавить"
-                const cards = container.querySelectorAll('.game-card:not(.add-card)');
-                cards.forEach(card => card.remove());
+                // Чистим всё, кроме кнопки "Добавить"
+                const existingCards = container.querySelectorAll('.game-card:not(.add-card)');
+                existingCards.forEach(c => c.remove());
 
-                snapshot.forEach((child) => {
-                    const game = child.val();
-                    const card = document.createElement('a');
-                    card.href = `category.html?id=${child.key}`;
-                    card.className = 'game-card';
-                    card.innerHTML = `
-                        <img src="${game.image}" class="game-img">
-                        <div class="game-info">
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        const game = child.val();
+                        const card = document.createElement('a');
+                        card.href = `category.html?id=${child.key}`;
+                        card.className = 'game-card';
+                        card.innerHTML = `
+                            <img src="${game.image}" class="game-img">
                             <p class="game-name">${game.name}</p>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
+                        `;
+                        container.appendChild(card);
+                    });
+                }
             });
         }
         loadGames();
 
-        // Проверка авторизации и роли
+        // Проверка админа и юзера
         auth.onAuthStateChanged((user) => {
             const nav = document.getElementById('user-nav');
             const addBtn = document.getElementById('add-game-btn');
@@ -186,20 +163,15 @@
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const data = snapshot.val();
-                    
-                    // Если роль admin — показываем карточку-кнопку
+                    // Проверка роли: роль "admin" как на твоем скриншоте
                     if (data && data.role === "admin") {
                         addBtn.style.display = 'flex';
-                    } else {
-                        addBtn.style.display = 'none';
                     }
-
                     const pic = data.profilePic || 'default-avatar.png';
                     nav.innerHTML = `<a href="profile.html"><img src="${pic}" class="header-avatar"></a>`;
                 });
             } else {
-                nav.innerHTML = `<a href="login.html" style="color: #ff0000; text-decoration: none; font-weight: bold; font-size: 14px;">Вход</a>`;
-                addBtn.style.display = 'none';
+                nav.innerHTML = `<a href="login.html" style="color:#f00; text-decoration:none; font-weight:bold;">Войти</a>`;
             }
         });
     </script>

@@ -16,12 +16,14 @@
             font-family: 'Segoe UI', sans-serif;
             color: white;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* ШАПКА СО ВСЕМИ КНОПКАМИ */
+        /* Фиксированная шапка */
         header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             background: #000;
             padding: 0 20px;
             height: 70px;
@@ -29,19 +31,20 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 1000;
+            box-sizing: border-box;
         }
 
-        .header-left { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
         .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; }
         .logo-img { height: 35px; }
         .brand-name { font-size: 20px; font-weight: bold; }
         .brand-name span { color: #f00; }
 
-        /* ПОИСКОВИК */
+        /* Поиск (как на скрине 2) */
         .search-box {
             flex: 1;
-            margin: 0 20px;
-            max-width: 500px;
+            margin: 0 30px;
+            max-width: 600px;
             position: relative;
         }
         .search-input {
@@ -49,12 +52,14 @@
             background: #111;
             border: 1px solid #333;
             border-radius: 8px;
-            padding: 10px 15px;
+            padding: 10px 15px 10px 40px;
             color: white;
             outline: none;
+            font-size: 14px;
         }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
 
-        /* КНОПКИ НАВИГАЦИИ */
+        /* Навигация (Новости, Чат) */
         .header-right { display: flex; align-items: center; gap: 20px; }
         .nav-link {
             text-decoration: none;
@@ -62,55 +67,59 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
             font-size: 10px;
             font-weight: bold;
             text-transform: uppercase;
+            transition: 0.2s;
         }
-        .nav-icon { width: 22px; height: 22px; fill: white; }
+        .nav-link:hover { color: #f00; }
+        .nav-icon { width: 20px; height: 20px; fill: currentColor; margin-bottom: 2px; }
 
-        /* СЕТКА */
+        /* Сетка компактных карточек */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
             padding: 100px 20px 40px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
+        /* Стиль карточки */
         .game-card {
-            background: #111;
-            border-radius: 10px;
+            background: #0a0a0a;
+            border-radius: 12px;
             border: 1px solid #222;
             text-decoration: none;
             overflow: hidden;
-            transition: 0.3s;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             aspect-ratio: 2/3;
+            position: relative;
         }
-        .game-card:hover { border-color: #f00; transform: translateY(-5px); }
-        .game-img { width: 100%; height: 75%; object-fit: cover; }
-        .game-name { padding: 8px; font-size: 11px; text-align: center; color: #fff; margin: 0; }
+        .game-card:hover { border-color: #f00; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(255, 0, 0, 0.15); }
+        .game-img { width: 100%; height: 80%; object-fit: cover; }
+        .game-name { padding: 10px; font-size: 12px; text-align: center; color: #fff; margin: 0; font-weight: 600; }
 
-        /* КАРТОЧКА АДМИНА */
+        /* КАРТОЧКА АДМИНА (Исправлено) */
         .add-card {
-            display: none;
-            border: 2px dashed #444;
-            background: transparent;
+            display: none; /* Покажется только админу */
+            border: 2px dashed #333;
+            background: rgba(255, 255, 255, 0.02);
             justify-content: center;
             align-items: center;
             flex-direction: column;
             cursor: pointer;
         }
-        .add-icon { font-size: 30px; color: #f00; }
-        .add-text { font-size: 10px; color: #888; margin-top: 5px; text-align: center; }
+        .add-card:hover { border-color: #f00; background: rgba(255, 0, 0, 0.05); }
+        .add-icon { font-size: 40px; color: #f00; line-height: 1; }
+        .add-text { font-size: 11px; color: #888; margin-top: 10px; text-align: center; font-weight: bold; }
 
-        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #f00; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #f00; object-fit: cover; }
 
-        @media (max-width: 700px) {
-            .search-box { display: none; } /* Скрываем поиск на мелких экранах для места */
+        @media (max-width: 800px) {
+            .search-box { display: none; }
             .brand-name { display: none; }
         }
     </style>
@@ -126,6 +135,7 @@
         </div>
 
         <div class="search-box">
+            <span class="search-icon">🔍</span>
             <input type="text" class="search-input" placeholder="Поиск игр...">
         </div>
 
@@ -179,7 +189,10 @@
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const data = snapshot.val();
-                    if (data && data.role === "admin") addBtn.style.display = 'flex';
+                    // Проверка роли "admin"
+                    if (data && data.role === "admin") {
+                        addBtn.style.display = 'flex';
+                    }
                     
                     const pic = data.profilePic || 'default-avatar.png';
                     nav.innerHTML = `

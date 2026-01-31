@@ -19,108 +19,113 @@
             overflow-x: hidden;
         }
 
-        /* Фиксированная шапка */
+        /* Увеличенная шапка */
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background: #000;
-            padding: 0 20px;
-            height: 70px;
-            border-bottom: 1px solid #222;
+            padding: 0 30px;
+            height: 90px; /* Увеличена высота */
+            border-bottom: 2px solid #222;
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 1000;
             box-sizing: border-box;
         }
 
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; }
-        .logo-img { height: 35px; }
-        .brand-name { font-size: 20px; font-weight: bold; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+        
+        /* Крупный логотип */
+        .logo-img { height: 55px; width: auto; } 
+        .brand-name { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
         .brand-name span { color: #f00; }
 
-        /* Поиск (как на скрине 2) */
+        /* Поиск */
         .search-box {
             flex: 1;
-            margin: 0 30px;
-            max-width: 600px;
+            margin: 0 40px;
+            max-width: 700px;
             position: relative;
         }
         .search-input {
             width: 100%;
             background: #111;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 10px 15px 10px 40px;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 12px 15px 12px 45px;
             color: white;
             outline: none;
-            font-size: 14px;
+            font-size: 16px;
+            transition: 0.3s;
         }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+        .search-input:focus { border-color: #f00; background: #000; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: 0.6; }
 
-        /* Навигация (Новости, Чат) */
-        .header-right { display: flex; align-items: center; gap: 20px; }
+        /* Увеличенная навигация */
+        .header-right { display: flex; align-items: center; gap: 35px; }
         .nav-link {
             text-decoration: none;
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 10px;
-            font-weight: bold;
+            font-size: 12px; /* Увеличен шрифт */
+            font-weight: 800;
             text-transform: uppercase;
             transition: 0.2s;
+            gap: 5px;
         }
-        .nav-link:hover { color: #f00; }
-        .nav-icon { width: 20px; height: 20px; fill: currentColor; margin-bottom: 2px; }
+        .nav-link:hover { color: #f00; transform: scale(1.1); }
+        .nav-icon { width: 30px; height: 30px; fill: currentColor; } /* Увеличены иконки */
 
-        /* Сетка компактных карточек */
+        /* Сетка карточек */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px;
-            padding: 100px 20px 40px;
-            max-width: 1200px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 25px;
+            padding: 120px 30px 50px;
+            max-width: 1300px;
             margin: 0 auto;
         }
 
-        /* Стиль карточки */
         .game-card {
             background: #0a0a0a;
-            border-radius: 12px;
+            border-radius: 15px;
             border: 1px solid #222;
             text-decoration: none;
             overflow: hidden;
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: 0.3s;
             display: flex;
             flex-direction: column;
             aspect-ratio: 2/3;
-            position: relative;
         }
-        .game-card:hover { border-color: #f00; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(255, 0, 0, 0.15); }
+        .game-card:hover { border-color: #f00; transform: translateY(-8px); box-shadow: 0 12px 25px rgba(255, 0, 0, 0.2); }
         .game-img { width: 100%; height: 80%; object-fit: cover; }
-        .game-name { padding: 10px; font-size: 12px; text-align: center; color: #fff; margin: 0; font-weight: 600; }
+        .game-name { padding: 12px; font-size: 14px; text-align: center; color: #fff; margin: 0; font-weight: bold; }
 
-        /* КАРТОЧКА АДМИНА (Исправлено) */
+        /* Крупная карточка админа */
         .add-card {
-            display: none; /* Покажется только админу */
-            border: 2px dashed #333;
-            background: rgba(255, 255, 255, 0.02);
+            display: none;
+            border: 3px dashed #333;
+            background: rgba(255, 255, 255, 0.03);
             justify-content: center;
             align-items: center;
             flex-direction: column;
             cursor: pointer;
         }
         .add-card:hover { border-color: #f00; background: rgba(255, 0, 0, 0.05); }
-        .add-icon { font-size: 40px; color: #f00; line-height: 1; }
-        .add-text { font-size: 11px; color: #888; margin-top: 10px; text-align: center; font-weight: bold; }
+        .add-icon { font-size: 50px; color: #f00; font-weight: 300; }
+        .add-text { font-size: 13px; color: #fff; margin-top: 12px; text-align: center; font-weight: 900; letter-spacing: 1px; }
 
-        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #f00; object-fit: cover; }
+        /* Аватар */
+        .header-avatar { width: 45px; height: 45px; border-radius: 50%; border: 3px solid #f00; object-fit: cover; }
 
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
             .search-box { display: none; }
             .brand-name { display: none; }
+            header { padding: 0 15px; height: 80px; }
         }
     </style>
 </head>
@@ -129,14 +134,14 @@
     <header>
         <div class="header-left">
             <a href="index.html" class="brand">
-                <img src="logo.png" alt="NG" class="logo-img">
+                <img src="Logo780.png" alt="NovaGame Logo" class="logo-img">
                 <div class="brand-name">Nova<span>Game</span></div>
             </a>
         </div>
 
         <div class="search-box">
             <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" placeholder="Поиск игр...">
+            <input type="text" class="search-input" placeholder="Поиск игр и товаров...">
         </div>
 
         <div class="header-right" id="user-nav">
@@ -151,6 +156,7 @@
     </div>
 
     <script>
+        // Твой конфиг Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -189,7 +195,6 @@
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const data = snapshot.val();
-                    // Проверка роли "admin"
                     if (data && data.role === "admin") {
                         addBtn.style.display = 'flex';
                     }
@@ -208,7 +213,7 @@
                     `;
                 });
             } else {
-                nav.innerHTML = `<a href="login.html" style="color:#f00; text-decoration:none; font-weight:bold;">Войти</a>`;
+                nav.innerHTML = `<a href="login.html" style="color:#f00; text-decoration:none; font-weight:900; font-size:18px;">ВОЙТИ</a>`;
             }
         });
     </script>

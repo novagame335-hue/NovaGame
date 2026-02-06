@@ -37,9 +37,7 @@
             height: 90px;
             border-bottom: 1px solid #1a1a1a;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             z-index: 100;
             box-sizing: border-box;
         }
@@ -58,7 +56,6 @@
             text-decoration: none;
         }
 
-        /* УВЕЛИЧЕННЫЙ ЛОГОТИП Logo780.png */
         .logo-img { height: 60px; width: auto; }
         .brand-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
         .brand-name span { color: #ff0000; }
@@ -136,9 +133,7 @@
         .mobile-nav {
             display: none;
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 0; left: 0; right: 0;
             height: 70px;
             background: #000;
             border-top: 1px solid #1a1a1a;
@@ -197,18 +192,24 @@
             backdrop-filter: blur(5px);
         }
 
-        .game-card:hover {
-            border-color: #ff0000;
-            transform: translateY(-5px);
-        }
-
+        .game-card:hover { border-color: #ff0000; transform: translateY(-5px); }
         .game-img { width: 100%; height: 200px; object-fit: cover; display: block; }
         .game-name { padding: 12px; font-weight: bold; text-align: center; color: white; font-size: 14px; }
 
+        /* МОБИЛЬНЫЕ СТИЛИ */
         @media (max-width: 850px) {
-            header { padding: 0 20px; height: 70px; }
-            .brand-name { font-size: 20px; }
-            .logo-img { height: 40px; }
+            header { padding: 0 15px; height: 70px; }
+            .brand-name { display: none; } /* Прячем текст логотипа */
+            .logo-img { height: 45px; }
+            .header-left { margin-right: 15px; }
+            
+            /* Убираем аватарку и кнопки справа в шапке */
+            .header-right { display: none !important; } 
+            
+            .header-center { margin-right: 0; }
+            .search-input { padding: 12px 15px 12px 45px; font-size: 14px; }
+            .search-icon { left: 15px; }
+
             .mobile-nav { display: flex; }
             .games-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
         }
@@ -290,7 +291,6 @@
                         return;
                     }
 
-                    // ТВОЯ ЛОГИКА АДМИНА
                     if (userData && (userData.admin === true || userData.role === "admin")) {
                         adminPanel.style.display = 'block';
                     }
@@ -312,8 +312,9 @@
                         </a>
                     `;
 
+                    // ИСПРАВЛЕННАЯ ЛОГИКА: УБИРАЕМ ПРОФИЛЬ СВЕРХУ
                     if (window.innerWidth <= 850) {
-                        pcNav.innerHTML = `<a href="profile.html" class="nav-item"><img src="${profilePic}" class="header-avatar"></a>`;
+                        pcNav.innerHTML = ''; // Очищаем верхнюю правую часть на мобилках
                         mobileNav.innerHTML = navButtonsHtml;
                         mobileNav.style.display = 'flex';
                     } else {

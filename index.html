@@ -2,9 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NovaGame — Маркетплейс</title>
     
+    <link rel="icon" type="image/png" href="Logo780.png">
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -12,111 +14,222 @@
     <style>
         body {
             margin: 0;
-            background: radial-gradient(circle at center, #1a0101, #000);
+            background: radial-gradient(circle at center, #350101, #000000, #220101, #000000);
+            background-size: 300% 300%;
+            animation: smoothBG 20s ease-in-out infinite;
             font-family: 'Segoe UI', sans-serif;
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Высокая и просторная шапка */
+        @keyframes smoothBG {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
         header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            background: #000;
-            padding: 0 40px; /* Увеличил боковые отступы */
-            height: 100px; 
-            border-bottom: 2px solid #222;
+            background-color: #000;
+            padding: 0 40px;
+            height: 90px;
+            border-bottom: 1px solid #1a1a1a;
             position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 1000;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
             box-sizing: border-box;
         }
 
-        .header-left { display: flex; align-items: center; min-width: 250px; }
-        .brand { display: flex; align-items: center; gap: 15px; text-decoration: none; color: white; }
-        
-        /* Твоё новое лого */
-        .logo-img { height: 65px; width: auto; object-fit: contain; } 
-        .brand-name { font-size: 30px; font-weight: 900; }
-        .brand-name span { color: #f00; }
-
-        /* Центрированный поисковик с правильным текстом */
-        .search-box {
-            flex: 1;
-            margin: 0 50px; /* Больше места по бокам, чтобы не давить на кнопки */
-            max-width: 600px;
-            position: relative;
+        .header-left {
+            display: flex;
+            align-items: center;
+            margin-right: 30px;
+            flex-shrink: 0;
         }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-img { height: 45px; width: auto; }
+        .brand-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
+        .brand-name span { color: #ff0000; }
+
+        .header-center {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+
         .search-input {
             width: 100%;
             background: #111;
-            border: 2px solid #333;
-            border-radius: 14px;
-            padding: 14px 20px 14px 50px;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 14px 20px 14px 55px;
             color: white;
-            outline: none;
             font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
         }
-        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); font-size: 20px; opacity: 0.5; }
 
-        /* Крупная навигация */
-        .header-right { display: flex; align-items: center; gap: 40px; min-width: 250px; justify-content: flex-end; }
-        .nav-link {
-            text-decoration: none;
-            color: white;
+        .search-input:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            opacity: 0.5;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-left: 30px;
+        }
+
+        .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 13px;
+            text-decoration: none;
+            gap: 4px;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .header-icon-svg { fill: white; width: 26px; height: 26px; }
+
+        .nav-label {
+            color: #fff;
+            font-size: 9px;
             font-weight: 800;
             text-transform: uppercase;
-            gap: 6px;
+            letter-spacing: 0.5px;
         }
-        .nav-icon { width: 32px; height: 32px; fill: currentColor; }
 
-        .header-avatar { width: 50px; height: 50px; border-radius: 50%; border: 3px solid #f00; object-fit: cover; }
+        .notif-badge {
+            display: none;
+            position: absolute;
+            top: -2px;
+            right: 15px;
+            width: 8px;
+            height: 8px;
+            background: #ff0000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ff0000;
+            border: 2px solid #000;
+        }
 
-        /* Сетка игр */
+        .header-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #ff0000;
+            object-fit: cover;
+        }
+
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: #000;
+            border-top: 1px solid #1a1a1a;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .login-btn-link {
+            text-decoration: none;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        /* Админ-панель и сетка игр */
+        #admin-panel {
+            display: none;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .admin-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .admin-btn:hover { background: #cc0000; transform: scale(1.02); }
+
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-            gap: 30px;
-            padding: 140px 40px 60px;
-            max-width: 1400px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         .game-card {
-            background: #0a0a0a;
-            border-radius: 18px;
-            border: 1px solid #222;
-            text-decoration: none;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
             overflow: hidden;
+            border: 1px solid #333;
             transition: 0.3s;
-            aspect-ratio: 2/3;
+            text-decoration: none;
+            backdrop-filter: blur(5px);
         }
-        .game-card:hover { border-color: #f00; transform: translateY(-10px); }
-        .game-img { width: 100%; height: 80%; object-fit: cover; }
-        .game-name { padding: 15px; font-size: 15px; text-align: center; color: #fff; font-weight: bold; }
 
-        /* Кнопка админа в сетке */
-        .add-card {
-            display: none;
-            border: 3px dashed #333;
-            background: rgba(255, 255, 255, 0.02);
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            cursor: pointer;
+        .game-card:hover {
+            border-color: #ff0000;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.15);
         }
-        .add-icon { font-size: 60px; color: #f00; line-height: 1; }
-        .add-text { font-size: 14px; color: #fff; margin-top: 15px; text-align: center; font-weight: 900; }
 
-        @media (max-width: 1000px) {
-            .search-box { display: none; }
-            header { padding: 0 20px; }
+        .game-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+        .game-name { padding: 12px; font-weight: bold; text-align: center; color: white; font-size: 14px; }
+
+        @media (max-width: 850px) {
+            header { padding: 0 20px; height: 70px; }
+            .header-right { display: flex; }
+            .header-right.guest-only { display: flex; margin-left: 15px; }
+            .brand-name { font-size: 20px; }
+            .logo-img { height: 35px; }
+            .mobile-nav { display: flex; }
+            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+            .game-img { height: 160px; }
         }
     </style>
 </head>
@@ -125,26 +238,30 @@
     <header>
         <div class="header-left">
             <a href="index.html" class="brand">
-                <img src="Logo780.png" alt="NG Logo" class="logo-img">
+                <img src="logo.png" alt="NG" class="logo-img">
                 <div class="brand-name">Nova<span>Game</span></div>
             </a>
         </div>
 
-        <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" placeholder="Поиск игр и приложений">
+        <div class="header-center">
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Поиск игр...">
+            </div>
         </div>
 
-        <div class="header-right" id="user-nav">
-            </div>
+        <div class="header-right" id="pc-nav"></div>
     </header>
 
-    <div class="games-grid" id="games-container">
-        <div class="game-card add-card" id="add-game-btn" onclick="location.href='add-game.html'">
-            <div class="add-icon">+</div>
-            <div class="add-text">ВЫСТАВИТЬ<br>ТОВАР</div>
-        </div>
+    <nav class="mobile-nav" id="mobile-nav"></nav>
+
+    <div style="height: 100px;"></div>
+
+    <div id="admin-panel">
+        <button class="admin-btn" onclick="location.href='add-game.html'">+ Добавить игру</button>
     </div>
+
+    <div class="games-grid" id="games-container"></div>
 
     <script>
         const firebaseConfig = {
@@ -161,47 +278,79 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // Загрузка игр из Firebase
         function loadGames() {
             const container = document.getElementById('games-container');
             db.ref('games').on('value', (snapshot) => {
-                const existingCards = container.querySelectorAll('.game-card:not(.add-card)');
-                existingCards.forEach(c => c.remove());
+                container.innerHTML = '';
                 snapshot.forEach((child) => {
                     const game = child.val();
-                    const card = document.createElement('a');
-                    card.href = `category.html?id=${child.key}`;
-                    card.className = 'game-card';
-                    card.innerHTML = `<img src="${game.image}" class="game-img"><p class="game-name">${game.name}</p>`;
-                    container.appendChild(card);
+                    container.innerHTML += `
+                        <a href="category.html?id=${child.key}" class="game-card">
+                            <img src="${game.image}" class="game-img">
+                            <div class="game-name">${game.name}</div>
+                        </a>
+                    `;
                 });
             });
         }
         loadGames();
 
         auth.onAuthStateChanged((user) => {
-            const nav = document.getElementById('user-nav');
-            const addBtn = document.getElementById('add-game-btn');
+            const pcNav = document.getElementById('pc-nav');
+            const mobileNav = document.getElementById('mobile-nav');
+            const adminPanel = document.getElementById('admin-panel');
             
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (data && data.role === "admin") addBtn.style.display = 'flex';
+                    const userData = snapshot.val();
                     
-                    const pic = data.profilePic || 'default-avatar.png';
-                    nav.innerHTML = `
-                        <a href="news.html" class="nav-link">
-                            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                            Новости
+                    if (userData && userData.isBanned === true) {
+                        window.location.href = "banned.html";
+                        return;
+                    }
+
+                    // Проверка роли admin (изменено по твоей просьбе)
+                    if (userData && userData.admin === true) {
+                        adminPanel.style.display = 'block';
+                    } else {
+                        adminPanel.style.display = 'none';
+                    }
+
+                    const profilePic = (userData && userData.profilePic) ? userData.profilePic : 'default-avatar.png';
+                    
+                    const navButtonsHtml = `
+                        <a href="news.html" class="nav-item">
+                            <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                            <span class="nav-label">Новости</span>
                         </a>
-                        <a href="chat.html" class="nav-link">
-                            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>
-                            Чат
+                        <a href="chat.html" class="nav-item">
+                            <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>
+                            <span class="nav-label">Чат</span>
+                            <div class="notif-badge" id="chat-dot"></div>
                         </a>
-                        <a href="profile.html"><img src="${pic}" class="header-avatar"></a>
+                        <a href="profile.html" class="nav-item">
+                            <img src="${profilePic}" class="header-avatar">
+                            <span class="nav-label">Профиль</span>
+                        </a>
                     `;
+
+                    if (window.innerWidth <= 850) {
+                        pcNav.innerHTML = `<a href="profile.html" class="nav-item"><img src="${profilePic}" class="header-avatar"></a>`;
+                        mobileNav.innerHTML = navButtonsHtml;
+                        mobileNav.style.display = 'flex';
+                    } else {
+                        pcNav.innerHTML = navButtonsHtml;
+                        mobileNav.innerHTML = '';
+                        mobileNav.style.display = 'none';
+                    }
+                    pcNav.classList.remove('guest-only');
                 });
             } else {
-                nav.innerHTML = `<a href="login.html" style="color:#f00; text-decoration:none; font-weight:900; font-size:20px;">ВОЙТИ</a>`;
+                pcNav.innerHTML = `<a href="login.html" class="login-btn-link">Войти</a>`;
+                mobileNav.style.display = 'none';
+                adminPanel.style.display = 'none';
+                pcNav.classList.add('guest-only');
             }
         });
     </script>

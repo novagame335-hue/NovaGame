@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить игру — NovaGame</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .form-container {
+            background: #111;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.1);
+        }
+
+        h2 { text-align: center; margin-bottom: 25px; color: #ff0000; }
+
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; opacity: 0.8; }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 10px;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus { border-color: #ff0000; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover { background: #cc0000; transform: scale(1.02); }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Новый товар</h2>
+        <div class="input-group">
+            <label>Название игры</label>
+            <input type="text" id="game-name" placeholder="Например: GTA VI">
+        </div>
+        <div class="input-group">
+            <label>Ссылка на обложку (URL)</label>
+            <input type="text" id="game-image" placeholder="https://site.com/image.jpg">
+        </div>
+        <div class="input-group">
+            <label>Категория</label>
+            <select id="game-category">
+                <option value="action">Экшен</option>
+                <option value="rpg">RPG</option>
+                <option value="strategy">Стратегии</option>
+                <option value="apps">Приложения</option>
+            </select>
+        </div>
+        <button class="submit-btn" onclick="addGame()">Опубликовать на сайт</button>
+        <a href="index.html" class="back-link">← Назад на главную</a>
+    </div>
+
+    <script>
+        // Твои настройки Firebase (те же самые)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+            authDomain: "novagame-b15b6.firebaseapp.com",
+            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "novagame-b15b6",
+            storageBucket: "novagame-b15b6.firebasestorage.app",
+            messagingSenderId: "7572791951",
+            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        // Проверка: только админ может тут находиться
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                db.ref('users/' + user.uid).once('value').then((snapshot) => {
+                    const userData = snapshot.val();
+                    if (!userData || (userData.admin !== true && userData.role !== "admin")) {
+                        alert("Доступ только для админов!");
+                        window.location.href = "index.html";
+                    }
+                });
+            }
+        });
+
+        function addGame() {
+            const name = document.getElementById('game-name').value;
+            const image = document.getElementById('game-image').value;
+            const category = document.getElementById('game-category').value;
+
+            if (name === "" || image === "") {
+                alert("Заполни все поля!");
+                return;
+            }
+
+            const newGameRef = db.ref('games').push();
+            newGameRef.set({
+                name: name,
+                image: image,
+                category: category,
+                date: Date.now()
+            }).then(() => {
+                alert("Игра успешно добавлена!");
+                window.location.href = "index.html";
+            }).catch((error) => {
+                alert("Ошибка: " + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

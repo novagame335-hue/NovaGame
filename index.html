@@ -46,63 +46,82 @@
         .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
-        /* КРУТЫЕ КАРТОЧКИ */
+        /* КВАДРАТНЫЕ КАРТОЧКИ */
         .games-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto;
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px; 
+            padding: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto;
         }
 
         .game-wrapper { position: relative; }
 
         .game-card {
-            background: #0a0a0a; border-radius: 20px; overflow: hidden;
-            border: 1px solid #222; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-decoration: none; display: block; position: relative;
+            background: #0a0a0a; 
+            border-radius: 24px; /* Гладкие края */
+            overflow: hidden;
+            border: 1px solid #222; 
+            transition: 0.3s;
+            text-decoration: none; 
+            display: block; 
+            position: relative;
+            aspect-ratio: 1 / 1; /* Квадрат */
         }
 
-        .game-card:hover { border-color: #ff0000; transform: translateY(-10px); box-shadow: 0 10px 30px rgba(255, 0, 0, 0.2); }
+        .game-card:hover { 
+            border-color: #ff0000; 
+            transform: translateY(-5px); 
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3); 
+        }
 
-        .game-img { width: 100%; height: 260px; object-fit: cover; transition: 0.5s; }
-        .game-card:hover .game-img { transform: scale(1.1); }
+        .game-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
 
-        /* Затемнение и текст поверх фото */
         .game-info {
             position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 20px 15px; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+            padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
         }
 
-        .game-name { font-weight: 800; color: white; font-size: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .game-name { 
+            font-weight: 700; color: white; font-size: 13px; 
+            text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
 
-        /* КНОПКИ АДМИНА */
+        /* КНОПКИ УПРАВЛЕНИЯ */
         .admin-actions {
-            position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 5;
+            position: absolute; top: 8px; right: 8px; display: flex; gap: 5px; z-index: 5;
         }
         .adm-btn {
-            width: 30px; height: 30px; border-radius: 8px; border: none; cursor: pointer;
+            width: 28px; height: 28px; border-radius: 10px; border: none; cursor: pointer;
             color: white; font-size: 12px; display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
         }
-        .del-btn { background: rgba(255, 0, 0, 0.8); }
-        .ed-btn { background: rgba(0, 100, 255, 0.8); }
+        .del-btn { background: rgba(255, 0, 0, 0.7); }
+        .ed-btn { background: rgba(0, 100, 255, 0.7); }
 
-        #admin-panel { display: none; max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        #admin-panel { display: none; max-width: 1200px; margin: 10px auto; padding: 0 20px; text-align: right; }
         .admin-add-link {
-            background: #ff0000; color: white; padding: 12px 24px; border-radius: 12px;
-            font-weight: bold; text-decoration: none; display: inline-block;
-        }
-
-        @media (max-width: 850px) {
-            header { padding: 0 15px; }
-            .brand-name { display: none; }
-            .header-right { display: none !important; }
-            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
-            .game-img { height: 200px; }
-            .mobile-nav { display: flex !important; }
+            background: #ff0000; color: white; padding: 10px 20px; border-radius: 12px;
+            font-weight: bold; text-decoration: none; display: inline-block; font-size: 14px;
         }
 
         .mobile-nav {
             display: none; position: fixed; bottom: 0; left: 0; right: 0;
             height: 70px; background: #000; border-top: 1px solid #1a1a1a;
             justify-content: space-around; align-items: center; z-index: 1000;
+        }
+
+        @media (max-width: 850px) {
+            header { padding: 0 15px; height: 70px; }
+            .brand-name { display: none; }
+            .header-right { display: none !important; }
+            .games-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+                padding: 10px; gap: 10px; 
+            }
+            .mobile-nav { display: flex !important; }
+            .admin-panel { margin-top: 80px; }
         }
     </style>
 </head>
@@ -124,7 +143,7 @@
         <div class="header-right" id="pc-nav"></div>
     </header>
 
-    <div style="height: 110px;"></div>
+    <div style="height: 100px;"></div>
 
     <div id="admin-panel">
         <a href="add-game.html" class="admin-add-link">+ Добавить игру</a>
@@ -202,7 +221,7 @@
 
                     if (isAdmin) adminPanel.style.display = 'block';
 
-                    loadGames(isAdmin); // Загружаем игры с учетом прав
+                    loadGames(isAdmin);
 
                     const navContent = `
                         <a href="news.html" class="nav-item">
@@ -225,10 +244,12 @@
                         mobileNav.style.display = 'flex';
                     } else {
                         pcNav.innerHTML = navContent;
+                        mobileNav.style.display = 'none';
                     }
                 });
             } else {
                 pcNav.innerHTML = `<a href="login.html" class="login-btn-link">Войти</a>`;
+                mobileNav.style.display = 'none';
                 loadGames(false);
             }
         });

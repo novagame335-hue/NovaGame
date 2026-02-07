@@ -14,24 +14,17 @@
     <style>
         body {
             margin: 0;
-            background: radial-gradient(circle at center, #1a0101, #000000, #220101, #000000);
-            background-size: 300% 300%;
-            animation: smoothBG 20s ease-in-out infinite;
+            background: radial-gradient(circle at center, #1a0101, #000000);
             font-family: 'Segoe UI', sans-serif;
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        @keyframes smoothBG {
-            0% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
-            100% { background-position: 0% 0%; }
-        }
-
         header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             background-color: #000;
             padding: 0 40px;
             height: 90px;
@@ -45,8 +38,7 @@
         .header-left {
             display: flex;
             align-items: center;
-            margin-right: 30px;
-            flex-shrink: 0;
+            flex-shrink: 0; /* Логотип не сжимается */
         }
 
         .brand {
@@ -56,7 +48,7 @@
             text-decoration: none;
         }
 
-        .logo-img { height: 60px; width: auto; }
+        .logo-img { height: 60px; }
         .brand-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
         .brand-name span { color: #ff0000; }
 
@@ -64,11 +56,15 @@
             flex: 1;
             display: flex;
             align-items: center;
+            justify-content: center;
+            margin: 0 20px;
+            min-width: 0; /* Позволяет поиску сжиматься */
         }
 
         .search-container {
             position: relative;
             width: 100%;
+            max-width: 500px; /* Ограничиваем, чтобы не выдавливал кнопки */
         }
 
         .search-input {
@@ -76,7 +72,7 @@
             background: #111;
             border: 1px solid #333;
             border-radius: 12px;
-            padding: 14px 20px 14px 55px;
+            padding: 14px 20px 14px 50px;
             color: white;
             font-size: 16px;
             outline: none;
@@ -86,20 +82,11 @@
 
         .search-input:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
 
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            opacity: 0.5;
-        }
-
         .header-right {
             display: flex;
             align-items: center;
             gap: 25px;
-            margin-left: 30px;
+            flex-shrink: 0; /* Кнопки никогда не сжимаются */
         }
 
         .nav-item {
@@ -109,31 +96,16 @@
             text-decoration: none;
             gap: 4px;
             transition: 0.2s;
-            position: relative;
         }
 
-        .header-icon-svg { fill: white; width: 26px; height: 26px; }
+        .header-icon-svg { fill: white; width: 24px; height: 24px; }
+        .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
-        .nav-label {
-            color: #fff;
-            font-size: 9px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .header-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid #ff0000;
-            object-fit: cover;
-        }
-
-        /* КВАДРАТНЫЕ КАРТОЧКИ */
+        /* КВАДРАТНЫЕ КАРТОЧКИ С ГЛАДКИМИ КРАЯМИ */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 15px;
             padding: 20px;
             max-width: 1200px;
@@ -144,20 +116,20 @@
 
         .game-card {
             background: #0a0a0a;
-            border-radius: 24px;
+            border-radius: 24px; /* Гладкость */
             overflow: hidden;
             border: 1px solid #222;
             transition: 0.3s;
             text-decoration: none;
             display: block;
-            aspect-ratio: 1 / 1;
+            aspect-ratio: 1 / 1; /* Квадрат */
             position: relative;
         }
 
         .game-card:hover {
             border-color: #ff0000;
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3);
         }
 
         .game-img { width: 100%; height: 100%; object-fit: cover; }
@@ -176,20 +148,18 @@
         #admin-panel {
             display: none;
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 10px auto;
             padding: 0 20px;
         }
 
-        .admin-btn {
+        .admin-add-link {
             background: #ff0000;
             color: white;
-            border: none;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 12px;
             font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+            text-decoration: none;
+            display: inline-block;
         }
 
         .admin-actions {
@@ -199,8 +169,8 @@
             width: 28px; height: 28px; border-radius: 10px; border: none; cursor: pointer;
             color: white; font-size: 12px; display: flex; align-items: center; justify-content: center;
         }
-        .del-btn { background: #ff0000; }
-        .ed-btn { background: #0064ff; }
+        .del-btn { background: rgba(255, 0, 0, 0.8); }
+        .ed-btn { background: rgba(0, 100, 255, 0.8); }
 
         .mobile-nav {
             display: none;
@@ -212,26 +182,15 @@
             justify-content: space-around;
             align-items: center;
             z-index: 1000;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .login-btn-link {
-            text-decoration: none;
-            border: 2px solid #fff;
-            color: #fff;
-            padding: 8px 18px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
         }
 
         @media (max-width: 850px) {
             header { padding: 0 15px; height: 70px; }
             .brand-name { display: none; }
-            .logo-img { height: 45px; }
-            .header-right { display: none !important; } 
+            .header-center { margin: 0 10px; }
+            .header-right { display: none !important; }
             .mobile-nav { display: flex; }
-            .games-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding: 10px; }
+            .games-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
         }
     </style>
 </head>
@@ -247,23 +206,23 @@
 
         <div class="header-center">
             <div class="search-container">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" placeholder="Поиск игр и приложений">
+                <span style="position:absolute; left:20px; top:50%; transform:translateY(-50%); opacity:0.5;">🔍</span>
+                <input type="text" class="search-input" placeholder="Поиск игр...">
             </div>
         </div>
 
         <div class="header-right" id="pc-nav"></div>
     </header>
 
-    <nav class="mobile-nav" id="mobile-nav"></nav>
-
     <div style="height: 100px;"></div>
 
     <div id="admin-panel">
-        <button class="admin-btn" onclick="location.href='add-game.html'">+ Добавить игру</button>
+        <a href="add-game.html" class="admin-add-link">+ Добавить игру</a>
     </div>
 
     <div class="games-grid" id="games-container"></div>
+
+    <nav class="mobile-nav" id="mobile-nav"></nav>
 
     <script>
         const firebaseConfig = {
@@ -293,13 +252,11 @@
                 snapshot.forEach((child) => {
                     const game = child.val();
                     const gameId = child.key;
-
                     const adminBtns = isAdmin ? `
                         <div class="admin-actions">
                             <button onclick="location.href='add-game.html?edit=${gameId}'" class="adm-btn ed-btn">✏️</button>
                             <button onclick="deleteGame('${gameId}')" class="adm-btn del-btn">🗑</button>
-                        </div>
-                    ` : '';
+                        </div>` : '';
 
                     container.innerHTML += `
                         <div class="game-wrapper">
@@ -310,8 +267,7 @@
                                     <div class="game-name">${game.name}</div>
                                 </div>
                             </a>
-                        </div>
-                    `;
+                        </div>`;
                 });
             });
         }
@@ -331,16 +287,11 @@
                         return;
                     }
 
-                    if (isAdmin) {
-                        adminPanel.style.display = 'block';
-                    }
-
+                    if (isAdmin) adminPanel.style.display = 'block';
                     loadGames(isAdmin);
 
-                    const profilePic = userData.profilePic || 'default-avatar.png';
-                    
-                    // ВОТ ОНИ ВСЕ ТРИ В РЯД
-                    const navButtonsHtml = `
+                    // ТРИ КНОПКИ: Новости, Чат, Профиль
+                    const navHtml = `
                         <a href="news.html" class="nav-item">
                             <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                             <span class="nav-label">Новости</span>
@@ -350,21 +301,22 @@
                             <span class="nav-label">Чат</span>
                         </a>
                         <a href="profile.html" class="nav-item">
-                            <img src="${profilePic}" class="header-avatar">
+                            <img src="${userData.profilePic || 'default-avatar.png'}" class="header-avatar">
                             <span class="nav-label">Профиль</span>
                         </a>
                     `;
 
                     if (window.innerWidth <= 850) {
                         pcNav.innerHTML = '';
-                        mobileNav.innerHTML = navButtonsHtml;
+                        mobileNav.innerHTML = navHtml;
+                        mobileNav.style.display = 'flex';
                     } else {
-                        pcNav.innerHTML = navButtonsHtml;
+                        pcNav.innerHTML = navHtml;
                         mobileNav.style.display = 'none';
                     }
                 });
             } else {
-                pcNav.innerHTML = `<a href="login.html" class="login-btn-link">Войти</a>`;
+                pcNav.innerHTML = `<a href="login.html" style="color:white; text-decoration:none; border:1px solid #ff0000; padding:8px 15px; border-radius:8px;">Войти</a>`;
                 mobileNav.style.display = 'none';
                 loadGames(false);
             }

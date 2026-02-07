@@ -140,7 +140,7 @@
 
         <div class="input-group">
             <label>Название игры</label>
-            <input type="text" id="game-name" placeholder="Введите название">
+            <input type="text" id="game-name" placeholder="Введите название (на английском)">
         </div>
 
         <div class="input-group">
@@ -149,13 +149,8 @@
         </div>
 
         <div class="input-group">
-            <label>Категория</label>
-            <select id="game-category">
-                <option value="Экшен">Экшен</option>
-                <option value="RPG">RPG</option>
-                <option value="Гонки">Гонки</option>
-                <option value="Приложения">Приложения</option>
-            </select>
+            <label>Поисковые слова (на русском)</label>
+            <input type="text" id="game-keywords" placeholder="Например: клеш оф кленс, стратегия">
         </div>
 
         <button class="submit-btn" id="upload-btn" onclick="uploadGame()">Опубликовать</button>
@@ -215,12 +210,13 @@
         function uploadGame() {
             const name = document.getElementById('game-name').value;
             const fileInput = document.getElementById('game-file');
-            const category = document.getElementById('game-category').value;
+            // Получаем слова из нового поля keywords
+            const keywords = document.getElementById('game-keywords').value;
             const btn = document.getElementById('upload-btn');
             const status = document.getElementById('status');
 
             if (!name || !fileInput.files[0]) {
-                alert("Заполните все поля!");
+                alert("Заполните название и выберите обложку!");
                 return;
             }
 
@@ -244,10 +240,11 @@
 
                 status.innerText = "Сохранение в базу...";
 
+                // Отправляем данные в Firebase
                 db.ref('games').push({
                     name: name,
                     image: base64Image,
-                    category: category,
+                    keywords: keywords, // Сохраняем русские слова
                     date: Date.now()
                 }).then(() => {
                     status.style.color = "#00ff00";

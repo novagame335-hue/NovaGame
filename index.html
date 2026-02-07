@@ -205,7 +205,7 @@
         <div class="header-center">
             <div class="search-container">
                 <span style="position:absolute; left:20px; top:50%; transform:translateY(-50%); opacity:0.5;">🔍</span>
-                <input type="text" id="gameSearch" class="search-input" placeholder="Поиск (по названию или ключевым словам)...">
+                <input type="text" id="gameSearch" class="search-input" placeholder="Поиски игр и приложений">
             </div>
         </div>
 
@@ -251,7 +251,6 @@
                     const game = child.val();
                     const gameId = child.key;
                     
-                    // СОБИРАЕМ ДАННЫЕ ДЛЯ ПОИСКА: Название + Ключевые слова из базы
                     const searchKeywords = (game.name + " " + (game.keywords || "")).toLowerCase();
 
                     const adminBtns = isAdmin ? `
@@ -274,15 +273,12 @@
             });
         }
 
-        // ЖИВОЙ ПОИСК
         document.getElementById('gameSearch').addEventListener('input', function(e) {
             const query = e.target.value.toLowerCase();
             const cards = document.querySelectorAll('.game-wrapper');
             
             cards.forEach(card => {
                 const searchContent = card.getAttribute('data-search-content');
-                
-                // Проверяем, есть ли запрос в названии или в русских ключевых словах
                 if (searchContent.includes(query)) {
                     card.style.display = 'block';
                 } else {

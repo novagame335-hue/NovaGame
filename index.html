@@ -14,204 +14,95 @@
     <style>
         body {
             margin: 0;
-            background: radial-gradient(circle at center, #350101, #000000, #220101, #000000);
-            background-size: 300% 300%;
-            animation: smoothBG 20s ease-in-out infinite;
+            background: radial-gradient(circle at center, #1a0101, #000000);
             font-family: 'Segoe UI', sans-serif;
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        @keyframes smoothBG {
-            0% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
-            100% { background-position: 0% 0%; }
-        }
-
         header {
-            display: flex;
-            align-items: center;
-            background-color: #000;
-            padding: 0 40px;
-            height: 90px;
-            border-bottom: 1px solid #1a1a1a;
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
-            box-sizing: border-box;
+            display: flex; align-items: center; background-color: #000;
+            padding: 0 40px; height: 90px; border-bottom: 1px solid #1a1a1a;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100; box-sizing: border-box;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            margin-right: 30px;
-            flex-shrink: 0;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .logo-img { height: 60px; width: auto; }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-img { height: 60px; }
         .brand-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
         .brand-name span { color: #ff0000; }
 
-        .header-center {
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-
-        .search-container {
-            position: relative;
-            width: 100%;
-        }
-
+        .header-center { flex: 1; display: flex; align-items: center; margin: 0 20px; }
+        .search-container { position: relative; width: 100%; }
         .search-input {
-            width: 100%;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 14px 20px 14px 55px;
-            color: white;
-            font-size: 16px;
-            outline: none;
-            transition: 0.3s;
-            box-sizing: border-box;
+            width: 100%; background: #111; border: 1px solid #333; border-radius: 12px;
+            padding: 14px 20px 14px 50px; color: white; font-size: 16px; outline: none; transition: 0.3s;
         }
-
         .search-input:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
 
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            opacity: 0.5;
+        .header-right { display: flex; align-items: center; gap: 25px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; gap: 4px; }
+        .header-icon-svg { fill: white; width: 24px; height: 24px; }
+        .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
+
+        /* КРУТЫЕ КАРТОЧКИ */
+        .games-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto;
         }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            margin-left: 30px;
+        .game-wrapper { position: relative; }
+
+        .game-card {
+            background: #0a0a0a; border-radius: 20px; overflow: hidden;
+            border: 1px solid #222; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none; display: block; position: relative;
         }
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            gap: 4px;
-            transition: 0.2s;
-            position: relative;
+        .game-card:hover { border-color: #ff0000; transform: translateY(-10px); box-shadow: 0 10px 30px rgba(255, 0, 0, 0.2); }
+
+        .game-img { width: 100%; height: 260px; object-fit: cover; transition: 0.5s; }
+        .game-card:hover .game-img { transform: scale(1.1); }
+
+        /* Затемнение и текст поверх фото */
+        .game-info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 20px 15px; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
         }
 
-        .header-icon-svg { fill: white; width: 26px; height: 26px; }
+        .game-name { font-weight: 800; color: white; font-size: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
-        .nav-label {
-            color: #fff;
-            font-size: 9px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* КНОПКИ АДМИНА */
+        .admin-actions {
+            position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 5;
+        }
+        .adm-btn {
+            width: 30px; height: 30px; border-radius: 8px; border: none; cursor: pointer;
+            color: white; font-size: 12px; display: flex; align-items: center; justify-content: center;
+        }
+        .del-btn { background: rgba(255, 0, 0, 0.8); }
+        .ed-btn { background: rgba(0, 100, 255, 0.8); }
+
+        #admin-panel { display: none; max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .admin-add-link {
+            background: #ff0000; color: white; padding: 12px 24px; border-radius: 12px;
+            font-weight: bold; text-decoration: none; display: inline-block;
         }
 
-        .header-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid #ff0000;
-            object-fit: cover;
+        @media (max-width: 850px) {
+            header { padding: 0 15px; }
+            .brand-name { display: none; }
+            .header-right { display: none !important; }
+            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+            .game-img { height: 200px; }
+            .mobile-nav { display: flex !important; }
         }
 
         .mobile-nav {
-            display: none;
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: 70px;
-            background: #000;
-            border-top: 1px solid #1a1a1a;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1000;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .login-btn-link {
-            text-decoration: none;
-            border: 2px solid #fff;
-            color: #fff;
-            padding: 8px 18px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-
-        #admin-panel {
-            display: none;
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-
-        .admin-btn {
-            background: #ff0000;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .game-card {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid #333;
-            transition: 0.3s;
-            text-decoration: none;
-            backdrop-filter: blur(5px);
-        }
-
-        .game-card:hover { border-color: #ff0000; transform: translateY(-5px); }
-        .game-img { width: 100%; height: 200px; object-fit: cover; display: block; }
-        .game-name { padding: 12px; font-weight: bold; text-align: center; color: white; font-size: 14px; }
-
-        /* МОБИЛЬНЫЕ СТИЛИ */
-        @media (max-width: 850px) {
-            header { padding: 0 15px; height: 70px; }
-            .brand-name { display: none; } /* Прячем текст логотипа */
-            .logo-img { height: 45px; }
-            .header-left { margin-right: 15px; }
-            
-            /* Убираем аватарку и кнопки справа в шапке */
-            .header-right { display: none !important; } 
-            
-            .header-center { margin-right: 0; }
-            .search-input { padding: 12px 15px 12px 45px; font-size: 14px; }
-            .search-icon { left: 15px; }
-
-            .mobile-nav { display: flex; }
-            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            height: 70px; background: #000; border-top: 1px solid #1a1a1a;
+            justify-content: space-around; align-items: center; z-index: 1000;
         }
     </style>
 </head>
@@ -224,26 +115,24 @@
                 <div class="brand-name">Nova<span>Game</span></div>
             </a>
         </div>
-
         <div class="header-center">
             <div class="search-container">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" placeholder="Поиск игр и приложений">
+                <span style="position:absolute; left:20px; top:50%; transform:translateY(-50%); opacity:0.5;">🔍</span>
+                <input type="text" class="search-input" placeholder="Поиск игр...">
             </div>
         </div>
-
         <div class="header-right" id="pc-nav"></div>
     </header>
 
-    <nav class="mobile-nav" id="mobile-nav"></nav>
-
-    <div style="height: 100px;"></div>
+    <div style="height: 110px;"></div>
 
     <div id="admin-panel">
-        <button class="admin-btn" onclick="location.href='add-game.html'">+ Добавить игру</button>
+        <a href="add-game.html" class="admin-add-link">+ Добавить игру</a>
     </div>
 
     <div class="games-grid" id="games-container"></div>
+
+    <nav class="mobile-nav" id="mobile-nav"></nav>
 
     <script>
         const firebaseConfig = {
@@ -260,22 +149,41 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        function loadGames() {
+        function deleteGame(id) {
+            if(confirm("Удалить эту игру?")) {
+                db.ref('games/' + id).remove();
+            }
+        }
+
+        function loadGames(isAdmin = false) {
             const container = document.getElementById('games-container');
             db.ref('games').on('value', (snapshot) => {
                 container.innerHTML = '';
                 snapshot.forEach((child) => {
                     const game = child.val();
+                    const gameId = child.key;
+
+                    const adminBtns = isAdmin ? `
+                        <div class="admin-actions">
+                            <button onclick="location.href='add-game.html?edit=${gameId}'" class="adm-btn ed-btn">✏️</button>
+                            <button onclick="deleteGame('${gameId}')" class="adm-btn del-btn">🗑</button>
+                        </div>
+                    ` : '';
+
                     container.innerHTML += `
-                        <a href="category.html?id=${child.key}" class="game-card">
-                            <img src="${game.image}" class="game-img">
-                            <div class="game-name">${game.name}</div>
-                        </a>
+                        <div class="game-wrapper">
+                            ${adminBtns}
+                            <a href="category.html?id=${gameId}" class="game-card">
+                                <img src="${game.image}" class="game-img">
+                                <div class="game-info">
+                                    <div class="game-name">${game.name}</div>
+                                </div>
+                            </a>
+                        </div>
                     `;
                 });
             });
         }
-        loadGames();
 
         auth.onAuthStateChanged((user) => {
             const pcNav = document.getElementById('pc-nav');
@@ -284,20 +192,19 @@
             
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
-                    const userData = snapshot.val();
-                    
-                    if (userData && userData.isBanned === true) {
+                    const userData = snapshot.val() || {};
+                    const isAdmin = userData.admin === true || userData.role === "admin";
+
+                    if (userData.isBanned) {
                         window.location.href = "banned.html";
                         return;
                     }
 
-                    if (userData && (userData.admin === true || userData.role === "admin")) {
-                        adminPanel.style.display = 'block';
-                    }
+                    if (isAdmin) adminPanel.style.display = 'block';
 
-                    const profilePic = userData.profilePic || 'default-avatar.png';
-                    
-                    const navButtonsHtml = `
+                    loadGames(isAdmin); // Загружаем игры с учетом прав
+
+                    const navContent = `
                         <a href="news.html" class="nav-item">
                             <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                             <span class="nav-label">Новости</span>
@@ -307,25 +214,22 @@
                             <span class="nav-label">Чат</span>
                         </a>
                         <a href="profile.html" class="nav-item">
-                            <img src="${profilePic}" class="header-avatar">
+                            <img src="${userData.profilePic || 'default-avatar.png'}" class="header-avatar">
                             <span class="nav-label">Профиль</span>
                         </a>
                     `;
 
-                    // ИСПРАВЛЕННАЯ ЛОГИКА: УБИРАЕМ ПРОФИЛЬ СВЕРХУ
                     if (window.innerWidth <= 850) {
-                        pcNav.innerHTML = ''; // Очищаем верхнюю правую часть на мобилках
-                        mobileNav.innerHTML = navButtonsHtml;
+                        pcNav.innerHTML = '';
+                        mobileNav.innerHTML = navContent;
                         mobileNav.style.display = 'flex';
                     } else {
-                        pcNav.innerHTML = navButtonsHtml;
-                        mobileNav.style.display = 'none';
+                        pcNav.innerHTML = navContent;
                     }
                 });
             } else {
                 pcNav.innerHTML = `<a href="login.html" class="login-btn-link">Войти</a>`;
-                mobileNav.style.display = 'none';
-                adminPanel.style.display = 'none';
+                loadGames(false);
             }
         });
     </script>

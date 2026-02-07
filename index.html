@@ -205,7 +205,7 @@
         <div class="header-center">
             <div class="search-container">
                 <span style="position:absolute; left:20px; top:50%; transform:translateY(-50%); opacity:0.5;">🔍</span>
-                <input type="text" id="gameSearch" class="search-input" placeholder="Поиск (на любом языке)...">
+                <input type="text" id="gameSearch" class="search-input" placeholder="Поиск (по названию или ключевым словам)...">
             </div>
         </div>
 
@@ -243,17 +243,6 @@
             }
         }
 
-        // Функция транслитерации (чтобы искать "гта" как "gta")
-        function translit(word) {
-            const converter = {
-                'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e', 'ж': 'zh',
-                'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
-                'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'c',
-                'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ь': '', 'ы': 'y', 'ъ': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
-            };
-            return word.split('').map(char => converter[char] || char).join('');
-        }
-
         function loadGames(isAdmin = false) {
             const container = document.getElementById('games-container');
             db.ref('games').on('value', (snapshot) => {
@@ -261,6 +250,10 @@
                 snapshot.forEach((child) => {
                     const game = child.val();
                     const gameId = child.key;
+                    
+                    // СОБИРАЕМ ДАННЫЕ ДЛЯ ПОИСКА: Название + Ключевые слова из базы
+                    const searchKeywords = (game.name + " " + (game.keywords || "")).toLowerCase();
+
                     const adminBtns = isAdmin ? `
                         <div class="admin-actions">
                             <button onclick="location.href='add-game.html?edit=${gameId}'" class="adm-btn ed-btn">✏️</button>
@@ -268,7 +261,7 @@
                         </div>` : '';
 
                     container.innerHTML += `
-                        <div class="game-wrapper" data-name="${game.name.toLowerCase()}" data-translit="${translit(game.name.toLowerCase())}">
+                        <div class="game-wrapper" data-search-content="${searchKeywords}">
                             ${adminBtns}
                             <a href="category.html?id=${gameId}" class="game-card">
                                 <img src="${game.image}" class="game-img">
@@ -281,18 +274,16 @@
             });
         }
 
-        // ЖИВОЙ ПОИСК (с поддержкой русского)
+        // ЖИВОЙ ПОИСК
         document.getElementById('gameSearch').addEventListener('input', function(e) {
             const query = e.target.value.toLowerCase();
-            const queryTranslit = translit(query);
             const cards = document.querySelectorAll('.game-wrapper');
             
             cards.forEach(card => {
-                const name = card.getAttribute('data-name');
-                const nameT = card.getAttribute('data-translit');
+                const searchContent = card.getAttribute('data-search-content');
                 
-                // Ищем и по оригиналу, и по транслиту
-                if (name.includes(query) || nameT.includes(query) || name.includes(queryTranslit)) {
+                // Проверяем, есть ли запрос в названии или в русских ключевых словах
+                if (searchContent.includes(query)) {
                     card.style.display = 'block';
                 } else {
                     card.style.display = 'none';

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Добавить игру — NovaGame</title>
+    <title>Управление игрой — NovaGame</title>
     
     <link rel="icon" type="image/png" href="Logo780.png">
 
@@ -61,7 +61,7 @@
             opacity: 0.7;
         }
         
-        input, select {
+        input {
             width: 100%;
             padding: 14px;
             background: #111;
@@ -119,7 +119,6 @@
         }
         .back-link:hover { color: #fff; }
 
-        /* Превью картинки */
         #preview {
             width: 100%;
             height: 150px;
@@ -134,7 +133,7 @@
 <body>
 
     <div class="form-container">
-        <h2>Nova<span>Admin</span></h2>
+        <h2 id="form-title">Nova<span>Admin</span></h2>
         
         <img id="preview" src="" alt="Превью">
 
@@ -144,7 +143,7 @@
         </div>
 
         <div class="input-group">
-            <label>Обложка (файл)</label>
+            <label>Обложка (оставьте пустым, если не меняете)</label>
             <input type="file" id="game-file" accept="image/*" onchange="previewImage()">
         </div>
 
@@ -175,7 +174,11 @@
         const db = firebase.database();
         const auth = firebase.auth();
 
-        // Проверка прав (только админ)
+        // Получаем ID для редактирования из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        let currentExistingImage = ""; // Храним старую картинку
+
         auth.onAuthStateChanged((user) => {
             if (!user) {
                 window.location.href = "login.html";
@@ -185,76 +188,100 @@
                     if (!userData || (userData.admin !== true && userData.role !== "admin")) {
                         alert("У вас нет прав администратора!");
                         window.location.href = "index.html";
+                    } else {
+                        // Если мы в режиме редактирования, загружаем данные
+                        if (editId) {
+                            prepareEditMode();
+                        }
                     }
                 });
             }
         });
 
-        // Функция показа превью
+        function prepareEditMode() {
+            document.getElementById('form-title').innerHTML = "Редактировать <span>Игру</span>";
+            document.getElementById('upload-btn').innerText = "Сохранить изменения";
+            
+            db.ref('games/' + editId).once('value').then((snapshot) => {
+                const game = snapshot.val();
+                if (game) {
+                    document.getElementById('game-name').value = game.name;
+                    document.getElementById('game-keywords').value = game.keywords || "";
+                    currentExistingImage = game.image; // Запоминаем старое фото
+                    
+                    const preview = document.getElementById('preview');
+                    preview.src = game.image;
+                    preview.style.display = 'block';
+                }
+            });
+        }
+
         function previewImage() {
             const file = document.getElementById('game-file').files[0];
             const preview = document.getElementById('preview');
             const reader = new FileReader();
-
-            reader.onloadend = function () {
-                preview.src = reader.result;
-                preview.style.display = 'block';
-            }
-
-            if (file) {
-                reader.readAsDataURL(file);
-            }
+            reader.onloadend = () => { preview.src = reader.result; preview.style.display = 'block'; }
+            if (file) reader.readAsDataURL(file);
         }
 
-        // Загрузка (Base64)
-        function uploadGame() {
+        async function uploadGame() {
             const name = document.getElementById('game-name').value;
             const fileInput = document.getElementById('game-file');
-            // Получаем слова из нового поля keywords
             const keywords = document.getElementById('game-keywords').value;
             const btn = document.getElementById('upload-btn');
             const status = document.getElementById('status');
 
-            if (!name || !fileInput.files[0]) {
-                alert("Заполните название и выберите обложку!");
-                return;
-            }
-
-            const file = fileInput.files[0];
-            
-            // Ограничение 1МБ для Base64
-            if (file.size > 1024 * 1024) {
-                alert("Картинка слишком тяжелая! Максимум 1 МБ.");
-                return;
-            }
+            if (!name) { alert("Введите название!"); return; }
 
             btn.disabled = true;
-            status.style.color = "#ff0000";
-            status.innerText = "Конвертация фото...";
+            status.innerText = "Обработка...";
 
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
+            let finalImage = currentExistingImage;
+
+            // Если выбран новый файл — конвертируем его
+            if (fileInput.files[0]) {
+                const file = fileInput.files[0];
+                if (file.size > 1024 * 1024) {
+                    alert("Файл слишком большой (макс 1МБ)");
+                    btn.disabled = false;
+                    return;
+                }
+                finalImage = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            if (!finalImage) {
+                alert("Выберите обложку!");
+                btn.disabled = false;
+                return;
+            }
+
+            const gameData = {
+                name: name,
+                image: finalImage,
+                keywords: keywords,
+                lastUpdate: Date.now()
+            };
+
+            // ЕСЛИ РЕДАКТИРУЕМ — update(), ЕСЛИ НОВАЯ — push()
+            const dbRef = editId ? db.ref('games/' + editId) : db.ref('games').push();
             
-            reader.onload = function () {
-                const base64Image = reader.result;
-
-                status.innerText = "Сохранение в базу...";
-
-                // Отправляем данные в Firebase
-                db.ref('games').push({
-                    name: name,
-                    image: base64Image,
-                    keywords: keywords, // Сохраняем русские слова
-                    date: Date.now()
-                }).then(() => {
-                    status.style.color = "#00ff00";
-                    status.innerText = "Игра успешно добавлена!";
-                    setTimeout(() => window.location.href = "index.html", 1500);
-                }).catch((error) => {
+            dbRef.set({
+                ...gameData,
+                date: editId ? undefined : Date.now() // Дату создания не меняем при редактировании
+            }, (error) => {
+                if (error) {
                     alert("Ошибка: " + error.message);
                     btn.disabled = false;
-                });
-            };
+                } else {
+                    status.style.color = "#00ff00";
+                    status.innerText = editId ? "Обновлено!" : "Опубликовано!";
+                    setTimeout(() => window.location.href = "index.html", 1000);
+                }
+            });
         }
     </script>
 </body>

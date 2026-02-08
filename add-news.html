@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Добавить баннер — NovaGame</title>
+    
+    <link rel="icon" type="image/png" href="Logo780.png">
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #350101, #000000);
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .form-container {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid #333;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(255, 0, 0, 0.2);
+        }
+
+        h2 { text-align: center; margin-bottom: 25px; font-weight: 800; }
+        h2 span { color: #ff0000; }
+
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 12px; text-transform: uppercase; font-weight: bold; opacity: 0.6; }
+        
+        input, textarea {
+            width: 100%; padding: 14px; background: #111; border: 1px solid #333;
+            border-radius: 12px; color: white; font-size: 15px; outline: none; box-sizing: border-box;
+        }
+        input:focus, textarea:focus { border-color: #ff0000; }
+
+        .preview-box {
+            width: 100%;
+            aspect-ratio: 21 / 9;
+            background: #111;
+            border: 2px dashed #333;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #preview-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+        .submit-btn {
+            width: 100%; padding: 16px; background: #ff0000; color: white; border: none;
+            border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .submit-btn:disabled { background: #444; opacity: 0.6; }
+
+        #status { text-align: center; margin-top: 15px; font-size: 14px; color: #ff0000; }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Новый <span>Баннер</span></h2>
+        
+        <div class="preview-box" id="preview-box">
+            <span id="preview-text" style="opacity: 0.3;">Превью баннера 21:9</span>
+            <img id="preview-img" src="">
+        </div>
+
+        <div class="input-group">
+            <label>Заголовок (на баннере)</label>
+            <input type="text" id="news-title" placeholder="Например: Обновление 2.0 уже тут!">
+        </div>
+
+        <div class="input-group">
+            <label>Изображение баннера</label>
+            <input type="file" id="news-file" accept="image/*" onchange="previewBanner()">
+        </div>
+
+        <div class="input-group">
+            <label>Текст новости (внутри)</label>
+            <textarea id="news-text" rows="4" placeholder="Описание события..."></textarea>
+        </div>
+
+        <button class="submit-btn" id="save-btn" onclick="uploadNews()">Опубликовать баннер</button>
+        <div id="status"></div>
+        <a href="index.html" class="back-link">← На главную</a>
+    </div>
+
+    <script>
+        // Используем твой конфиг
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
+            authDomain: "novagame-b15b6.firebaseapp.com",
+            databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "novagame-b15b6",
+            storageBucket: "novagame-b15b6.firebasestorage.app",
+            messagingSenderId: "7572791951",
+            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        // Проверка прав
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                db.ref('users/' + user.uid).once('value').then((snap) => {
+                    const d = snap.val();
+                    if (!d || (d.admin !== true && d.role !== "admin")) {
+                        window.location.href = "index.html";
+                    }
+                });
+            }
+        });
+
+        function previewBanner() {
+            const file = document.getElementById('news-file').files[0];
+            const reader = new FileReader();
+            const img = document.getElementById('preview-img');
+            const txt = document.getElementById('preview-text');
+
+            reader.onloadend = () => {
+                img.src = reader.result;
+                img.style.display = 'block';
+                txt.style.display = 'none';
+            }
+            if (file) reader.readAsDataURL(file);
+        }
+
+        async function uploadNews() {
+            const title = document.getElementById('news-title').value;
+            const text = document.getElementById('news-text').value;
+            const fileInput = document.getElementById('news-file');
+            const btn = document.getElementById('save-btn');
+            const status = document.getElementById('status');
+
+            if (!title || !fileInput.files[0]) return alert("Заполни заголовок и выбери фото!");
+
+            btn.disabled = true;
+            status.innerText = "Загрузка баннера...";
+
+            const file = fileInput.files[0];
+            // Лимит 1.5МБ для баннера
+            if (file.size > 1500000) {
+                alert("Картинка слишком тяжелая!");
+                btn.disabled = false;
+                return;
+            }
+
+            const base64 = await new Promise(r => {
+                const rd = new FileReader();
+                rd.onload = () => r(rd.result);
+                rd.readAsDataURL(file);
+            });
+
+            const newsData = {
+                title: title,
+                text: text,
+                image: base64,
+                timestamp: Date.now()
+            };
+
+            db.ref('news').push(newsData)
+                .then(() => {
+                    status.style.color = "#00ff00";
+                    status.innerText = "Баннер успешно добавлен!";
+                    setTimeout(() => window.location.href = "index.html", 1500);
+                })
+                .catch(e => {
+                    alert("Ошибка: " + e.message);
+                    btn.disabled = false;
+                });
+        }
+    </script>
+</body>
+</html>

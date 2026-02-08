@@ -102,10 +102,10 @@
         .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
-        /* --- ОБНОВЛЕННЫЕ СТИЛИ БАННЕРОВ (Вытянуты и выше) --- */
+        /* --- ОБНОВЛЕННЫЕ СТИЛИ БАННЕРОВ (Вытянуты вправо и вниз) --- */
         .news-section {
             max-width: 1200px;
-            margin: 5px auto 15px auto; /* Уменьшили верхний отступ, чтобы поднять выше */
+            margin: 5px auto 15px auto; /* Подняли выше к шапке */
             padding: 0 20px;
         }
         .news-header {
@@ -139,16 +139,16 @@
         .news-item-container {
             position: relative;
             flex-shrink: 0;
-            min-width: 90%; /* Сделали шире на мобильных */
+            min-width: 100%; /* Растягиваем на всю ширину вправо */
             width: 100%;
         }
 
         .news-item {
             display: block;
-            aspect-ratio: 5 / 1; /* Сильно вытянули вправо */
-            max-height: 180px;  /* Уменьшили высоту */
+            aspect-ratio: 3 / 1; /* Вытянули вниз (было 5/1 или 4/1) */
+            max-height: 320px;  /* Позволяем баннеру быть выше */
             background: #111;
-            border-radius: 15px;
+            border-radius: 18px;
             overflow: hidden;
             text-decoration: none;
             position: relative;
@@ -158,8 +158,8 @@
         }
         
         @media (min-width: 850px) {
-            .news-item-container { min-width: 100%; } /* На ПК во всю ширину */
-            .news-item { max-height: 200px; }
+            .news-item-container { min-width: 100%; } 
+            .news-item { max-height: 350px; }
         }
 
         .news-item:hover { border-color: #ff0000; transform: scale(1.005); }
@@ -174,12 +174,12 @@
         .news-overlay {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 10px 20px; /* Уменьшили падинги для узкого баннера */
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 20px; 
+            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
         }
 
         .news-title {
-            font-size: 15px;
+            font-size: 18px;
             font-weight: 800;
             color: white;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
@@ -187,15 +187,15 @@
 
         .news-del-btn {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 12px;
+            right: 12px;
             z-index: 10;
-            background: rgba(255, 0, 0, 0.85);
+            background: rgba(255, 0, 0, 0.9);
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 4px 10px;
-            font-size: 9px;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 10px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
@@ -344,7 +344,6 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // УДАЛЕНИЕ БАННЕРА
         function deleteNews(id, event) {
             event.preventDefault();
             if(confirm("Удалить это объявление?")) {
@@ -352,7 +351,6 @@
             }
         }
 
-        // ЗАГРУЗКА БАННЕРОВ
         function loadNews(isAdmin = false) {
             const newsCont = document.getElementById('news-container');
             db.ref('news').on('value', (snapshot) => {

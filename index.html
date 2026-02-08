@@ -102,7 +102,7 @@
         .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
-        /* --- НОВЫЕ СТИЛИ НОВОСТНОЙ ЛЕНТЫ --- */
+        /* --- НОВЫЕ СТИЛИ ДЛЯ БАННЕРОВ --- */
         .news-section {
             max-width: 1200px;
             margin: 20px auto;
@@ -132,21 +132,48 @@
             overflow-x: auto;
             padding-bottom: 15px;
             scrollbar-width: none;
+            scroll-snap-type: x mandatory;
         }
         .news-wrapper::-webkit-scrollbar { display: none; }
+        
         .news-item {
-            min-width: 280px;
-            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
-            border: 1px solid #333;
-            border-radius: 16px;
-            padding: 15px;
+            min-width: 85%; /* На мобилках почти на весь экран */
+            aspect-ratio: 21 / 9; /* Формат баннера */
+            background: #111;
+            border-radius: 20px;
+            overflow: hidden;
             text-decoration: none;
-            color: white;
+            position: relative;
+            scroll-snap-align: center;
+            border: 1px solid #333;
             transition: 0.3s;
         }
-        .news-item:hover { border-color: #ff0000; transform: translateY(-3px); }
-        .news-date { font-size: 10px; color: #ff0000; font-weight: bold; margin-bottom: 5px; display: block;}
-        .news-title { font-size: 15px; font-weight: 700; line-height: 1.3; }
+        
+        @media (min-width: 850px) {
+            .news-item { min-width: 600px; } /* На ПК баннеры фиксированного размера */
+        }
+
+        .news-item:hover { border-color: #ff0000; }
+        
+        .news-banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .news-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        }
+
+        .news-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
         /* ---------------------------------- */
 
         .games-grid {
@@ -263,14 +290,14 @@
     <div style="height: 100px;"></div>
 
     <div class="news-section">
-        <div class="news-header">Новости и обновления</div>
+        <div class="news-header">События</div>
         <div class="news-wrapper" id="news-container">
             </div>
     </div>
 
     <div id="admin-panel">
         <a href="add-game.html" class="admin-add-link">+ Добавить игру</a>
-        <a href="add-news.html" class="admin-add-link" style="background:#333;">+ Добавить новость</a>
+        <a href="add-news.html" class="admin-add-link" style="background:#333;">+ Добавить баннер</a>
     </div>
 
     <div class="games-grid" id="games-container"></div>
@@ -292,21 +319,24 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // ФУНКЦИЯ ЗАГРУЗКИ НОВОСТЕЙ
+        // ЗАГРУЗКА БАННЕРОВ
         function loadNews() {
             const newsCont = document.getElementById('news-container');
-            db.ref('news').limitToLast(5).on('value', (snapshot) => {
+            db.ref('news').on('value', (snapshot) => {
                 newsCont.innerHTML = '';
                 if (!snapshot.exists()) {
-                    newsCont.innerHTML = '<div style="color:#444; font-size:12px;">Нет новых известий</div>';
+                    newsCont.innerHTML = '<div style="color:#444; font-size:12px;">Пока нет активных событий</div>';
                     return;
                 }
                 snapshot.forEach((child) => {
                     const news = child.val();
+                    // Используем news.image для картинки баннера
                     newsCont.innerHTML += `
                         <a href="view-news.html?id=${child.key}" class="news-item">
-                            <span class="news-date">НОВОЕ</span>
-                            <div class="news-title">${news.title}</div>
+                            <img src="${news.image}" class="news-banner-img">
+                            <div class="news-overlay">
+                                <div class="news-title">${news.title}</div>
+                            </div>
                         </a>
                     `;
                 });
@@ -368,7 +398,7 @@
             const mobileNav = document.getElementById('mobile-nav');
             const adminPanel = document.getElementById('admin-panel');
             
-            loadNews(); // Загружаем новости при любом раскладе
+            loadNews();
 
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {

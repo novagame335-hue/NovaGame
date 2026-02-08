@@ -102,6 +102,53 @@
         .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
+        /* --- НОВЫЕ СТИЛИ НОВОСТНОЙ ЛЕНТЫ --- */
+        .news-section {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .news-header {
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #ff0000;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .news-header::before {
+            content: "";
+            display: block;
+            width: 4px;
+            height: 16px;
+            background: #ff0000;
+        }
+        .news-wrapper {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+            scrollbar-width: none;
+        }
+        .news-wrapper::-webkit-scrollbar { display: none; }
+        .news-item {
+            min-width: 280px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 15px;
+            text-decoration: none;
+            color: white;
+            transition: 0.3s;
+        }
+        .news-item:hover { border-color: #ff0000; transform: translateY(-3px); }
+        .news-date { font-size: 10px; color: #ff0000; font-weight: bold; margin-bottom: 5px; display: block;}
+        .news-title { font-size: 15px; font-weight: 700; line-height: 1.3; }
+        /* ---------------------------------- */
+
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -158,6 +205,7 @@
             font-weight: bold;
             text-decoration: none;
             display: inline-block;
+            margin-right: 10px;
         }
 
         .admin-actions {
@@ -214,8 +262,15 @@
 
     <div style="height: 100px;"></div>
 
+    <div class="news-section">
+        <div class="news-header">Новости и обновления</div>
+        <div class="news-wrapper" id="news-container">
+            </div>
+    </div>
+
     <div id="admin-panel">
         <a href="add-game.html" class="admin-add-link">+ Добавить игру</a>
+        <a href="add-news.html" class="admin-add-link" style="background:#333;">+ Добавить новость</a>
     </div>
 
     <div class="games-grid" id="games-container"></div>
@@ -236,6 +291,27 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
+
+        // ФУНКЦИЯ ЗАГРУЗКИ НОВОСТЕЙ
+        function loadNews() {
+            const newsCont = document.getElementById('news-container');
+            db.ref('news').limitToLast(5).on('value', (snapshot) => {
+                newsCont.innerHTML = '';
+                if (!snapshot.exists()) {
+                    newsCont.innerHTML = '<div style="color:#444; font-size:12px;">Нет новых известий</div>';
+                    return;
+                }
+                snapshot.forEach((child) => {
+                    const news = child.val();
+                    newsCont.innerHTML += `
+                        <a href="view-news.html?id=${child.key}" class="news-item">
+                            <span class="news-date">НОВОЕ</span>
+                            <div class="news-title">${news.title}</div>
+                        </a>
+                    `;
+                });
+            });
+        }
 
         function deleteGame(id) {
             if(confirm("Удалить эту игру?")) {
@@ -292,6 +368,8 @@
             const mobileNav = document.getElementById('mobile-nav');
             const adminPanel = document.getElementById('admin-panel');
             
+            loadNews(); // Загружаем новости при любом раскладе
+
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const userData = snapshot.val() || {};

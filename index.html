@@ -102,10 +102,10 @@
         .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
-        /* --- ОБНОВЛЕННЫЕ СТИЛИ БАННЕРОВ --- */
+        /* --- ОБНОВЛЕННЫЕ СТИЛИ БАННЕРОВ (Вытянуты и выше) --- */
         .news-section {
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 5px auto 15px auto; /* Уменьшили верхний отступ, чтобы поднять выше */
             padding: 0 20px;
         }
         .news-header {
@@ -139,15 +139,16 @@
         .news-item-container {
             position: relative;
             flex-shrink: 0;
-            min-width: 85%;
+            min-width: 90%; /* Сделали шире на мобильных */
+            width: 100%;
         }
 
         .news-item {
             display: block;
-            aspect-ratio: 4 / 1; /* Делаем баннер узким */
-            max-height: 220px;  /* Ограничение высоты */
+            aspect-ratio: 5 / 1; /* Сильно вытянули вправо */
+            max-height: 180px;  /* Уменьшили высоту */
             background: #111;
-            border-radius: 18px;
+            border-radius: 15px;
             overflow: hidden;
             text-decoration: none;
             position: relative;
@@ -157,27 +158,28 @@
         }
         
         @media (min-width: 850px) {
-            .news-item-container { min-width: 650px; } 
-            .news-item { max-height: 180px; }
+            .news-item-container { min-width: 100%; } /* На ПК во всю ширину */
+            .news-item { max-height: 200px; }
         }
 
-        .news-item:hover { border-color: #ff0000; transform: scale(1.01); }
+        .news-item:hover { border-color: #ff0000; transform: scale(1.005); }
         
         .news-banner-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
         }
 
         .news-overlay {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 15px 20px;
+            padding: 10px 20px; /* Уменьшили падинги для узкого баннера */
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
         }
 
         .news-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             color: white;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
@@ -185,15 +187,15 @@
 
         .news-del-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 8px;
+            right: 8px;
             z-index: 10;
             background: rgba(255, 0, 0, 0.85);
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 10px;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 9px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
@@ -435,7 +437,7 @@
                     
                     if (isAdmin) adminPanel.style.display = 'block';
                     
-                    loadNews(isAdmin); // Передаем статус админа для кнопки удаления
+                    loadNews(isAdmin);
                     loadGames(isAdmin);
 
                     const navHtml = `

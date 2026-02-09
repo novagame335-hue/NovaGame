@@ -102,104 +102,99 @@
         .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
-        /* --- ОБНОВЛЕННЫЕ СТИЛИ БАННЕРОВ (Вытянуты вправо и вниз) --- */
+        /* --- СТИЛЬ БАННЕРОВ КАК НА PLAYEROK --- */
         .news-section {
             max-width: 1200px;
-            margin: 5px auto 15px auto; /* Подняли выше к шапке */
+            margin: 10px auto 20px auto;
             padding: 0 20px;
         }
+        
         .news-header {
             font-size: 14px;
             font-weight: 900;
             text-transform: uppercase;
             color: #ff0000;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             letter-spacing: 1px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .news-header::before {
-            content: "";
-            display: block;
-            width: 4px;
-            height: 16px;
-            background: #ff0000;
-        }
+
         .news-wrapper {
             display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding-bottom: 15px;
-            scrollbar-width: none;
-            scroll-snap-type: x mandatory;
+            gap: 12px;
+            overflow-x: auto; /* Позволяет листать */
+            padding-bottom: 10px;
+            scroll-snap-type: x mandatory; /* Магнитный эффект при скролле */
+            scrollbar-width: none; /* Прячем скроллбар в Firefox */
         }
-        .news-wrapper::-webkit-scrollbar { display: none; }
         
+        .news-wrapper::-webkit-scrollbar { display: none; } /* Прячем скроллбар в Chrome/Safari */
+
         .news-item-container {
             position: relative;
             flex-shrink: 0;
-            min-width: 100%; /* Растягиваем на всю ширину вправо */
-            width: 100%;
+            width: 280px; /* Ширина одной карточки баннера */
+            scroll-snap-align: start;
         }
 
         .news-item {
             display: block;
-            aspect-ratio: 3 / 1; /* Вытянули вниз (было 5/1 или 4/1) */
-            max-height: 320px;  /* Позволяем баннеру быть выше */
+            width: 100%;
+            aspect-ratio: 16 / 9; /* Формат карточки */
             background: #111;
-            border-radius: 18px;
+            border-radius: 20px;
             overflow: hidden;
             text-decoration: none;
             position: relative;
-            scroll-snap-align: center;
-            border: 1px solid #333;
+            border: 1px solid #222;
             transition: 0.3s;
         }
-        
-        @media (min-width: 850px) {
-            .news-item-container { min-width: 100%; } 
-            .news-item { max-height: 350px; }
+
+        .news-item:hover {
+            border-color: #ff0000;
+            transform: scale(1.02);
         }
 
-        .news-item:hover { border-color: #ff0000; transform: scale(1.005); }
-        
         .news-banner-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center;
         }
 
         .news-overlay {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 20px; 
-            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+            padding: 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
         }
 
         .news-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 800;
             color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
         }
 
         .news-del-btn {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 8px; right: 8px;
             z-index: 10;
-            background: rgba(255, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.6);
             color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 6px 14px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 24px; height: 24px;
             font-size: 10px;
-            font-weight: bold;
             cursor: pointer;
-            text-transform: uppercase;
+            display: flex; align-items: center; justify-content: center;
         }
+        
+        @media (max-width: 850px) {
+            .news-item-container { width: 240px; } /* Чуть меньше на телефонах */
+        }
+
         /* ---------------------------------- */
 
         .games-grid {
@@ -317,7 +312,8 @@
 
     <div class="news-section">
         <div class="news-header">События</div>
-        <div class="news-wrapper" id="news-container"></div>
+        <div class="news-wrapper" id="news-container">
+            </div>
     </div>
 
     <div id="admin-panel">
@@ -346,7 +342,7 @@
 
         function deleteNews(id, event) {
             event.preventDefault();
-            if(confirm("Удалить это объявление?")) {
+            if(confirm("Удалить это событие?")) {
                 db.ref('news/' + id).remove();
             }
         }
@@ -362,7 +358,7 @@
                 snapshot.forEach((child) => {
                     const news = child.val();
                     const newsId = child.key;
-                    const delBtn = isAdmin ? `<button class="news-del-btn" onclick="deleteNews('${newsId}', event)">🗑 Удалить</button>` : '';
+                    const delBtn = isAdmin ? `<button class="news-del-btn" onclick="deleteNews('${newsId}', event)">✕</button>` : '';
 
                     newsCont.innerHTML += `
                         <div class="news-item-container">
@@ -431,7 +427,6 @@
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const userData = snapshot.val() || {};
                     const isAdmin = userData.admin === true || userData.role === "admin";
-                    if (userData.isBanned) { window.location.href = "banned.html"; return; }
                     
                     if (isAdmin) adminPanel.style.display = 'block';
                     

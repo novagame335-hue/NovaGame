@@ -162,8 +162,7 @@
         /* --- БАННЕРЫ (PLAYEROK STYLE) --- */
         .banners-section {
             max-width: 1300px;
-            /* ПРАВКА: Уменьшили верхний margin с 20px до 5px */
-            margin: 5px auto 40px auto;
+            margin: 5px auto 20px auto; /* Уменьшили нижний отступ с 40px до 20px */
             padding: 0 20px;
             position: relative;
         }
@@ -173,7 +172,6 @@
             font-weight: 900;
             text-transform: uppercase;
             color: #ff0000;
-            /* ПРАВКА: Уменьшили нижний margin с 20px до 10px */
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -187,32 +185,30 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        /* Контейнер для кнопок и ленты */
         .slider-wrapper {
             position: relative;
             display: flex;
             align-items: center;
         }
 
-        /* Сама лента с баннерами */
         .banners-scroll-container {
             display: flex;
             gap: 16px;
             overflow-x: auto;
             scroll-behavior: smooth;
             scroll-snap-type: x mandatory;
-            scrollbar-width: none; /* Скрытие скроллбара Firefox */
+            scrollbar-width: none;
             padding: 10px 0;
         }
 
         .banners-scroll-container::-webkit-scrollbar {
-            display: none; /* Скрытие скроллбара Chrome */
+            display: none;
         }
 
         .banner-card {
             position: relative;
             flex-shrink: 0;
-            width: 320px; /* Размер карточки как на плеерке */
+            width: 320px;
             scroll-snap-align: start;
         }
 
@@ -255,7 +251,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* Кнопки прокрутки */
         .slider-nav-btn {
             position: absolute;
             top: 50%;
@@ -285,7 +280,6 @@
         .btn-l { left: -15px; }
         .btn-r { right: -15px; }
 
-        /* Админ-кнопка удаления на баннере */
         .news-delete-btn {
             position: absolute;
             top: 15px;
@@ -301,11 +295,12 @@
             cursor: pointer;
         }
 
-        /* --- СЕТКА КАТАЛОГА --- */
+        /* --- СЕТКА КАТАЛОГА (ИГРЫ) --- */
         .catalog-section {
             max-width: 1300px;
             margin: 0 auto;
-            padding: 0 20px 100px 20px;
+            /* ПРАВКА: Уменьшили верхний padding для поднятия категорий */
+            padding: 0 20px 100px 20px; 
         }
 
         .catalog-grid {
@@ -359,11 +354,11 @@
             text-overflow: ellipsis;
         }
 
-        /* --- АДМИН ПАНЕЛЬ (FLOATING) --- */
+        /* --- АДМИН ПАНЕЛЬ --- */
         #admin-panel {
             display: none;
             max-width: 1300px;
-            margin: 20px auto;
+            margin: 10px auto; /* Уменьшили margin для плотности */
             padding: 0 20px;
         }
 
@@ -451,27 +446,23 @@
     </div>
 
     <section class="banners-section">
-        <div class="section-header">Главные новости</div>
+        <div class="section-header">ОБЬЯВЛЕНИЯ</div>
         <div class="slider-wrapper">
             <button class="slider-nav-btn btn-l" id="slidePrev">❮</button>
-            
-            <div class="banners-scroll-container" id="banners-list">
-                </div>
-            
+            <div class="banners-scroll-container" id="banners-list"></div>
             <button class="slider-nav-btn btn-r" id="slideNext">❯</button>
         </div>
     </section>
 
     <main class="catalog-section">
         <div class="section-header">Все категории</div>
-        <div class="catalog-grid" id="catalog-list">
-            </div>
+        <div class="catalog-grid" id="catalog-list"></div>
     </main>
 
     <nav class="mobile-nav" id="nav-mobile"></nav>
 
     <script>
-        // 1. Инициализация Firebase
+        // Код инициализации Firebase и функций остается без изменений
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -486,12 +477,10 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // 2. Функции прокрутки баннеров
         const bannersContainer = document.getElementById('banners-list');
         document.getElementById('slideNext').onclick = () => bannersContainer.scrollBy({ left: 336, behavior: 'smooth' });
         document.getElementById('slidePrev').onclick = () => bannersContainer.scrollBy({ left: -336, behavior: 'smooth' });
 
-        // 3. Загрузка баннеров
         function loadBanners(isAdmin = false) {
             db.ref('news').on('value', (snapshot) => {
                 bannersContainer.innerHTML = '';
@@ -502,9 +491,7 @@
                 snapshot.forEach((child) => {
                     const data = child.val();
                     const id = child.key;
-                    
                     const delBtn = isAdmin ? `<button class="news-delete-btn" onclick="deleteBanner('${id}')">Удалить</button>` : '';
-                    
                     bannersContainer.innerHTML += `
                         <div class="banner-card">
                             ${delBtn}
@@ -523,7 +510,6 @@
             if(confirm("Удалить этот баннер?")) db.ref('news/' + id).remove();
         }
 
-        // 4. Загрузка каталога игр
         function loadCatalog(isAdmin = false) {
             const list = document.getElementById('catalog-list');
             db.ref('games').on('value', (snapshot) => {
@@ -532,13 +518,11 @@
                     const game = child.val();
                     const id = child.key;
                     const searchTags = (game.name + " " + (game.keywords || "")).toLowerCase();
-                    
                     const adminTools = isAdmin ? `
                         <div class="game-manage-tools">
                             <button onclick="location.href='add-game.html?edit=${id}'" class="tool-btn tool-edit">✏️</button>
                             <button onclick="deleteGame('${id}')" class="tool-btn tool-del">🗑</button>
                         </div>` : '';
-
                     list.innerHTML += `
                         <div class="game-card-wrapper" data-tags="${searchTags}">
                             ${adminTools}
@@ -557,7 +541,6 @@
             if(confirm("Удалить категорию?")) db.ref('games/' + id).remove();
         }
 
-        // 5. Поиск по каталогу
         document.getElementById('globalSearch').oninput = function() {
             const val = this.value.toLowerCase();
             document.querySelectorAll('.game-card-wrapper').forEach(card => {
@@ -566,7 +549,6 @@
             });
         };
 
-        // 6. Управление состоянием пользователя
         auth.onAuthStateChanged((user) => {
             const dNav = document.getElementById('nav-desktop');
             const mNav = document.getElementById('nav-mobile');
@@ -576,11 +558,7 @@
                 db.ref('users/' + user.uid).on('value', (snap) => {
                     const profile = snap.val() || {};
                     const isAdmin = profile.admin === true || profile.role === "admin";
-
-                    // Показ админки
                     aPanel.style.display = isAdmin ? 'block' : 'none';
-                    
-                    // Загрузка контента (кнопки удаления появятся только у админа)
                     loadBanners(isAdmin);
                     loadCatalog(isAdmin);
 
@@ -602,7 +580,6 @@
                     mNav.innerHTML = menuHTML;
                 });
             } else {
-                // Гостевой режим
                 dNav.innerHTML = `<a href="login.html" style="color:white; text-decoration:none; border:2px solid #ff0000; padding:10px 22px; border-radius:14px; font-weight:800; font-size:14px;">ВОЙТИ</a>`;
                 aPanel.style.display = 'none';
                 loadBanners(false);

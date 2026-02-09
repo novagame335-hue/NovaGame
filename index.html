@@ -113,6 +113,66 @@
             pointer-events: none;
         }
 
+        /* СТИЛИ ДЛЯ ВЫПАДАЮЩЕГО ПОИСКА */
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.98);
+            border: 1px solid #333;
+            border-radius: 18px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 9999;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-bottom: 1px solid #1a1a1a;
+            transition: 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid #333;
+        }
+
+        .result-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .result-category {
+            color: #888;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
         /* --- НАВИГАЦИЯ ДЛЯ ПК --- */
         .header-right {
             display: flex;
@@ -430,7 +490,8 @@
         <div class="header-center">
             <div class="search-wrapper">
                 <span class="search-icon-hint">🔍</span>
-                <input type="text" id="globalSearch" class="search-input" placeholder="Поиск игр, аккаунтов, валюты...">
+                <input type="text" id="globalSearch" class="search-input" placeholder="Поиск игр, аккаунтов, валюты..." autocomplete="off">
+                <div id="search-results-dropdown" class="search-dropdown"></div>
             </div>
         </div>
 
@@ -541,13 +602,60 @@
             if(confirm("Удалить категорию?")) db.ref('games/' + id).remove();
         }
 
-        document.getElementById('globalSearch').oninput = function() {
-            const val = this.value.toLowerCase();
+        // ОБНОВЛЕННЫЙ СКРИПТ ПОИСКА С ВЫПАДАЮЩИМ СПИСКОМ
+        const searchInput = document.getElementById('globalSearch');
+        const searchDropdown = document.getElementById('search-results-dropdown');
+
+        searchInput.oninput = function() {
+            const val = this.value.toLowerCase().trim();
+            
+            // Фильтр карточек на странице (как было)
             document.querySelectorAll('.game-card-wrapper').forEach(card => {
                 const match = card.dataset.tags.includes(val);
                 card.style.display = match ? 'block' : 'none';
             });
+
+            // Показ выпадающего списка
+            if (val.length < 1) {
+                searchDropdown.style.display = 'none';
+                return;
+            }
+
+            db.ref('games').once('value', (snapshot) => {
+                let resultsHTML = '';
+                let foundCount = 0;
+
+                snapshot.forEach((child) => {
+                    const game = child.val();
+                    const id = child.key;
+                    if (game.name.toLowerCase().includes(val)) {
+                        foundCount++;
+                        resultsHTML += `
+                            <a href="category.html?id=${id}" class="search-result-item">
+                                <img src="${game.image}" class="result-img">
+                                <div class="result-info">
+                                    <div class="result-name">${game.name}</div>
+                                    <div class="result-category">Аккаунты, Валюта, Услуги</div>
+                                </div>
+                            </a>`;
+                    }
+                });
+
+                if (foundCount > 0) {
+                    searchDropdown.innerHTML = resultsHTML;
+                    searchDropdown.style.display = 'flex';
+                } else {
+                    searchDropdown.style.display = 'none';
+                }
+            });
         };
+
+        // Закрытие списка при клике вне поиска
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-wrapper')) {
+                searchDropdown.style.display = 'none';
+            }
+        });
 
         auth.onAuthStateChanged((user) => {
             const dNav = document.getElementById('nav-desktop');

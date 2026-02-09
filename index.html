@@ -84,7 +84,6 @@
             position: relative;
             width: 100%;
             max-width: 550px;
-            /* Важно: не ставим overflow: hidden, иначе меню скроется */
         }
 
         .search-input {
@@ -115,10 +114,10 @@
             z-index: 5;
         }
 
-        /* ИСПРАВЛЕННЫЙ ВЫПАДАЮЩИЙ СПИСОК */
+        /* ВЫПАДАЮЩИЙ СПИСОК ПОИСКА */
         .search-dropdown {
             position: absolute;
-            top: 100%; /* Сразу под инпутом */
+            top: 100%;
             left: 0;
             right: 0;
             background: #0f0f0f;
@@ -127,10 +126,10 @@
             margin-top: 8px;
             max-height: 400px;
             overflow-y: auto;
-            display: none; /* Переключается через JS */
+            display: none;
             flex-direction: column;
-            z-index: 9999;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 99999; /* Поверх всех элементов */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
         }
 
         .search-result-item {
@@ -158,6 +157,7 @@
             color: white;
             font-weight: 600;
             font-size: 14px;
+            display: block;
         }
 
         .result-category {
@@ -165,7 +165,7 @@
             font-size: 11px;
         }
 
-        /* --- НАВИГАЦИЯ ДЛЯ ПК --- */
+        /* --- НАВИГАЦИЯ --- */
         .header-right {
             display: flex;
             align-items: center;
@@ -183,16 +183,6 @@
 
         .nav-link:hover {
             transform: translateY(-3px);
-        }
-
-        .icon-svg {
-            fill: white;
-            width: 24px;
-            height: 24px;
-        }
-
-        .nav-link:hover .icon-svg {
-            fill: #ff0000;
         }
 
         .nav-text {
@@ -490,19 +480,19 @@
             });
         }
 
-        // --- ИСПРАВЛЕННЫЙ ПОИСК ---
+        // --- ЛОГИКА ПОИСКА И ВЫПАДАЮЩЕГО МЕНЮ ---
         const searchInput = document.getElementById('globalSearch');
         const searchDropdown = document.getElementById('search-results-dropdown');
 
         searchInput.addEventListener('input', function() {
             const val = this.value.toLowerCase().trim();
             
-            // 1. Фильтр карточек на главной
+            // Фильтрация плиток на главной
             document.querySelectorAll('.game-card-wrapper').forEach(card => {
                 card.style.display = card.dataset.tags.includes(val) ? 'block' : 'none';
             });
 
-            // 2. Обработка выпадающего списка
+            // Выпадающее меню
             if (val.length < 1) {
                 searchDropdown.style.display = 'none';
                 return;
@@ -520,7 +510,7 @@
                                 <img src="${game.image}" class="result-img">
                                 <div>
                                     <div class="result-name">${game.name}</div>
-                                    <div class="result-category">Перейти в категорию</div>
+                                    <div class="result-category">Перейти в магазин</div>
                                 </div>
                             </a>`;
                     }
@@ -535,31 +525,47 @@
             });
         });
 
-        // Закрытие при клике мимо
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.search-wrapper')) searchDropdown.style.display = 'none';
         });
 
-        // Проверка авторизации
+        // --- ПРОВЕРКА АВТОРИЗАЦИИ И ЧАТ ---
         auth.onAuthStateChanged((user) => {
             const dNav = document.getElementById('nav-desktop');
             const mNav = document.getElementById('nav-mobile');
             const aPanel = document.getElementById('admin-panel');
+
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snap) => {
                     const profile = snap.val() || {};
                     const isAdmin = profile.admin === true;
                     if(aPanel) aPanel.style.display = isAdmin ? 'block' : 'none';
+                    
                     loadBanners(isAdmin);
                     loadCatalog(isAdmin);
+
+                    // HTML код меню (С СОХРАНЕНИЕМ КНОПКИ ЧАТА)
                     const menu = `
-                        <a href="news.html" class="nav-link"><span class="nav-text">События</span></a>
-                        <a href="profile.html" class="nav-link"><img src="${profile.profilePic || 'default-avatar.png'}" class="user-avatar-small"><span class="nav-text">Аккаунт</span></a>`;
-                    dNav.innerHTML = menu; mNav.innerHTML = menu;
+                        <a href="news.html" class="nav-link">
+                            <span class="nav-text">События</span>
+                        </a>
+                        <a href="chat.html" class="nav-link">
+                            <span class="nav-text" style="color:#ff0000;">Чат</span>
+                        </a>
+                        <a href="profile.html" class="nav-link">
+                            <img src="${profile.profilePic || 'default-avatar.png'}" class="user-avatar-small">
+                            <span class="nav-text">Аккаунт</span>
+                        </a>`;
+
+                    dNav.innerHTML = menu; 
+                    mNav.innerHTML = menu;
                 });
             } else {
-                dNav.innerHTML = `<a href="login.html" style="color:red; font-weight:800; text-decoration:none;">ВОЙТИ</a>`;
-                loadBanners(false); loadCatalog(false);
+                const guestMenu = `<a href="login.html" style="color:red; font-weight:800; text-decoration:none;">ВОЙТИ</a>`;
+                dNav.innerHTML = guestMenu;
+                mNav.innerHTML = guestMenu;
+                loadBanners(false); 
+                loadCatalog(false);
             }
         });
     </script>

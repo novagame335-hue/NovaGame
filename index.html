@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NovaGame — Маркетплейс</title>
+    <title>NovaGame — Официальный Маркетплейс</title>
     
     <link rel="icon" type="image/png" href="Logo780.png">
 
@@ -12,27 +12,32 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
+        /* ОСНОВНЫЕ СТИЛИ СТРАНИЦЫ */
         body {
             margin: 0;
+            padding: 0;
             background: radial-gradient(circle at center, #1a0101, #000000);
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
+        /* ШАПКА САЙТА (HEADER) */
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #000;
+            background-color: rgba(0, 0, 0, 0.95);
             padding: 0 40px;
             height: 90px;
             border-bottom: 1px solid #1a1a1a;
             position: fixed;
             top: 0; left: 0; right: 0;
-            z-index: 100;
+            z-index: 1000;
             box-sizing: border-box;
+            backdrop-filter: blur(10px);
         }
 
         .header-left {
@@ -48,40 +53,69 @@
             text-decoration: none;
         }
 
-        .logo-img { height: 60px; }
-        .brand-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
-        .brand-name span { color: #ff0000; }
+        .logo-img {
+            height: 60px;
+            width: auto;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
+        }
 
+        .brand-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .brand-name span {
+            color: #ff0000;
+        }
+
+        /* ПОИСКОВАЯ СИСТЕМА */
         .header-center {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 20px;
+            margin: 0 30px;
             min-width: 0;
         }
 
         .search-container {
             position: relative;
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
         }
 
         .search-input {
             width: 100%;
             background: #111;
             border: 1px solid #333;
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 14px 20px 14px 50px;
             color: white;
             font-size: 16px;
             outline: none;
-            transition: 0.3s;
+            transition: all 0.3s ease;
             box-sizing: border-box;
         }
 
-        .search-input:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
+        .search-input:focus {
+            border-color: #ff0000;
+            background: #161616;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.15);
+        }
 
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* НАВИГАЦИЯ ДЛЯ ПК */
         .header-right {
             display: flex;
             align-items: center;
@@ -94,126 +128,210 @@
             flex-direction: column;
             align-items: center;
             text-decoration: none;
-            gap: 4px;
-            transition: 0.2s;
-        }
-
-        .header-icon-svg { fill: white; width: 24px; height: 24px; }
-        .nav-label { color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; }
-        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
-
-        /* --- СТИЛЬ БАННЕРОВ КАК НА PLAYEROK --- */
-        .news-section {
-            max-width: 1200px;
-            margin: 10px auto 20px auto;
-            padding: 0 20px;
-        }
-        
-        .news-header {
-            font-size: 14px;
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #ff0000;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .news-wrapper {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto; /* Позволяет листать */
-            padding-bottom: 10px;
-            scroll-snap-type: x mandatory; /* Магнитный эффект при скролле */
-            scrollbar-width: none; /* Прячем скроллбар в Firefox */
-        }
-        
-        .news-wrapper::-webkit-scrollbar { display: none; } /* Прячем скроллбар в Chrome/Safari */
-
-        .news-item-container {
+            gap: 5px;
+            transition: 0.3s;
             position: relative;
-            flex-shrink: 0;
-            width: 280px; /* Ширина одной карточки баннера */
-            scroll-snap-align: start;
         }
 
-        .news-item {
-            display: block;
-            width: 100%;
-            aspect-ratio: 16 / 9; /* Формат карточки */
-            background: #111;
-            border-radius: 20px;
-            overflow: hidden;
-            text-decoration: none;
-            position: relative;
-            border: 1px solid #222;
+        .nav-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .header-icon-svg {
+            fill: white;
+            width: 26px;
+            height: 26px;
             transition: 0.3s;
         }
 
-        .news-item:hover {
-            border-color: #ff0000;
-            transform: scale(1.02);
+        .nav-item:hover .header-icon-svg {
+            fill: #ff0000;
         }
 
-        .news-banner-img {
+        .nav-label {
+            color: #fff;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #ff0000;
+            object-fit: cover;
+            background: #222;
+        }
+
+        /* --- СЕКЦИЯ БАННЕРОВ (КАК НА PLAYEROK) --- */
+        .news-section {
+            max-width: 1300px;
+            margin: 20px auto 30px auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .news-header {
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #ffffff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .news-header::before {
+            content: "";
+            width: 4px;
+            height: 20px;
+            background: #ff0000;
+            border-radius: 2px;
+        }
+
+        .news-outer-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Контейнер прокрутки */
+        .news-wrapper {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Firefox */
+            padding: 10px 0;
+        }
+
+        .news-wrapper::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .news-card-box {
+            position: relative;
+            flex-shrink: 0;
+            width: 320px;
+            scroll-snap-align: start;
+        }
+
+        .news-card-link {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #111;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            position: relative;
+        }
+
+        .news-card-link:hover {
+            border-color: #ff0000;
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .news-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .news-overlay {
+        .news-info-overlay {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 15px;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 20%, transparent);
         }
 
-        .news-title {
-            font-size: 16px;
+        .news-card-title {
+            font-size: 18px;
             font-weight: 800;
             color: white;
-            line-height: 1.2;
+            margin: 0;
         }
 
-        .news-del-btn {
+        /* Кнопки управления баннерами */
+        .nav-btn {
             position: absolute;
-            top: 8px; right: 8px;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.6);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
             color: white;
-            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 50%;
-            width: 24px; height: 24px;
-            font-size: 10px;
             cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-        
-        @media (max-width: 850px) {
-            .news-item-container { width: 240px; } /* Чуть меньше на телефонах */
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            font-size: 20px;
         }
 
-        /* ---------------------------------- */
+        .nav-btn:hover {
+            background: #ff0000;
+            border-color: #ff0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .btn-prev { left: -15px; }
+        .btn-next { right: -15px; }
+
+        .admin-news-del {
+            position: absolute;
+            top: 15px; right: 15px;
+            z-index: 20;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* --- СЕТКА ТОВАРОВ/ИГР --- */
+        .content-section {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 20px 100px 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
 
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 15px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
         }
 
-        .game-wrapper { position: relative; }
+        .game-item-container {
+            position: relative;
+        }
 
         .game-card {
-            background: #0a0a0a;
-            border-radius: 24px;
+            background: #0d0d0d;
+            border-radius: 28px;
             overflow: hidden;
-            border: 1px solid #222;
-            transition: 0.3s;
+            border: 1px solid #1a1a1a;
+            transition: all 0.3s ease;
             text-decoration: none;
             display: block;
             aspect-ratio: 1 / 1;
@@ -222,69 +340,107 @@
 
         .game-card:hover {
             border-color: #ff0000;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(255, 0, 0, 0.2);
         }
 
-        .game-img { width: 100%; height: 100%; object-fit: cover; }
-
-        .game-info {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        .game-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        .game-name {
-            font-weight: 700; color: white; font-size: 12px;
-            text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        .game-label-box {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 12px;
+            background: linear-gradient(to top, #000 30%, transparent);
+            text-align: center;
         }
 
-        #admin-panel {
+        .game-title-text {
+            font-weight: 700;
+            color: white;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ПАНЕЛЬ АДМИНИСТРАТОРА */
+        #admin-controls {
             display: none;
-            max-width: 1200px;
-            margin: 10px auto;
+            max-width: 1300px;
+            margin: 20px auto;
             padding: 0 20px;
         }
 
-        .admin-add-link {
+        .btn-admin-action {
             background: #ff0000;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 12px;
             font-weight: bold;
             text-decoration: none;
             display: inline-block;
-            margin-right: 10px;
+            margin-right: 15px;
+            transition: 0.3s;
         }
 
-        .admin-actions {
-            position: absolute; top: 8px; right: 8px; display: flex; gap: 5px; z-index: 5;
+        .btn-admin-action:hover {
+            filter: brightness(1.2);
         }
-        .adm-btn {
-            width: 28px; height: 28px; border-radius: 10px; border: none; cursor: pointer;
-            color: white; font-size: 12px; display: flex; align-items: center; justify-content: center;
-        }
-        .del-btn { background: rgba(255, 0, 0, 0.8); }
-        .ed-btn { background: rgba(0, 100, 255, 0.8); }
 
-        .mobile-nav {
+        .game-management-btns {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .m-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .btn-del { background: rgba(255, 0, 0, 0.9); }
+        .btn-edit { background: rgba(0, 110, 255, 0.9); }
+
+        /* МОБИЛЬНОЕ МЕНЮ */
+        .mobile-bottom-nav {
             display: none;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: 70px;
-            background: #000;
+            height: 75px;
+            background: rgba(0,0,0,0.95);
             border-top: 1px solid #1a1a1a;
             justify-content: space-around;
             align-items: center;
-            z-index: 1000;
+            z-index: 2000;
+            backdrop-filter: blur(15px);
         }
 
+        /* АДАПТИВНОСТЬ */
         @media (max-width: 850px) {
-            header { padding: 0 15px; height: 70px; }
+            header { padding: 0 20px; height: 75px; }
             .brand-name { display: none; }
-            .header-center { margin: 0 10px; }
-            .header-right { display: none !important; }
-            .mobile-nav { display: flex; }
-            .games-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+            .header-right { display: none; }
+            .nav-btn { display: none; }
+            .mobile-bottom-nav { display: flex; }
+            .games-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+            .news-card-box { width: 280px; }
+            .content-section { padding-bottom: 100px; }
+            header { top: 0; }
         }
     </style>
 </head>
@@ -293,39 +449,49 @@
     <header>
         <div class="header-left">
             <a href="index.html" class="brand">
-                <img src="Logo780.png" alt="NG" class="logo-img">
+                <img src="Logo780.png" alt="Logo" class="logo-img">
                 <div class="brand-name">Nova<span>Game</span></div>
             </a>
         </div>
 
         <div class="header-center">
             <div class="search-container">
-                <span style="position:absolute; left:20px; top:50%; transform:translateY(-50%); opacity:0.5;">🔍</span>
-                <input type="text" id="gameSearch" class="search-input" placeholder="Поиски игр и приложений">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="mainSearchInput" class="search-input" placeholder="Искать игры, ключи, услуги...">
             </div>
         </div>
 
-        <div class="header-right" id="pc-nav"></div>
+        <div class="header-right" id="desktop-nav-area">
+            </div>
     </header>
 
-    <div style="height: 100px;"></div>
+    <div style="height: 110px;"></div>
 
-    <div class="news-section">
-        <div class="news-header">События</div>
-        <div class="news-wrapper" id="news-container">
+    <div id="admin-controls">
+        <a href="add-game.html" class="btn-admin-action">✚ Добавить игру</a>
+        <a href="add-news.html" class="btn-admin-action" style="background: #222; border: 1px solid #444;">✚ Добавить баннер</a>
+    </div>
+
+    <section class="news-section">
+        <div class="news-header">Актуальные события</div>
+        <div class="news-outer-container">
+            <button class="nav-btn btn-prev" onclick="moveSlider(-1)">❮</button>
+            <div class="news-wrapper" id="news-list">
+                </div>
+            <button class="nav-btn btn-next" onclick="moveSlider(1)">❯</button>
+        </div>
+    </section>
+
+    <main class="content-section">
+        <div class="section-title">Каталог игр</div>
+        <div class="games-grid" id="games-list">
             </div>
-    </div>
+    </main>
 
-    <div id="admin-panel">
-        <a href="add-game.html" class="admin-add-link">+ Добавить игру</a>
-        <a href="add-news.html" class="admin-add-link" style="background:#333;">+ Добавить баннер</a>
-    </div>
-
-    <div class="games-grid" id="games-container"></div>
-
-    <nav class="mobile-nav" id="mobile-nav"></nav>
+    <nav class="mobile-bottom-nav" id="mobile-nav-area"></nav>
 
     <script>
+        // --- КОНФИГУРАЦИЯ FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -340,68 +506,49 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        function deleteNews(id, event) {
+        // --- ЛОГИКА СЛАЙДЕРА ---
+        function moveSlider(direction) {
+            const container = document.getElementById('news-list');
+            const step = 336; // Ширина карточки + gap
+            container.scrollBy({ left: direction * step, behavior: 'smooth' });
+        }
+
+        // --- УДАЛЕНИЕ ДАННЫХ ---
+        function deleteNewsItem(id, event) {
             event.preventDefault();
-            if(confirm("Удалить это событие?")) {
+            if(confirm("Вы уверены, что хотите удалить этот баннер?")) {
                 db.ref('news/' + id).remove();
             }
         }
 
-        function loadNews(isAdmin = false) {
-            const newsCont = document.getElementById('news-container');
-            db.ref('news').on('value', (snapshot) => {
-                newsCont.innerHTML = '';
-                if (!snapshot.exists()) {
-                    newsCont.innerHTML = '<div style="color:#444; font-size:12px;">Пока нет активных событий</div>';
-                    return;
-                }
-                snapshot.forEach((child) => {
-                    const news = child.val();
-                    const newsId = child.key;
-                    const delBtn = isAdmin ? `<button class="news-del-btn" onclick="deleteNews('${newsId}', event)">✕</button>` : '';
-
-                    newsCont.innerHTML += `
-                        <div class="news-item-container">
-                            ${delBtn}
-                            <a href="#" class="news-item">
-                                <img src="${news.image}" class="news-banner-img">
-                                <div class="news-overlay">
-                                    <div class="news-title">${news.title || ''}</div>
-                                </div>
-                            </a>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        function deleteGame(id) {
-            if(confirm("Удалить эту игру?")) {
+        function deleteGameItem(id) {
+            if(confirm("Удалить игру из каталога?")) {
                 db.ref('games/' + id).remove();
             }
         }
 
-        function loadGames(isAdmin = false) {
-            const container = document.getElementById('games-container');
-            db.ref('games').on('value', (snapshot) => {
-                container.innerHTML = '';
-                snapshot.forEach((child) => {
-                    const game = child.val();
-                    const gameId = child.key;
-                    const searchKeywords = (game.name + " " + (game.keywords || "")).toLowerCase();
-                    const adminBtns = isAdmin ? `
-                        <div class="admin-actions">
-                            <button onclick="location.href='add-game.html?edit=${gameId}'" class="adm-btn ed-btn">✏️</button>
-                            <button onclick="deleteGame('${gameId}')" class="adm-btn del-btn">🗑</button>
-                        </div>` : '';
-
-                    container.innerHTML += `
-                        <div class="game-wrapper" data-search-content="${searchKeywords}">
-                            ${adminBtns}
-                            <a href="category.html?id=${gameId}" class="game-card">
-                                <img src="${game.image}" class="game-img">
-                                <div class="game-info">
-                                    <div class="game-name">${game.name}</div>
+        // --- ЗАГРУЗКА БАННЕРОВ ---
+        function fetchNews(isAdmin) {
+            const newsBox = document.getElementById('news-list');
+            db.ref('news').on('value', (snapshot) => {
+                newsBox.innerHTML = '';
+                if (!snapshot.exists()) {
+                    newsBox.innerHTML = '<p style="opacity:0.3; padding:20px;">Новых событий пока нет...</p>';
+                    return;
+                }
+                snapshot.forEach((item) => {
+                    const data = item.val();
+                    const id = item.key;
+                    
+                    const deleteBtn = isAdmin ? `<button class="admin-news-del" onclick="deleteNewsItem('${id}', event)">Удалить</button>` : '';
+                    
+                    newsBox.innerHTML += `
+                        <div class="news-card-box">
+                            ${deleteBtn}
+                            <a href="${data.link || '#'}" class="news-card-link">
+                                <img src="${data.image}" class="news-img">
+                                <div class="news-info-overlay">
+                                    <p class="news-card-title">${data.title || ''}</p>
                                 </div>
                             </a>
                         </div>`;
@@ -409,31 +556,61 @@
             });
         }
 
-        document.getElementById('gameSearch').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.game-wrapper');
-            cards.forEach(card => {
-                const searchContent = card.getAttribute('data-search-content');
-                card.style.display = searchContent.includes(query) ? 'block' : 'none';
+        // --- ЗАГРУЗКА ИГР ---
+        function fetchGames(isAdmin) {
+            const list = document.getElementById('games-list');
+            db.ref('games').on('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((item) => {
+                    const game = item.val();
+                    const id = item.key;
+                    const searchStr = (game.name + " " + (game.keywords || "")).toLowerCase();
+                    
+                    const adminHtml = isAdmin ? `
+                        <div class="game-management-btns">
+                            <button onclick="location.href='add-game.html?edit=${id}'" class="m-btn btn-edit">✏️</button>
+                            <button onclick="deleteGameItem('${id}')" class="m-btn btn-del">🗑</button>
+                        </div>` : '';
+
+                    list.innerHTML += `
+                        <div class="game-item-container" data-filter="${searchStr}">
+                            ${adminHtml}
+                            <a href="category.html?id=${id}" class="game-card">
+                                <img src="${game.image}" class="game-thumbnail">
+                                <div class="game-label-box">
+                                    <div class="game-title-text">${game.name}</div>
+                                </div>
+                            </a>
+                        </div>`;
+                });
+            });
+        }
+
+        // --- ПОИСК ---
+        document.getElementById('mainSearchInput').addEventListener('input', function(e) {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('.game-item-container').forEach(el => {
+                const match = el.getAttribute('data-filter').includes(val);
+                el.style.display = match ? 'block' : 'none';
             });
         });
 
+        // --- ПРОВЕРКА ПОЛЬЗОВАТЕЛЯ И РОЛИ ---
         auth.onAuthStateChanged((user) => {
-            const pcNav = document.getElementById('pc-nav');
-            const mobileNav = document.getElementById('mobile-nav');
-            const adminPanel = document.getElementById('admin-panel');
+            const pcNav = document.getElementById('desktop-nav-area');
+            const mobileNav = document.getElementById('mobile-nav-area');
+            const adminBar = document.getElementById('admin-controls');
 
             if (user) {
-                db.ref('users/' + user.uid).on('value', (snapshot) => {
-                    const userData = snapshot.val() || {};
-                    const isAdmin = userData.admin === true || userData.role === "admin";
-                    
-                    if (isAdmin) adminPanel.style.display = 'block';
-                    
-                    loadNews(isAdmin);
-                    loadGames(isAdmin);
+                db.ref('users/' + user.uid).on('value', (snap) => {
+                    const profile = snap.val() || {};
+                    const isAdmin = profile.admin === true || profile.role === "admin";
 
-                    const navHtml = `
+                    if (isAdmin) adminBar.style.display = 'block';
+                    fetchNews(isAdmin);
+                    fetchGames(isAdmin);
+
+                    const navContent = `
                         <a href="news.html" class="nav-item">
                             <svg class="header-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                             <span class="nav-label">Новости</span>
@@ -443,17 +620,18 @@
                             <span class="nav-label">Чат</span>
                         </a>
                         <a href="profile.html" class="nav-item">
-                            <img src="${userData.profilePic || 'default-avatar.png'}" class="header-avatar">
-                            <span class="nav-label">Профиль</span>
+                            <img src="${profile.profilePic || 'default-avatar.png'}" class="header-avatar">
+                            <span class="nav-label">Кабинет</span>
                         </a>
                     `;
-                    pcNav.innerHTML = navHtml;
-                    mobileNav.innerHTML = navHtml;
+                    pcNav.innerHTML = navContent;
+                    mobileNav.innerHTML = navContent;
                 });
             } else {
-                pcNav.innerHTML = `<a href="login.html" style="color:white; text-decoration:none; border:1px solid #ff0000; padding:8px 15px; border-radius:8px;">Войти</a>`;
-                loadNews(false);
-                loadGames(false);
+                const loginBtn = `<a href="login.html" style="color:white; text-decoration:none; border:2px solid #ff0000; padding:10px 20px; border-radius:12px; font-weight:bold;">Войти</a>`;
+                pcNav.innerHTML = loginBtn;
+                fetchNews(false);
+                fetchGames(false);
             }
         });
     </script>

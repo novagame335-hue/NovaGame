@@ -84,6 +84,7 @@
             position: relative;
             width: 100%;
             max-width: 550px;
+            /* Важно: не ставим overflow: hidden, иначе меню скроется */
         }
 
         .search-input {
@@ -111,66 +112,57 @@
             transform: translateY(-50%);
             opacity: 0.4;
             pointer-events: none;
+            z-index: 5;
         }
 
-        /* СТИЛИ ДЛЯ ВЫПАДАЮЩЕГО ПОИСКА */
+        /* ИСПРАВЛЕННЫЙ ВЫПАДАЮЩИЙ СПИСОК */
         .search-dropdown {
             position: absolute;
-            top: calc(100% + 10px);
+            top: 100%; /* Сразу под инпутом */
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.98);
+            background: #0f0f0f;
             border: 1px solid #333;
-            border-radius: 18px;
-            display: none;
+            border-radius: 14px;
+            margin-top: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none; /* Переключается через JS */
             flex-direction: column;
-            overflow: hidden;
             z-index: 9999;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
         .search-result-item {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 12px 20px;
+            gap: 12px;
+            padding: 12px 15px;
             text-decoration: none;
             border-bottom: 1px solid #1a1a1a;
             transition: 0.2s;
         }
 
         .search-result-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .search-result-item:last-child {
-            border-bottom: none;
+            background: #1a1a1a;
         }
 
         .result-img {
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             object-fit: cover;
-            border: 1px solid #333;
-        }
-
-        .result-info {
-            display: flex;
-            flex-direction: column;
         }
 
         .result-name {
-            color: #fff;
-            font-weight: 700;
-            font-size: 15px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
         }
 
         .result-category {
-            color: #888;
-            font-size: 12px;
-            margin-top: 2px;
+            color: #777;
+            font-size: 11px;
         }
 
         /* --- НАВИГАЦИЯ ДЛЯ ПК --- */
@@ -219,10 +211,10 @@
             object-fit: cover;
         }
 
-        /* --- БАННЕРЫ (PLAYEROK STYLE) --- */
+        /* --- БАННЕРЫ --- */
         .banners-section {
             max-width: 1300px;
-            margin: 5px auto 20px auto; /* Уменьшили нижний отступ с 40px до 20px */
+            margin: 5px auto 20px auto;
             padding: 0 20px;
             position: relative;
         }
@@ -280,35 +272,14 @@
             border-radius: 24px;
             overflow: hidden;
             border: 1px solid #222;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: 0.4s;
             text-decoration: none;
-            position: relative;
-        }
-
-        .banner-link:hover {
-            border-color: #ff0000;
-            transform: scale(1.02) translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         .banner-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-
-        .banner-overlay {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 20%, transparent);
-        }
-
-        .banner-title {
-            font-size: 18px;
-            font-weight: 800;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
         .slider-nav-btn {
@@ -326,40 +297,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.3s;
-            backdrop-filter: blur(5px);
-            font-size: 18px;
-        }
-
-        .slider-nav-btn:hover {
-            background: #ff0000;
-            border-color: #ff0000;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
         }
 
         .btn-l { left: -15px; }
         .btn-r { right: -15px; }
 
-        .news-delete-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 20;
-            background: rgba(255, 0, 0, 0.9);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 6px 10px;
-            font-weight: bold;
-            font-size: 11px;
-            cursor: pointer;
-        }
-
-        /* --- СЕТКА КАТАЛОГА (ИГРЫ) --- */
+        /* --- КАТАЛОГ --- */
         .catalog-section {
             max-width: 1300px;
             margin: 0 auto;
-            /* ПРАВКА: Уменьшили верхний padding для поднятия категорий */
             padding: 0 20px 100px 20px; 
         }
 
@@ -382,13 +328,6 @@
             display: block;
             text-decoration: none;
             aspect-ratio: 1 / 1;
-            position: relative;
-        }
-
-        .game-card-item:hover {
-            border-color: #ff0000;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.15);
         }
 
         .game-img-thumb {
@@ -409,16 +348,13 @@
             font-weight: 700;
             color: white;
             font-size: 13px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         /* --- АДМИН ПАНЕЛЬ --- */
         #admin-panel {
             display: none;
             max-width: 1300px;
-            margin: 10px auto; /* Уменьшили margin для плотности */
+            margin: 10px auto;
             padding: 0 20px;
         }
 
@@ -431,24 +367,8 @@
             text-decoration: none;
             display: inline-block;
             margin-right: 15px;
-            transition: 0.3s;
             font-size: 14px;
         }
-
-        .game-manage-tools {
-            position: absolute;
-            top: 10px; right: 10px;
-            display: flex; gap: 6px; z-index: 10;
-        }
-
-        .tool-btn {
-            width: 32px; height: 32px;
-            border-radius: 10px; border: none;
-            cursor: pointer; color: white;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .tool-del { background: rgba(255, 0, 0, 0.9); }
-        .tool-edit { background: rgba(0, 110, 255, 0.9); }
 
         /* --- МОБИЛЬНАЯ НАВИГАЦИЯ --- */
         .mobile-nav {
@@ -461,19 +381,14 @@
             justify-content: space-around;
             align-items: center;
             z-index: 2000;
-            backdrop-filter: blur(10px);
         }
 
-        /* --- АДАПТИВНОСТЬ --- */
         @media (max-width: 850px) {
             header { padding: 0 20px; height: 75px; }
             .brand-name { display: none; }
             .header-right { display: none; }
-            .slider-nav-btn { display: none; }
             .mobile-nav { display: flex; }
-            .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-            .banner-card { width: 280px; }
-            .banners-section { margin-top: 10px; }
+            .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
         }
     </style>
 </head>
@@ -495,8 +410,7 @@
             </div>
         </div>
 
-        <div class="header-right" id="nav-desktop">
-            </div>
+        <div class="header-right" id="nav-desktop"></div>
     </header>
 
     <div style="height: 90px;"></div>
@@ -523,7 +437,6 @@
     <nav class="mobile-nav" id="nav-mobile"></nav>
 
     <script>
-        // Код инициализации Firebase и функций остается без изменений
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -538,6 +451,7 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // Функционал слайдера
         const bannersContainer = document.getElementById('banners-list');
         document.getElementById('slideNext').onclick = () => bannersContainer.scrollBy({ left: 336, behavior: 'smooth' });
         document.getElementById('slidePrev').onclick = () => bannersContainer.scrollBy({ left: -336, behavior: 'smooth' });
@@ -545,30 +459,16 @@
         function loadBanners(isAdmin = false) {
             db.ref('news').on('value', (snapshot) => {
                 bannersContainer.innerHTML = '';
-                if (!snapshot.exists()) {
-                    bannersContainer.innerHTML = '<div style="opacity:0.2; padding:20px;">Нет активных акций</div>';
-                    return;
-                }
                 snapshot.forEach((child) => {
                     const data = child.val();
-                    const id = child.key;
-                    const delBtn = isAdmin ? `<button class="news-delete-btn" onclick="deleteBanner('${id}')">Удалить</button>` : '';
                     bannersContainer.innerHTML += `
                         <div class="banner-card">
-                            ${delBtn}
                             <a href="${data.link || '#'}" class="banner-link">
                                 <img src="${data.image}" class="banner-img">
-                                <div class="banner-overlay">
-                                    <div class="banner-title">${data.title || ''}</div>
-                                </div>
                             </a>
                         </div>`;
                 });
             });
-        }
-
-        function deleteBanner(id) {
-            if(confirm("Удалить этот баннер?")) db.ref('news/' + id).remove();
         }
 
         function loadCatalog(isAdmin = false) {
@@ -579,119 +479,87 @@
                     const game = child.val();
                     const id = child.key;
                     const searchTags = (game.name + " " + (game.keywords || "")).toLowerCase();
-                    const adminTools = isAdmin ? `
-                        <div class="game-manage-tools">
-                            <button onclick="location.href='add-game.html?edit=${id}'" class="tool-btn tool-edit">✏️</button>
-                            <button onclick="deleteGame('${id}')" class="tool-btn tool-del">🗑</button>
-                        </div>` : '';
                     list.innerHTML += `
                         <div class="game-card-wrapper" data-tags="${searchTags}">
-                            ${adminTools}
                             <a href="category.html?id=${id}" class="game-card-item">
                                 <img src="${game.image}" class="game-img-thumb">
-                                <div class="game-caption">
-                                    <div class="game-name-label">${game.name}</div>
-                                </div>
+                                <div class="game-caption"><div class="game-name-label">${game.name}</div></div>
                             </a>
                         </div>`;
                 });
             });
         }
 
-        function deleteGame(id) {
-            if(confirm("Удалить категорию?")) db.ref('games/' + id).remove();
-        }
-
-        // ОБНОВЛЕННЫЙ СКРИПТ ПОИСКА С ВЫПАДАЮЩИМ СПИСКОМ
+        // --- ИСПРАВЛЕННЫЙ ПОИСК ---
         const searchInput = document.getElementById('globalSearch');
         const searchDropdown = document.getElementById('search-results-dropdown');
 
-        searchInput.oninput = function() {
+        searchInput.addEventListener('input', function() {
             const val = this.value.toLowerCase().trim();
             
-            // Фильтр карточек на странице (как было)
+            // 1. Фильтр карточек на главной
             document.querySelectorAll('.game-card-wrapper').forEach(card => {
-                const match = card.dataset.tags.includes(val);
-                card.style.display = match ? 'block' : 'none';
+                card.style.display = card.dataset.tags.includes(val) ? 'block' : 'none';
             });
 
-            // Показ выпадающего списка
+            // 2. Обработка выпадающего списка
             if (val.length < 1) {
                 searchDropdown.style.display = 'none';
                 return;
             }
 
             db.ref('games').once('value', (snapshot) => {
-                let resultsHTML = '';
-                let foundCount = 0;
-
-                snapshot.forEach((child) => {
+                let html = '';
+                let count = 0;
+                snapshot.forEach(child => {
                     const game = child.val();
-                    const id = child.key;
                     if (game.name.toLowerCase().includes(val)) {
-                        foundCount++;
-                        resultsHTML += `
-                            <a href="category.html?id=${id}" class="search-result-item">
+                        count++;
+                        html += `
+                            <a href="category.html?id=${child.key}" class="search-result-item">
                                 <img src="${game.image}" class="result-img">
-                                <div class="result-info">
+                                <div>
                                     <div class="result-name">${game.name}</div>
-                                    <div class="result-category">Аккаунты, Валюта, Услуги</div>
+                                    <div class="result-category">Перейти в категорию</div>
                                 </div>
                             </a>`;
                     }
                 });
 
-                if (foundCount > 0) {
-                    searchDropdown.innerHTML = resultsHTML;
+                if (count > 0) {
+                    searchDropdown.innerHTML = html;
                     searchDropdown.style.display = 'flex';
                 } else {
                     searchDropdown.style.display = 'none';
                 }
             });
-        };
-
-        // Закрытие списка при клике вне поиска
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-wrapper')) {
-                searchDropdown.style.display = 'none';
-            }
         });
 
+        // Закрытие при клике мимо
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-wrapper')) searchDropdown.style.display = 'none';
+        });
+
+        // Проверка авторизации
         auth.onAuthStateChanged((user) => {
             const dNav = document.getElementById('nav-desktop');
             const mNav = document.getElementById('nav-mobile');
             const aPanel = document.getElementById('admin-panel');
-
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snap) => {
                     const profile = snap.val() || {};
-                    const isAdmin = profile.admin === true || profile.role === "admin";
-                    aPanel.style.display = isAdmin ? 'block' : 'none';
+                    const isAdmin = profile.admin === true;
+                    if(aPanel) aPanel.style.display = isAdmin ? 'block' : 'none';
                     loadBanners(isAdmin);
                     loadCatalog(isAdmin);
-
-                    const menuHTML = `
-                        <a href="news.html" class="nav-link">
-                            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                            <span class="nav-text">События</span>
-                        </a>
-                        <a href="chat.html" class="nav-link">
-                            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>
-                            <span class="nav-text">Сообщения</span>
-                        </a>
-                        <a href="profile.html" class="nav-link">
-                            <img src="${profile.profilePic || 'default-avatar.png'}" class="user-avatar-small">
-                            <span class="nav-text">Аккаунт</span>
-                        </a>
-                    `;
-                    dNav.innerHTML = menuHTML;
-                    mNav.innerHTML = menuHTML;
+                    const menu = `
+                        <a href="news.html" class="nav-link"><span class="nav-text">События</span></a>
+                        <a href="profile.html" class="nav-link"><img src="${profile.profilePic || 'default-avatar.png'}" class="user-avatar-small"><span class="nav-text">Аккаунт</span></a>`;
+                    dNav.innerHTML = menu; mNav.innerHTML = menu;
                 });
             } else {
-                dNav.innerHTML = `<a href="login.html" style="color:white; text-decoration:none; border:2px solid #ff0000; padding:10px 22px; border-radius:14px; font-weight:800; font-size:14px;">ВОЙТИ</a>`;
-                aPanel.style.display = 'none';
-                loadBanners(false);
-                loadCatalog(false);
+                dNav.innerHTML = `<a href="login.html" style="color:red; font-weight:800; text-decoration:none;">ВОЙТИ</a>`;
+                loadBanners(false); loadCatalog(false);
             }
         });
     </script>

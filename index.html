@@ -96,21 +96,49 @@
         .result-name { color: white; font-weight: 600; font-size: 14px; display: block; }
         .result-category { color: #777; font-size: 11px; }
 
-        /* --- НАВИГАЦИЯ С БЕЛЫМИ ИКОНКАМИ --- */
-        .header-right { display: flex; align-items: center; gap: 25px; }
-        .nav-link { display: flex; flex-direction: column; align-items: center; text-decoration: none; gap: 4px; transition: 0.2s ease; }
+        /* --- НАВИГАЦИЯ С ИСПРАВЛЕННЫМ ВЫРАВНИВАНИЕМ --- */
+        .header-right { 
+            display: flex; 
+            align-items: flex-end; /* Иконки будут на одной линии снизу */
+            gap: 25px; 
+            padding-bottom: 15px; /* Чтобы не прилипало к краю шапки */
+        }
+
+        .nav-link { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            text-decoration: none; 
+            gap: 6px; 
+            transition: 0.2s ease;
+            min-width: 65px;
+        }
+
         .nav-link:hover { transform: translateY(-3px); }
-        .nav-text { color: #fff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* Стиль для белых SVG иконок */
+        .nav-text { 
+            color: #fff; 
+            font-size: 10px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+        
         .nav-icon-svg {
-            width: 22px;
-            height: 22px;
-            fill: white; /* Делает иконку белой */
+            width: 24px;
+            height: 24px;
+            fill: white;
             display: block;
         }
 
-        .user-avatar-small { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
+        .user-avatar-small { 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            border: 1.5px solid #ff0000; 
+            object-fit: cover; 
+        }
 
         /* --- БАННЕРЫ --- */
         .banners-section { max-width: 1300px; margin: 5px auto 20px auto; padding: 0 20px; position: relative; }
@@ -141,7 +169,18 @@
         .admin-btn-action { background: #ff0000; color: white; padding: 14px 24px; border-radius: 14px; font-weight: 800; text-decoration: none; display: inline-block; margin-right: 15px; font-size: 14px; }
 
         /* --- МОБИЛЬНАЯ НАВИГАЦИЯ --- */
-        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: rgba(0,0,0,0.96); border-top: 1px solid #1a1a1a; justify-content: space-around; align-items: center; z-index: 2000; }
+        .mobile-nav { 
+            display: none; 
+            position: fixed; 
+            bottom: 0; left: 0; right: 0; 
+            height: 75px; 
+            background: rgba(0,0,0,0.96); 
+            border-top: 1px solid #1a1a1a; 
+            justify-content: space-around; 
+            align-items: flex-end; /* Выравнивание иконок в мобилке */
+            padding-bottom: 10px;
+            z-index: 2000; 
+        }
 
         @media (max-width: 850px) {
             header { padding: 0 20px; height: 75px; }
@@ -195,7 +234,7 @@
     <nav class="mobile-nav" id="nav-mobile"></nav>
 
     <script>
-        console.log("NOVAGAME UI: White Vector Icons Applied");
+        console.log("NOVAGAME UI: Fixed Alignment & Text");
 
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
@@ -309,11 +348,11 @@
                         </a>
                         <a href="chat.html" class="nav-link">
                             <svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
-                            <span class="nav-text" style="color:#ff0000; font-weight: bold;">Чат</span>
+                            <span class="nav-text">Чат</span>
                         </a>
                         <a href="profile.html" class="nav-link">
                             <img src="${profile.profilePic || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="user-avatar-small">
-                            <span class="nav-text">Аккаунт</span>
+                            <span class="nav-text">Профиль</span>
                         </a>`;
 
                     dNav.innerHTML = menu; mNav.innerHTML = menu;

@@ -59,7 +59,7 @@
         /* --- ПОИСК (СТИЛЬ PLAYEROK) --- */
         .header-center { flex: 1; display: flex; justify-content: center; margin: 0 20px; }
         .search-wrapper { 
-            position: relative; /* ВАЖНО для позиционирования меню */
+            position: relative; 
             width: 100%; 
             max-width: 550px; 
         }
@@ -83,7 +83,6 @@
 
         .search-icon-hint { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); opacity: 0.4; pointer-events: none; z-index: 5; }
 
-        /* ВЫПАДАЮЩЕЕ МЕНЮ */
         .search-dropdown {
             position: absolute;
             top: calc(100% + 10px); 
@@ -93,7 +92,7 @@
             border-radius: 16px;
             max-height: 380px;
             overflow-y: auto;
-            display: none; /* Скрыто по умолчанию */
+            display: none; 
             flex-direction: column;
             z-index: 9999;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8);
@@ -137,7 +136,7 @@
         .nav-icon-svg { width: 22px; height: 22px; fill: white; }
         .user-avatar-small { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #ff0000; object-fit: cover; }
 
-        /* --- ОСТАЛЬНЫЕ СЕКЦИИ --- */
+        /* --- СЕКЦИИ --- */
         .banners-section { max-width: 1300px; margin: 5px auto 20px auto; padding: 0 20px; }
         .section-header { font-size: 14px; font-weight: 900; text-transform: uppercase; color: #ff0000; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
         .section-header::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.05); }
@@ -216,13 +215,12 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // --- ИСПРАВЛЕННЫЙ ПОИСК ---
+        // --- ПОИСК ---
         const searchInput = document.getElementById('globalSearch');
         const searchDropdown = document.getElementById('search-results-dropdown');
 
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
-            
             if (query.length < 1) {
                 searchDropdown.style.display = 'none';
                 return;
@@ -231,51 +229,34 @@
             db.ref('games').once('value', (snapshot) => {
                 let htmlContent = '';
                 let hasResults = false;
-
                 snapshot.forEach((child) => {
                     const game = child.val();
-                    const id = child.key;
-                    
-                    // Проверка по имени или ключевым словам
                     if (game.name.toLowerCase().includes(query)) {
                         hasResults = true;
                         htmlContent += `
-                            <a href="category.html?id=${id}" class="search-item">
+                            <a href="category.html?id=${child.key}" class="search-item">
                                 <img src="${game.image}" class="search-item-img">
                                 <div class="search-item-info">${game.name}</div>
                             </a>`;
                     }
                 });
-
-                if (hasResults) {
-                    searchDropdown.innerHTML = htmlContent;
-                    searchDropdown.style.display = 'flex';
-                } else {
-                    searchDropdown.style.display = 'none';
-                }
+                searchDropdown.innerHTML = htmlContent;
+                searchDropdown.style.display = hasResults ? 'flex' : 'none';
             });
         });
 
-        // Скрывать при клике мимо
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-wrapper')) {
-                searchDropdown.style.display = 'none';
-            }
+            if (!e.target.closest('.search-wrapper')) searchDropdown.style.display = 'none';
         });
 
-        // --- ЗАГРУЗКА ДАННЫХ ---
+        // --- ЗАГРУЗКА КОНТЕНТА ---
         function loadBanners() {
             db.ref('news').on('value', (snapshot) => {
                 const container = document.getElementById('banners-list');
                 container.innerHTML = '';
                 snapshot.forEach((child) => {
                     const data = child.val();
-                    container.innerHTML += `
-                        <div class="banner-card">
-                            <a href="${data.link || '#'}" class="banner-link">
-                                <img src="${data.image}" class="banner-img">
-                            </a>
-                        </div>`;
+                    container.innerHTML += `<div class="banner-card"><a href="${data.link || '#'}" class="banner-link"><img src="${data.image}" class="banner-img"></a></div>`;
                 });
             });
         }
@@ -286,16 +267,12 @@
                 list.innerHTML = '';
                 snapshot.forEach((child) => {
                     const game = child.val();
-                    const id = child.key;
-                    list.innerHTML += `
-                        <a href="category.html?id=${id}" class="game-card-item">
-                            <img src="${game.image}" class="game-img-thumb">
-                            <div class="game-caption"><div class="game-name-label">${game.name}</div></div>
-                        </a>`;
+                    list.innerHTML += `<a href="category.html?id=${child.key}" class="game-card-item"><img src="${game.image}" class="game-img-thumb"><div class="game-caption"><div class="game-name-label">${game.name}</div></div></a>`;
                 });
             });
         }
 
+        // --- АВТОРИЗАЦИЯ И АДМИНКА ---
         auth.onAuthStateChanged((user) => {
             const dNav = document.getElementById('nav-desktop');
             const mNav = document.getElementById('nav-mobile');
@@ -304,7 +281,10 @@
             if (user) {
                 db.ref('users/' + user.uid).on('value', (snap) => {
                     const profile = snap.val() || {};
-                    if(aPanel) aPanel.style.display = profile.admin ? 'block' : 'none';
+                    // Проверка на админа (сработает даже если в базе строка "true")
+                    const isAdmin = profile.admin === true || String(profile.admin).toLowerCase() === 'true';
+                    
+                    if(aPanel) aPanel.style.display = isAdmin ? 'block' : 'none';
                     
                     const menu = `
                         <a href="news.html" class="nav-link">
@@ -324,6 +304,7 @@
             } else {
                 const guest = `<a href="login.html" style="color:red; font-weight:800; text-decoration:none; border: 1px solid red; padding: 6px 15px; border-radius: 10px; font-size:12px;">ВХОД</a>`;
                 dNav.innerHTML = guest; mNav.innerHTML = guest;
+                if(aPanel) aPanel.style.display = 'none';
             }
         });
 

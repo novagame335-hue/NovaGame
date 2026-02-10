@@ -56,7 +56,7 @@
         }
         .brand-name span { color: #ff0000; }
 
-        /* --- ПОИСК --- */
+        /* --- ПОИСК (СТИЛЬ PLAYEROK) --- */
         .header-center { flex: 1; display: flex; justify-content: center; margin: 0 20px; }
         .search-wrapper { position: relative; width: 100%; max-width: 550px; }
         .search-input {
@@ -79,26 +79,55 @@
 
         .search-icon-hint { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); opacity: 0.4; pointer-events: none; z-index: 5; }
 
+        /* Выпадающее меню поиска */
         .search-dropdown {
             position: absolute;
-            top: 100%; left: 0; right: 0;
+            top: calc(100% + 8px); 
+            left: 0; right: 0;
             background: #0f0f0f;
             border: 1px solid #333;
-            border-radius: 14px;
-            margin-top: 8px;
-            max-height: 400px;
+            border-radius: 16px;
+            max-height: 350px;
             overflow-y: auto;
-            display: none;
+            display: none; /* Скрыто по умолчанию */
             flex-direction: column;
             z-index: 99999;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            padding: 8px;
         }
 
-        /* --- НАВИГАЦИЯ (ИСПРАВЛЕНО: ПЛОТНОЕ РАСПОЛОЖЕНИЕ) --- */
+        .search-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            text-decoration: none;
+            color: white;
+            border-radius: 10px;
+            transition: 0.2s;
+        }
+
+        .search-item:hover {
+            background: #1a1a1a;
+        }
+
+        .search-item-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .search-item-info {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* --- НАВИГАЦИЯ --- */
         .header-right { 
             display: flex; 
             align-items: flex-end; 
-            gap: 12px; /* Уменьшено расстояние между иконками */
+            gap: 12px; 
             padding-bottom: 12px; 
         }
 
@@ -109,14 +138,14 @@
             text-decoration: none; 
             gap: 4px; 
             transition: 0.2s ease;
-            min-width: 45px; /* Минимальная ширина уменьшена для плотности */
+            min-width: 45px; 
         }
 
         .nav-link:hover { transform: translateY(-3px); }
         
         .nav-text { 
             color: #fff; 
-            font-size: 9px; /* Чуть уменьшен шрифт текста */
+            font-size: 9px; 
             font-weight: 800; 
             text-transform: uppercase; 
             letter-spacing: 0.3px;
@@ -124,14 +153,14 @@
         }
         
         .nav-icon-svg {
-            width: 22px; /* Уменьшен размер иконок */
+            width: 22px; 
             height: 22px;
             fill: white;
             display: block;
         }
 
         .user-avatar-small { 
-            width: 26px; /* Уменьшен аватар */
+            width: 26px; 
             height: 26px; 
             border-radius: 50%; 
             border: 1.5px solid #ff0000; 
@@ -242,6 +271,49 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // --- ЛОГИКА ПОИСКА (СТИЛЬ PLAYEROK) ---
+        const searchInput = document.getElementById('globalSearch');
+        const searchDropdown = document.getElementById('search-results-dropdown');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length < 1) {
+                searchDropdown.style.display = 'none';
+                return;
+            }
+
+            db.ref('games').once('value', (snapshot) => {
+                searchDropdown.innerHTML = '';
+                let count = 0;
+                
+                snapshot.forEach((child) => {
+                    const game = child.val();
+                    const id = child.key;
+                    if (game.name.toLowerCase().includes(query)) {
+                        count++;
+                        searchDropdown.innerHTML += `
+                            <a href="category.html?id=${id}" class="search-item">
+                                <img src="${game.image}" class="search-item-img">
+                                <div class="search-item-info">${game.name}</div>
+                            </a>`;
+                    }
+                });
+
+                if (count > 0) {
+                    searchDropdown.style.display = 'flex';
+                } else {
+                    searchDropdown.style.display = 'none';
+                }
+            });
+        });
+
+        // Закрытие при клике вне
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-wrapper')) {
+                searchDropdown.style.display = 'none';
+            }
+        });
+
         const bannersContainer = document.getElementById('banners-list');
         document.getElementById('slideNext').onclick = () => bannersContainer.scrollBy({ left: 336, behavior: 'smooth' });
         document.getElementById('slidePrev').onclick = () => bannersContainer.scrollBy({ left: -336, behavior: 'smooth' });
@@ -268,9 +340,8 @@
                 snapshot.forEach((child) => {
                     const game = child.val();
                     const id = child.key;
-                    const searchTags = (game.name + " " + (game.keywords || "")).toLowerCase();
                     list.innerHTML += `
-                        <div class="game-card-wrapper" data-tags="${searchTags}">
+                        <div class="game-card-wrapper">
                             <a href="category.html?id=${id}" class="game-card-item">
                                 <img src="${game.image}" class="game-img-thumb">
                                 <div class="game-caption"><div class="game-name-label">${game.name}</div></div>

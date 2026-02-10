@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
-        /* --- ТВОИ ОРИГИНАЛЬНЫЕ БАЗОВЫЕ СТИЛИ --- */
+        /* --- БАЗОВЫЕ СТИЛИ --- */
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
@@ -46,7 +46,15 @@
         .header-left { display: flex; align-items: center; }
         .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .logo-img { height: 60px; filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3)); }
-        .brand-name { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -1px; text-transform: uppercase; }
+        
+        /* ИСПРАВЛЕНО: Убран принудительный капс (text-transform: none) */
+        .brand-name { 
+            font-size: 28px; 
+            font-weight: 900; 
+            color: #fff; 
+            letter-spacing: -1px; 
+            text-transform: none; 
+        }
         .brand-name span { color: #ff0000; }
 
         /* --- ПОИСК --- */
@@ -87,21 +95,12 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.9);
         }
 
-        .search-result-item {
-            display: flex; align-items: center; gap: 12px; padding: 12px 15px;
-            text-decoration: none; border-bottom: 1px solid #1a1a1a; transition: 0.2s;
-        }
-        .search-result-item:hover { background: #1a1a1a; }
-        .result-img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
-        .result-name { color: white; font-weight: 600; font-size: 14px; display: block; }
-        .result-category { color: #777; font-size: 11px; }
-
-        /* --- НАВИГАЦИЯ С ИСПРАВЛЕННЫМ ВЫРАВНИВАНИЕМ --- */
+        /* --- НАВИГАЦИЯ --- */
         .header-right { 
             display: flex; 
-            align-items: flex-end; /* Иконки будут на одной линии снизу */
+            align-items: flex-end; 
             gap: 25px; 
-            padding-bottom: 15px; /* Чтобы не прилипало к краю шапки */
+            padding-bottom: 15px; 
         }
 
         .nav-link { 
@@ -164,10 +163,6 @@
         .game-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 15px 10px; background: linear-gradient(to top, #000 40%, transparent); text-align: center; }
         .game-name-label { font-weight: 700; color: white; font-size: 13px; }
 
-        /* --- АДМИН ПАНЕЛЬ --- */
-        #admin-panel { display: none; max-width: 1300px; margin: 10px auto; padding: 0 20px; }
-        .admin-btn-action { background: #ff0000; color: white; padding: 14px 24px; border-radius: 14px; font-weight: 800; text-decoration: none; display: inline-block; margin-right: 15px; font-size: 14px; }
-
         /* --- МОБИЛЬНАЯ НАВИГАЦИЯ --- */
         .mobile-nav { 
             display: none; 
@@ -177,7 +172,7 @@
             background: rgba(0,0,0,0.96); 
             border-top: 1px solid #1a1a1a; 
             justify-content: space-around; 
-            align-items: flex-end; /* Выравнивание иконок в мобилке */
+            align-items: flex-end; 
             padding-bottom: 10px;
             z-index: 2000; 
         }
@@ -203,7 +198,7 @@
         <div class="header-center">
             <div class="search-wrapper">
                 <span class="search-icon-hint">🔍</span>
-                <input type="text" id="globalSearch" class="search-input" placeholder="Поиск игр, аккаунтов, валюты..." autocomplete="off">
+                <input type="text" id="globalSearch" class="search-input" placeholder="Поиск игр и приложений" autocomplete="off">
                 <div id="search-results-dropdown" class="search-dropdown"></div>
             </div>
         </div>
@@ -212,9 +207,9 @@
 
     <div style="height: 90px;"></div>
 
-    <div id="admin-panel">
-        <a href="add-game.html" class="admin-btn-action">✚ Добавить категорию</a>
-        <a href="add-news.html" class="admin-btn-action" style="background: #222; border: 1px solid #333;">✚ Создать баннер</a>
+    <div id="admin-panel" style="display:none; max-width: 1300px; margin: 10px auto; padding: 0 20px;">
+        <a href="add-game.html" style="background: #ff0000; color: white; padding: 14px 24px; border-radius: 14px; font-weight: 800; text-decoration: none; display: inline-block; margin-right: 15px; font-size: 14px;">✚ Добавить категорию</a>
+        <a href="add-news.html" style="background: #222; border: 1px solid #333; color: white; padding: 14px 24px; border-radius: 14px; font-weight: 800; text-decoration: none; display: inline-block; font-size: 14px;">✚ Создать баннер</a>
     </div>
 
     <section class="banners-section">
@@ -234,8 +229,6 @@
     <nav class="mobile-nav" id="nav-mobile"></nav>
 
     <script>
-        console.log("NOVAGAME UI: Fixed Alignment & Text");
-
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -287,48 +280,6 @@
                 });
             });
         }
-
-        const searchInput = document.getElementById('globalSearch');
-        const searchDropdown = document.getElementById('search-results-dropdown');
-
-        searchInput.addEventListener('input', function() {
-            const val = this.value.toLowerCase().trim();
-            document.querySelectorAll('.game-card-wrapper').forEach(card => {
-                card.style.display = card.dataset.tags.includes(val) ? 'block' : 'none';
-            });
-            if (val.length < 1) {
-                searchDropdown.style.display = 'none';
-                return;
-            }
-            db.ref('games').once('value', (snapshot) => {
-                let html = '';
-                let count = 0;
-                snapshot.forEach(child => {
-                    const game = child.val();
-                    if (game.name.toLowerCase().includes(val) || (game.keywords && game.keywords.toLowerCase().includes(val))) {
-                        count++;
-                        html += `
-                            <a href="category.html?id=${child.key}" class="search-result-item">
-                                <img src="${game.image}" class="result-img">
-                                <div>
-                                    <div class="result-name">${game.name}</div>
-                                    <div class="result-category">${game.keywords || 'Перейти в раздел'}</div>
-                                </div>
-                            </a>`;
-                    }
-                });
-                if (count > 0) {
-                    searchDropdown.innerHTML = html;
-                    searchDropdown.style.display = 'flex';
-                } else {
-                    searchDropdown.style.display = 'none';
-                }
-            });
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-wrapper')) searchDropdown.style.display = 'none';
-        });
 
         auth.onAuthStateChanged((user) => {
             const dNav = document.getElementById('nav-desktop');

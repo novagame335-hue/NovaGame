@@ -128,7 +128,7 @@
             overflow-y: auto;
             display: none;
             flex-direction: column;
-            z-index: 99999; /* Поверх всех элементов */
+            z-index: 99999;
             box-shadow: 0 10px 40px rgba(0,0,0,0.9);
         }
 
@@ -411,7 +411,7 @@
     </div>
 
     <section class="banners-section">
-        <div class="section-header">ОБЬЯВЛЕНИЯ</div>
+        <div class="section-header">ОБЪЯВЛЕНИЯ</div>
         <div class="slider-wrapper">
             <button class="slider-nav-btn btn-l" id="slidePrev">❮</button>
             <div class="banners-scroll-container" id="banners-list"></div>
@@ -480,19 +480,16 @@
             });
         }
 
-        // --- ЛОГИКА ПОИСКА И ВЫПАДАЮЩЕГО МЕНЮ ---
+        // --- ЛОГИКА ПОИСКА ---
         const searchInput = document.getElementById('globalSearch');
         const searchDropdown = document.getElementById('search-results-dropdown');
 
         searchInput.addEventListener('input', function() {
             const val = this.value.toLowerCase().trim();
-            
-            // Фильтрация плиток на главной
             document.querySelectorAll('.game-card-wrapper').forEach(card => {
                 card.style.display = card.dataset.tags.includes(val) ? 'block' : 'none';
             });
 
-            // Выпадающее меню
             if (val.length < 1) {
                 searchDropdown.style.display = 'none';
                 return;
@@ -510,12 +507,11 @@
                                 <img src="${game.image}" class="result-img">
                                 <div>
                                     <div class="result-name">${game.name}</div>
-                                    <div class="result-category">Перейти в магазин</div>
+                                    <div class="result-category">Перейти в категорию</div>
                                 </div>
                             </a>`;
                     }
                 });
-
                 if (count > 0) {
                     searchDropdown.innerHTML = html;
                     searchDropdown.style.display = 'flex';
@@ -529,7 +525,7 @@
             if (!e.target.closest('.search-wrapper')) searchDropdown.style.display = 'none';
         });
 
-        // --- ПРОВЕРКА АВТОРИЗАЦИИ И ЧАТ ---
+        // --- АВТОРИЗАЦИЯ И МЕНЮ ---
         auth.onAuthStateChanged((user) => {
             const dNav = document.getElementById('nav-desktop');
             const mNav = document.getElementById('nav-mobile');
@@ -544,16 +540,15 @@
                     loadBanners(isAdmin);
                     loadCatalog(isAdmin);
 
-                    // HTML код меню (С СОХРАНЕНИЕМ КНОПКИ ЧАТА)
                     const menu = `
                         <a href="news.html" class="nav-link">
                             <span class="nav-text">События</span>
                         </a>
                         <a href="chat.html" class="nav-link">
-                            <span class="nav-text" style="color:#ff0000;">Чат</span>
+                            <span class="nav-text" style="color:#ff0000; font-weight: bold;">Чат</span>
                         </a>
                         <a href="profile.html" class="nav-link">
-                            <img src="${profile.profilePic || 'default-avatar.png'}" class="user-avatar-small">
+                            <img src="${profile.profilePic || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="user-avatar-small">
                             <span class="nav-text">Аккаунт</span>
                         </a>`;
 
@@ -561,7 +556,7 @@
                     mNav.innerHTML = menu;
                 });
             } else {
-                const guestMenu = `<a href="login.html" style="color:red; font-weight:800; text-decoration:none;">ВОЙТИ</a>`;
+                const guestMenu = `<a href="login.html" style="color:red; font-weight:800; text-decoration:none; border: 1px solid red; padding: 5px 15px; border-radius: 10px;">ВОЙТИ</a>`;
                 dNav.innerHTML = guestMenu;
                 mNav.innerHTML = guestMenu;
                 loadBanners(false); 

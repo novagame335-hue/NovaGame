@@ -72,7 +72,7 @@
 
         .search-icon-hint { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); opacity: 0.4; pointer-events: none; z-index: 5; }
 
-        /* ВЫПАДАЮЩИЙ СПИСОК ПОИСКА (Твой стиль) */
+        /* ВЫПАДАЮЩИЙ СПИСОК ПОИСКА */
         .search-dropdown {
             position: absolute;
             top: 100%; left: 0; right: 0;
@@ -99,9 +99,10 @@
 
         /* --- НАВИГАЦИЯ --- */
         .header-right { display: flex; align-items: center; gap: 25px; }
-        .nav-link { display: flex; flex-direction: column; align-items: center; text-decoration: none; gap: 4px; transition: 0.2s ease; }
+        .nav-link { display: flex; flex-direction: column; align-items: center; text-decoration: none; gap: 2px; transition: 0.2s ease; }
         .nav-link:hover { transform: translateY(-3px); }
         .nav-text { color: #fff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-icon { font-size: 18px; } /* Иконки для кнопок */
         .user-avatar-small { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
         /* --- БАННЕРЫ --- */
@@ -187,7 +188,8 @@
     <nav class="mobile-nav" id="nav-mobile"></nav>
 
     <script>
-        // ТВОЙ КОНФИГ С ВСТАВЛЕННЫМ КЛЮЧОМ
+        console.log("NOVAGAME UI UPDATED: Icons & Search Loaded");
+
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -202,7 +204,6 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // Функционал слайдера
         const bannersContainer = document.getElementById('banners-list');
         document.getElementById('slideNext').onclick = () => bannersContainer.scrollBy({ left: 336, behavior: 'smooth' });
         document.getElementById('slidePrev').onclick = () => bannersContainer.scrollBy({ left: -336, behavior: 'smooth' });
@@ -241,14 +242,11 @@
             });
         }
 
-        // --- ЛОГИКА ПОИСКА (КАК НА PLAYEROK) ---
         const searchInput = document.getElementById('globalSearch');
         const searchDropdown = document.getElementById('search-results-dropdown');
 
         searchInput.addEventListener('input', function() {
             const val = this.value.toLowerCase().trim();
-            
-            // Фильтруем карточки на странице
             document.querySelectorAll('.game-card-wrapper').forEach(card => {
                 card.style.display = card.dataset.tags.includes(val) ? 'block' : 'none';
             });
@@ -258,7 +256,6 @@
                 return;
             }
 
-            // Выводим результаты в выпадашку
             db.ref('games').once('value', (snapshot) => {
                 let html = '';
                 let count = 0;
@@ -289,7 +286,6 @@
             if (!e.target.closest('.search-wrapper')) searchDropdown.style.display = 'none';
         });
 
-        // --- АВТОРИЗАЦИЯ И МЕНЮ ---
         auth.onAuthStateChanged((user) => {
             const dNav = document.getElementById('nav-desktop');
             const mNav = document.getElementById('nav-mobile');
@@ -302,8 +298,14 @@
                     if(aPanel) aPanel.style.display = isAdmin ? 'block' : 'none';
                     
                     const menu = `
-                        <a href="news.html" class="nav-link"><span class="nav-text">События</span></a>
-                        <a href="chat.html" class="nav-link"><span class="nav-text" style="color:#ff0000; font-weight: bold;">Чат</span></a>
+                        <a href="news.html" class="nav-link">
+                            <span class="nav-icon">📅</span>
+                            <span class="nav-text">События</span>
+                        </a>
+                        <a href="chat.html" class="nav-link">
+                            <span class="nav-icon">💬</span>
+                            <span class="nav-text" style="color:#ff0000; font-weight: bold;">Чат</span>
+                        </a>
                         <a href="profile.html" class="nav-link">
                             <img src="${profile.profilePic || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="user-avatar-small">
                             <span class="nav-text">Аккаунт</span>

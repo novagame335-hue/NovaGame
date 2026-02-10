@@ -72,7 +72,6 @@
 
         .search-icon-hint { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); opacity: 0.4; pointer-events: none; z-index: 5; }
 
-        /* ВЫПАДАЮЩИЙ СПИСОК ПОИСКА */
         .search-dropdown {
             position: absolute;
             top: 100%; left: 0; right: 0;
@@ -97,12 +96,20 @@
         .result-name { color: white; font-weight: 600; font-size: 14px; display: block; }
         .result-category { color: #777; font-size: 11px; }
 
-        /* --- НАВИГАЦИЯ --- */
+        /* --- НАВИГАЦИЯ С БЕЛЫМИ ИКОНКАМИ --- */
         .header-right { display: flex; align-items: center; gap: 25px; }
-        .nav-link { display: flex; flex-direction: column; align-items: center; text-decoration: none; gap: 2px; transition: 0.2s ease; }
+        .nav-link { display: flex; flex-direction: column; align-items: center; text-decoration: none; gap: 4px; transition: 0.2s ease; }
         .nav-link:hover { transform: translateY(-3px); }
         .nav-text { color: #fff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .nav-icon { font-size: 18px; } /* Иконки для кнопок */
+        
+        /* Стиль для белых SVG иконок */
+        .nav-icon-svg {
+            width: 22px;
+            height: 22px;
+            fill: white; /* Делает иконку белой */
+            display: block;
+        }
+
         .user-avatar-small { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ff0000; object-fit: cover; }
 
         /* --- БАННЕРЫ --- */
@@ -188,7 +195,7 @@
     <nav class="mobile-nav" id="nav-mobile"></nav>
 
     <script>
-        console.log("NOVAGAME UI UPDATED: Icons & Search Loaded");
+        console.log("NOVAGAME UI: White Vector Icons Applied");
 
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
@@ -250,12 +257,10 @@
             document.querySelectorAll('.game-card-wrapper').forEach(card => {
                 card.style.display = card.dataset.tags.includes(val) ? 'block' : 'none';
             });
-
             if (val.length < 1) {
                 searchDropdown.style.display = 'none';
                 return;
             }
-
             db.ref('games').once('value', (snapshot) => {
                 let html = '';
                 let count = 0;
@@ -299,11 +304,11 @@
                     
                     const menu = `
                         <a href="news.html" class="nav-link">
-                            <span class="nav-icon">📅</span>
+                            <svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>
                             <span class="nav-text">События</span>
                         </a>
                         <a href="chat.html" class="nav-link">
-                            <span class="nav-icon">💬</span>
+                            <svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
                             <span class="nav-text" style="color:#ff0000; font-weight: bold;">Чат</span>
                         </a>
                         <a href="profile.html" class="nav-link">

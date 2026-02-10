@@ -47,7 +47,6 @@
         .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .logo-img { height: 60px; filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3)); }
         
-        /* ИСПРАВЛЕНО: Убран принудительный капс (text-transform: none) */
         .brand-name { 
             font-size: 28px; 
             font-weight: 900; 
@@ -58,7 +57,7 @@
         .brand-name span { color: #ff0000; }
 
         /* --- ПОИСК --- */
-        .header-center { flex: 1; display: flex; justify-content: center; margin: 0 30px; }
+        .header-center { flex: 1; display: flex; justify-content: center; margin: 0 20px; }
         .search-wrapper { position: relative; width: 100%; max-width: 550px; }
         .search-input {
             width: 100%;
@@ -95,12 +94,12 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.9);
         }
 
-        /* --- НАВИГАЦИЯ --- */
+        /* --- НАВИГАЦИЯ (ИСПРАВЛЕНО: ПЛОТНОЕ РАСПОЛОЖЕНИЕ) --- */
         .header-right { 
             display: flex; 
             align-items: flex-end; 
-            gap: 25px; 
-            padding-bottom: 15px; 
+            gap: 12px; /* Уменьшено расстояние между иконками */
+            padding-bottom: 12px; 
         }
 
         .nav-link { 
@@ -108,32 +107,32 @@
             flex-direction: column; 
             align-items: center; 
             text-decoration: none; 
-            gap: 6px; 
+            gap: 4px; 
             transition: 0.2s ease;
-            min-width: 65px;
+            min-width: 45px; /* Минимальная ширина уменьшена для плотности */
         }
 
         .nav-link:hover { transform: translateY(-3px); }
         
         .nav-text { 
             color: #fff; 
-            font-size: 10px; 
+            font-size: 9px; /* Чуть уменьшен шрифт текста */
             font-weight: 800; 
             text-transform: uppercase; 
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             text-align: center;
         }
         
         .nav-icon-svg {
-            width: 24px;
-            height: 24px;
+            width: 22px; /* Уменьшен размер иконок */
+            height: 22px;
             fill: white;
             display: block;
         }
 
         .user-avatar-small { 
-            width: 28px; 
-            height: 28px; 
+            width: 26px; /* Уменьшен аватар */
+            height: 26px; 
             border-radius: 50%; 
             border: 1.5px solid #ff0000; 
             object-fit: cover; 

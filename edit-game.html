@@ -122,7 +122,7 @@
             <input type="file" id="fileInput" accept="image/*" style="display:none;">
         </div>
 
-        <div id="loading-text">Загрузка данных...</div>
+        <div id="loading-text">Инициализация...</div>
 
         <button class="btn-save" id="saveBtn" onclick="updateGame()">Сохранить изменения</button>
         <a href="index.html" class="btn-back">ОТМЕНА</a>
@@ -155,15 +155,16 @@
 
         let currentImageUrl = ""; 
 
-        // 1. Проверка авторизации (важно для Storage)
+        // 1. Проверка авторизации
         auth.onAuthStateChanged((user) => {
             if (!user) {
-                alert("Ошибка: вы должны войти в систему как администратор!");
-                window.location.href = "login.html";
+                console.warn("Пользователь не авторизован!");
+            } else {
+                console.log("Авторизован как:", user.email);
             }
         });
 
-        // 2. Загрузка данных при открытии
+        // 2. Загрузка данных
         if (gameId) {
             db.ref('games/' + gameId).once('value').then((snapshot) => {
                 const data = snapshot.val();
@@ -172,66 +173,66 @@
                     currentImageUrl = data.image;
                     preview.src = data.image;
                 }
-            }).catch(err => alert("Ошибка БД: " + err.message));
+            }).catch(err => console.error("Ошибка загрузки данных:", err));
         }
 
-        // 3. Предпросмотр выбранного файла
+        // 3. Предпросмотр
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    preview.src = event.target.result;
-                };
+                reader.onload = (event) => { preview.src = event.target.result; };
                 reader.readAsDataURL(file);
                 document.getElementById('fileLabel').innerText = "Выбрано: " + file.name;
             }
         });
 
-        // 4. Основная функция сохранения
+        // 4. Сохранение
         async function updateGame() {
             const newName = nameInput.value.trim();
             const file = fileInput.files[0];
 
-            if (!newName) {
-                alert("Введите название!");
-                return;
-            }
+            if (!newName) { alert("Введите название!"); return; }
 
             saveBtn.disabled = true;
             loadingText.style.display = 'block';
-            console.log("Начинаю процесс сохранения...");
+            loadingText.innerText = "Подготовка к загрузке...";
 
             try {
                 let finalImageUrl = currentImageUrl;
 
-                // Если выбран новый файл — загружаем его в Storage
                 if (file) {
-                    console.log("Загрузка файла в Storage...");
+                    loadingText.innerText = "Загрузка файла в облако...";
                     const storageRef = storage.ref('game_icons/' + gameId + '_' + Date.now());
                     
-                    // Загружаем с обработкой ошибок
-                    const uploadTask = await storageRef.put(file).catch(err => {
-                        throw new Error("Ошибка Storage (проверьте Rules): " + err.message);
-                    });
+                    // Создаем задачу загрузки
+                    const uploadTask = storageRef.put(file);
+
+                    // Добавляем принудительный таймаут 15 секунд
+                    const timeout = setTimeout(() => {
+                        alert("Тайм-аут! Проверьте: 1. Включен ли MFA в консоли. 2. Настроены ли Rules в Storage. 3. Размер файла.");
+                        location.reload();
+                    }, 15000);
+
+                    const snapshot = await uploadTask;
+                    clearTimeout(timeout);
                     
-                    console.log("Файл загружен, получаем ссылку...");
-                    finalImageUrl = await uploadTask.ref.getDownloadURL();
+                    loadingText.innerText = "Файл загружен. Получение ссылки...";
+                    finalImageUrl = await snapshot.ref.getDownloadURL();
                 }
 
-                // Обновляем данные в Realtime Database
-                console.log("Обновление данных в БД...");
+                loadingText.innerText = "Обновление базы данных...";
                 await db.ref('games/' + gameId).update({
                     name: newName,
                     image: finalImageUrl
                 });
 
-                alert("Успешно обновлено!");
+                alert("Готово!");
                 window.location.href = "index.html";
 
             } catch (error) {
-                console.error("Критическая ошибка:", error);
-                alert(error.message);
+                console.error("Ошибка при сохранении:", error);
+                alert("Произошла ошибка: " + error.message);
                 saveBtn.disabled = false;
                 loadingText.style.display = 'none';
             }

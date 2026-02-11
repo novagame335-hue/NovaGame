@@ -3,239 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактирование категории — NovaGame</title>
-    
+    <title>Редактирование — NovaGame</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-
     <style>
-        body {
-            margin: 0;
-            background: #000;
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .edit-container {
-            background: #0d0d0d;
-            padding: 30px;
-            border-radius: 24px;
-            border: 1px solid #222;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
-        }
-
-        h2 { color: #ff0000; margin-top: 0; text-align: center; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-
-        .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            background: #151515;
-            border: 1px solid #333;
-            border-radius: 12px;
-            color: white;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input[type="text"]:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.1); }
-
-        .file-upload-label {
-            display: block;
-            background: #222;
-            border: 2px dashed #444;
-            padding: 20px;
-            text-align: center;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .file-upload-label:hover { border-color: #ff0000; background: #1a0000; }
-
-        .preview-img {
-            width: 100%;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border: 1px solid #333;
-        }
-
-        .btn-save {
-            width: 100%;
-            padding: 16px;
-            background: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 15px;
-            margin-top: 10px;
-        }
-
-        .btn-save:disabled { background: #555; cursor: not-allowed; }
-        .btn-save:hover:not(:disabled) { background: #cc0000; transform: scale(1.02); }
-        
-        .btn-back {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #555;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        
-        #loading-text { font-size: 12px; color: #ff0000; text-align: center; display: none; margin-bottom: 10px; }
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .edit-container { background: #0d0d0d; padding: 30px; border-radius: 20px; border: 1px solid #222; width: 350px; text-align: center; }
+        h2 { color: #ff0000; }
+        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; background: #111; border: 1px solid #333; color: white; border-radius: 10px; box-sizing: border-box; }
+        .file-label { display: block; padding: 15px; background: #222; border: 2px dashed #444; border-radius: 10px; cursor: pointer; margin: 10px 0; }
+        .preview-img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin: 10px 0; display: none; }
+        .btn-save { width: 100%; padding: 15px; background: #ff0000; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #status { font-size: 12px; color: #ff0000; margin: 10px 0; }
     </style>
 </head>
 <body>
 
     <div class="edit-container">
         <h2>Редактировать</h2>
+        <img id="imagePreview" class="preview-img">
+        <input type="text" id="gameName" placeholder="Название">
         
-        <img id="imagePreview" class="preview-img" src="https://via.placeholder.com/300" alt="Превью">
-
-        <div class="input-group">
-            <label>Название категории</label>
-            <input type="text" id="gameName" placeholder="Название игры">
-        </div>
-
-        <div class="input-group">
-            <label>Иконка категории</label>
-            <label for="fileInput" class="file-upload-label" id="fileLabel">
-                Выбрать файл с устройства
-            </label>
-            <input type="file" id="fileInput" accept="image/*" style="display:none;">
-        </div>
-
-        <div id="loading-text">Инициализация...</div>
-
-        <button class="btn-save" id="saveBtn" onclick="updateGame()">Сохранить изменения</button>
-        <a href="index.html" class="btn-back">ОТМЕНА</a>
+        <label for="fileInput" class="file-label" id="fileLabel">Сменить иконку</label>
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        
+        <div id="status"></div>
+        <button class="btn-save" onclick="saveChanges()">Сохранить</button>
     </div>
 
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
-            authDomain: "novagame-b15b6.firebaseapp.com",
             databaseURL: "https://novagame-b15b6-default-rtdb.europe-west1.firebasedatabase.app/",
-            projectId: "novagame-b15b6",
-            storageBucket: "novagame-b15b6.firebasestorage.app",
-            messagingSenderId: "7572791951",
-            appId: "1:7572791951:web:7c207e63da98fd9c28c6fa"
+            projectId: "novagame-b15b6"
         };
-        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const storage = firebase.storage();
-        const auth = firebase.auth();
 
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('id');
 
-        const nameInput = document.getElementById('gameName');
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('imagePreview');
-        const saveBtn = document.getElementById('saveBtn');
-        const loadingText = document.getElementById('loading-text');
+        let base64Image = ""; // Тут будет храниться код картинки
 
-        let currentImageUrl = ""; 
-
-        // 1. Проверка авторизации
-        auth.onAuthStateChanged((user) => {
-            if (!user) {
-                console.warn("Пользователь не авторизован!");
-            } else {
-                console.log("Авторизован как:", user.email);
+        // Загружаем данные
+        db.ref('games/' + gameId).once('value').then(snap => {
+            const data = snap.val();
+            document.getElementById('gameName').value = data.name;
+            if(data.image) {
+                const img = document.getElementById('imagePreview');
+                img.src = data.image;
+                img.style.display = 'block';
+                base64Image = data.image;
             }
         });
 
-        // 2. Загрузка данных
-        if (gameId) {
-            db.ref('games/' + gameId).once('value').then((snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    nameInput.value = data.name;
-                    currentImageUrl = data.image;
-                    preview.src = data.image;
-                }
-            }).catch(err => console.error("Ошибка загрузки данных:", err));
-        }
-
-        // 3. Предпросмотр
-        fileInput.addEventListener('change', (e) => {
+        // Перевод картинки в текст (Base64)
+        document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => { preview.src = event.target.result; };
-                reader.readAsDataURL(file);
-                document.getElementById('fileLabel').innerText = "Выбрано: " + file.name;
+            const reader = new FileReader();
+            
+            document.getElementById('status').innerText = "Обработка фото...";
+            
+            reader.onloadend = function() {
+                base64Image = reader.result; // Это и есть наша строка Base64
+                const img = document.getElementById('imagePreview');
+                img.src = base64Image;
+                img.style.display = 'block';
+                document.getElementById('status').innerText = "Фото готово!";
             }
+            if (file) reader.readAsDataURL(file);
         });
 
-        // 4. Сохранение
-        async function updateGame() {
-            const newName = nameInput.value.trim();
-            const file = fileInput.files[0];
+        function saveChanges() {
+            const name = document.getElementById('gameName').value;
+            document.getElementById('status').innerText = "Сохранение...";
 
-            if (!newName) { alert("Введите название!"); return; }
-
-            saveBtn.disabled = true;
-            loadingText.style.display = 'block';
-            loadingText.innerText = "Подготовка к загрузке...";
-
-            try {
-                let finalImageUrl = currentImageUrl;
-
-                if (file) {
-                    loadingText.innerText = "Загрузка файла в облако...";
-                    const storageRef = storage.ref('game_icons/' + gameId + '_' + Date.now());
-                    
-                    // Создаем задачу загрузки
-                    const uploadTask = storageRef.put(file);
-
-                    // Добавляем принудительный таймаут 15 секунд
-                    const timeout = setTimeout(() => {
-                        alert("Тайм-аут! Проверьте: 1. Включен ли MFA в консоли. 2. Настроены ли Rules в Storage. 3. Размер файла.");
-                        location.reload();
-                    }, 15000);
-
-                    const snapshot = await uploadTask;
-                    clearTimeout(timeout);
-                    
-                    loadingText.innerText = "Файл загружен. Получение ссылки...";
-                    finalImageUrl = await snapshot.ref.getDownloadURL();
-                }
-
-                loadingText.innerText = "Обновление базы данных...";
-                await db.ref('games/' + gameId).update({
-                    name: newName,
-                    image: finalImageUrl
-                });
-
-                alert("Готово!");
+            db.ref('games/' + gameId).update({
+                name: name,
+                image: base64Image
+            }).then(() => {
+                alert("Обновлено!");
                 window.location.href = "index.html";
-
-            } catch (error) {
-                console.error("Ошибка при сохранении:", error);
-                alert("Произошла ошибка: " + error.message);
-                saveBtn.disabled = false;
-                loadingText.style.display = 'none';
-            }
+            });
         }
     </script>
 </body>

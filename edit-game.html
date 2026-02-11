@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
         body {
@@ -24,63 +25,82 @@
         .edit-container {
             background: #0d0d0d;
             padding: 30px;
-            border-radius: 20px;
+            border-radius: 24px;
             border: 1px solid #222;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
         }
 
-        h2 { color: #ff0000; margin-top: 0; text-align: center; }
+        h2 { color: #ff0000; margin-top: 0; text-align: center; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
         .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 14px; opacity: 0.7; }
+        label { display: block; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; }
         
-        input {
+        input[type="text"] {
             width: 100%;
-            padding: 12px;
-            background: #111;
+            padding: 14px;
+            background: #151515;
             border: 1px solid #333;
-            border-radius: 10px;
+            border-radius: 12px;
             color: white;
             outline: none;
             transition: 0.3s;
         }
 
-        input:focus { border-color: #ff0000; }
+        input[type="text"]:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.1); }
+
+        /* Стилизация выбора файла */
+        .file-upload-label {
+            display: block;
+            background: #222;
+            border: 2px dashed #444;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .file-upload-label:hover { border-color: #ff0000; background: #1a0000; }
 
         .preview-img {
             width: 100%;
-            height: 150px;
+            aspect-ratio: 1/1;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 15px;
             margin-bottom: 20px;
-            border: 1px solid #222;
-            display: none; /* Покажется, когда загрузится ссылка */
+            border: 1px solid #333;
         }
 
         .btn-save {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: #ff0000;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-weight: 800;
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.3s;
+            font-size: 15px;
+            margin-top: 10px;
         }
 
-        .btn-save:hover { background: #cc0000; transform: translateY(-2px); }
+        .btn-save:disabled { background: #555; cursor: not-allowed; }
+        .btn-save:hover:not(:disabled) { background: #cc0000; transform: scale(1.02); }
         
         .btn-back {
             display: block;
             text-align: center;
-            margin-top: 15px;
-            color: #666;
+            margin-top: 20px;
+            color: #555;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 600;
         }
+        
+        #loading-text { font-size: 12px; color: #ff0000; text-align: center; display: none; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -88,24 +108,28 @@
     <div class="edit-container">
         <h2>Редактировать</h2>
         
-        <img id="imagePreview" class="preview-img" src="" alt="Предпросмотр">
+        <img id="imagePreview" class="preview-img" src="https://via.placeholder.com/300" alt="Превью">
 
         <div class="input-group">
             <label>Название категории</label>
-            <input type="text" id="gameName" placeholder="Например: Brawl Stars">
+            <input type="text" id="gameName" placeholder="Название игры">
         </div>
 
         <div class="input-group">
-            <label>Ссылка на иконку (URL)</label>
-            <input type="text" id="gameImage" placeholder="https://image-link.com/img.png">
+            <label>Иконка категории</label>
+            <label for="fileInput" class="file-upload-label" id="fileLabel">
+                Выбрать файл с устройства
+            </label>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
         </div>
 
-        <button class="btn-save" onclick="updateGame()">Сохранить изменения</button>
-        <a href="index.html" class="btn-back">Отмена</a>
+        <div id="loading-text">Загрузка изображения...</div>
+
+        <button class="btn-save" id="saveBtn" onclick="updateGame()">Сохранить изменения</button>
+        <a href="index.html" class="btn-back">ОТМЕНА</a>
     </div>
 
     <script>
-        // Твои настройки Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBmVusnUmwqWTMRSUeL4uTF_yrXQvZA0eQ",
             authDomain: "novagame-b15b6.firebaseapp.com",
@@ -118,61 +142,82 @@
         
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const storage = firebase.storage();
 
-        // 1. Получаем ID игры из URL (например, edit-game.html?id=-Nxyz123)
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('id');
 
-        if (!gameId) {
-            alert("ID игры не найден!");
-            window.location.href = "index.html";
+        const nameInput = document.getElementById('gameName');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('imagePreview');
+        const saveBtn = document.getElementById('saveBtn');
+        const loadingText = document.getElementById('loading-text');
+
+        let currentImageUrl = ""; // Здесь будет лежать старая или новая ссылка
+
+        // 1. Загрузка данных при открытии
+        if (gameId) {
+            db.ref('games/' + gameId).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    nameInput.value = data.name;
+                    currentImageUrl = data.image;
+                    preview.src = data.image;
+                }
+            });
         }
 
-        const nameInput = document.getElementById('gameName');
-        const imageInput = document.getElementById('gameImage');
-        const preview = document.getElementById('imagePreview');
-
-        // 2. Загружаем текущие данные из базы
-        db.ref('games/' + gameId).once('value').then((snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                nameInput.value = data.name;
-                imageInput.value = data.image;
-                if (data.image) {
-                    preview.src = data.image;
-                    preview.style.display = 'block';
-                }
-            } else {
-                alert("Данные не найдены!");
-                window.location.href = "index.html";
+        // 2. Предпросмотр выбранного файла
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    preview.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+                document.getElementById('fileLabel').innerText = "Файл выбран: " + file.name;
             }
         });
 
-        // 3. Обновление картинки при вводе новой ссылки
-        imageInput.addEventListener('input', () => {
-            preview.src = imageInput.value;
-            preview.style.display = imageInput.value ? 'block' : 'none';
-        });
-
-        // 4. Функция сохранения
-        function updateGame() {
+        // 3. Основная функция сохранения
+        async function updateGame() {
             const newName = nameInput.value.trim();
-            const newImage = imageInput.value.trim();
+            const file = fileInput.files[0];
 
-            if (!newName || !newImage) {
-                alert("Заполните все поля!");
+            if (!newName) {
+                alert("Введите название!");
                 return;
             }
 
-            db.ref('games/' + gameId).update({
-                name: newName,
-                image: newImage
-            }).then(() => {
-                alert("Изменения сохранены!");
+            saveBtn.disabled = true;
+            loadingText.style.display = 'block';
+
+            try {
+                let finalImageUrl = currentImageUrl;
+
+                // Если выбран новый файл — загружаем его в Storage
+                if (file) {
+                    const storageRef = storage.ref('game_icons/' + gameId + '_' + file.name);
+                    const uploadTask = await storageRef.put(file);
+                    finalImageUrl = await uploadTask.ref.getDownloadURL();
+                }
+
+                // Обновляем данные в Realtime Database
+                await db.ref('games/' + gameId).update({
+                    name: newName,
+                    image: finalImageUrl
+                });
+
+                alert("Успешно обновлено!");
                 window.location.href = "index.html";
-            }).catch((err) => {
-                alert("Ошибка сохранения: " + err.message);
-            });
+
+            } catch (error) {
+                console.error(error);
+                alert("Ошибка: " + error.message);
+                saveBtn.disabled = false;
+                loadingText.style.display = 'none';
+            }
         }
     </script>
 </body>

@@ -50,7 +50,6 @@
 
         input[type="text"]:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.1); }
 
-        /* Стилизация выбора файла */
         .file-upload-label {
             display: block;
             background: #222;
@@ -123,7 +122,7 @@
             <input type="file" id="fileInput" accept="image/*" style="display:none;">
         </div>
 
-        <div id="loading-text">Загрузка изображения...</div>
+        <div id="loading-text">Загрузка данных...</div>
 
         <button class="btn-save" id="saveBtn" onclick="updateGame()">Сохранить изменения</button>
         <a href="index.html" class="btn-back">ОТМЕНА</a>
@@ -143,6 +142,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const storage = firebase.storage();
+        const auth = firebase.auth();
 
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('id');
@@ -153,9 +153,17 @@
         const saveBtn = document.getElementById('saveBtn');
         const loadingText = document.getElementById('loading-text');
 
-        let currentImageUrl = ""; // Здесь будет лежать старая или новая ссылка
+        let currentImageUrl = ""; 
 
-        // 1. Загрузка данных при открытии
+        // 1. Проверка авторизации (важно для Storage)
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                alert("Ошибка: вы должны войти в систему как администратор!");
+                window.location.href = "login.html";
+            }
+        });
+
+        // 2. Загрузка данных при открытии
         if (gameId) {
             db.ref('games/' + gameId).once('value').then((snapshot) => {
                 const data = snapshot.val();
@@ -164,10 +172,10 @@
                     currentImageUrl = data.image;
                     preview.src = data.image;
                 }
-            });
+            }).catch(err => alert("Ошибка БД: " + err.message));
         }
 
-        // 2. Предпросмотр выбранного файла
+        // 3. Предпросмотр выбранного файла
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -176,11 +184,11 @@
                     preview.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
-                document.getElementById('fileLabel').innerText = "Файл выбран: " + file.name;
+                document.getElementById('fileLabel').innerText = "Выбрано: " + file.name;
             }
         });
 
-        // 3. Основная функция сохранения
+        // 4. Основная функция сохранения
         async function updateGame() {
             const newName = nameInput.value.trim();
             const file = fileInput.files[0];
@@ -192,18 +200,27 @@
 
             saveBtn.disabled = true;
             loadingText.style.display = 'block';
+            console.log("Начинаю процесс сохранения...");
 
             try {
                 let finalImageUrl = currentImageUrl;
 
                 // Если выбран новый файл — загружаем его в Storage
                 if (file) {
-                    const storageRef = storage.ref('game_icons/' + gameId + '_' + file.name);
-                    const uploadTask = await storageRef.put(file);
+                    console.log("Загрузка файла в Storage...");
+                    const storageRef = storage.ref('game_icons/' + gameId + '_' + Date.now());
+                    
+                    // Загружаем с обработкой ошибок
+                    const uploadTask = await storageRef.put(file).catch(err => {
+                        throw new Error("Ошибка Storage (проверьте Rules): " + err.message);
+                    });
+                    
+                    console.log("Файл загружен, получаем ссылку...");
                     finalImageUrl = await uploadTask.ref.getDownloadURL();
                 }
 
                 // Обновляем данные в Realtime Database
+                console.log("Обновление данных в БД...");
                 await db.ref('games/' + gameId).update({
                     name: newName,
                     image: finalImageUrl
@@ -213,8 +230,8 @@
                 window.location.href = "index.html";
 
             } catch (error) {
-                console.error(error);
-                alert("Ошибка: " + error.message);
+                console.error("Критическая ошибка:", error);
+                alert(error.message);
                 saveBtn.disabled = false;
                 loadingText.style.display = 'none';
             }
